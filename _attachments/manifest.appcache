@@ -1,0 +1,58 @@
+CACHE MANIFEST
+# VERSION A
+
+/
+/js/app.min.js
+/js/libs.min.js
+/css/style.min.css
+/appcache-nanny.js
+/images/back_disabled.png
+/images/back_enabled_hover.png
+/images/back_enabled.png
+/images/caseNotificationIncomplete.png
+/images/caseNotification.png
+/images/coconut_logo_hori_1_med.jpg
+/images/delete.png
+/images/facilityIncomplete.png
+/images/facility.png
+/images/forward_disabled.png
+/images/forward_enabled_hover.png
+/images/forward_enabled.png
+/images/group.png
+/images/householdIncomplete.png
+/images/householdMemberIncomplete.png
+/images/householdMember.png
+/images/household.png
+/images/layers.png
+/images/loading.gif
+/images/marker-icon-2x.png
+/images/marker-icon.png
+/images/marker-shadow.png
+/images/repeat.png
+/images/sort_asc_disabled.png
+/images/sort_asc.png
+/images/sort_both.png
+/images/sort_desc_disabled.png
+/images/sort_desc.png
+/images/ungroup.png
+/images/ussd.png
+/css/images/ajax-loader.gif
+/css/images/ajax-loader.png
+/css/images/icons-18-black.png
+/css/images/icons-18-white.png
+/css/images/icons-36-black.png
+/css/images/icons-36-white.png
+
+
+NETWORK:
+*
+http://*
+
+FALLBACK:
+/ /
+# VERSION 
+# VERSION 
+# VERSION 
+# VERSION 
+# VERSION 
+# VERSION 

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "Help.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "app/models/Help.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,IAAA;EAAA;+BAAA;;AAAA;AACE,yBAAA,CAAA;;;;GAAA;;AAAA,iBAAA,UAAA,GAAY,SAAA,GAAA,CAAZ,CAAA;;AAAA,iBAEA,GAAA,GAAM,OAFN,CAAA;;cAAA;;GADiB,QAAQ,CAAC,MAA5B,CAAA"
+}
