@@ -1,6 +1,8 @@
 CACHE MANIFEST
 # VERSION A
 
+# defaults.json is added to couchapp during deployment
+defaults.json
 /
 /js/app.min.js
 /js/libs.min.js
@@ -56,3 +58,10 @@ FALLBACK:
 # VERSION 
 # VERSION 
 # VERSION 
+# VERSION 91e23e6
+# VERSION 91e23e6
+# VERSION 91e23e6
+# VERSION 91e23e6
+# VERSION 91e23e6
+# VERSION 91e23e6
+# VERSION 91e23e6

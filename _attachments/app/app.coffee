@@ -370,28 +370,38 @@ database.get '_local/initial_load_complete', (error, result) ->
   if error
     throw error if (error.status isnt 404)
 
-    cloudUrl = prompt "Enter cloud URL", "http://mikeymckay.iriscouch.com"
-    cloudUrl = cloudUrl.replace(/http:\/\//,"")
-    Coconut.config = new Config
-      cloud: cloudUrl
-      cloud_database_name: prompt("Enter application name")
-      cloud_credentials: "#{prompt "Enter cloud username", "admin"}:#{prompt "Enter cloud password", "admin"}"
+    cloudDefault = ""
+    usernameDefault = ""
+    passwordDefault = ""
 
-    Coconut.config.save()
-    console.log Coconut.config.toJSON()
+    $.ajax
+      url: "defaults.json",
+      success: (result) ->
+        if result
+          cloudDefault = result.cloud
+          [usernameDefault,passwordDefault] = result.cloud_credentials.split(":")
 
+      complete: ->
+        cloudUrl = prompt "Enter cloud URL", cloudDefault
+        cloudUrl = cloudUrl.replace(/http:\/\//,"")
+        Coconut.config = new Config
+          cloud: cloudUrl
+          cloud_database_name: prompt("Enter application name")
+          cloud_credentials: "#{prompt "Enter cloud username", usernameDefault}:#{prompt "Enter cloud password", passwordDefault}"
 
-    sync = new Sync
-    sync.replicateApplicationDocs
-      error: (error) ->
-        console.error "Updating application docs failed: #{JSON.stringify error}"
-      success: ->
-        database.put {_id: '_local/initial_load_complete'}, (error, result) ->
-          console.log error if error
-        Coconut.router.startApp()
-        _.delay ->
-          $("#log").html ""
-        ,5000
+        Coconut.config.save()
+
+        sync = new Sync
+        sync.replicateApplicationDocs
+          error: (error) ->
+            console.error "Updating application docs failed: #{JSON.stringify error}"
+          success: ->
+            database.put {_id: '_local/initial_load_complete'}, (error, result) ->
+              console.log error if error
+            Coconut.router.startApp()
+            _.delay ->
+              $("#log").html ""
+            ,5000
 
   else
     _.delay appCacheNanny.start, 5000

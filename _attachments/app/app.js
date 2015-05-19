@@ -475,37 +475,52 @@ Coconut = {};
 Coconut.router = new Router();
 
 database.get('_local/initial_load_complete', function(error, result) {
-  var cloudUrl, sync;
+  var cloudDefault, passwordDefault, usernameDefault;
   if (error) {
     if (error.status !== 404) {
       throw error;
     }
-    cloudUrl = prompt("Enter cloud URL", "http://mikeymckay.iriscouch.com");
-    cloudUrl = cloudUrl.replace(/http:\/\//, "");
-    Coconut.config = new Config({
-      cloud: cloudUrl,
-      cloud_database_name: prompt("Enter application name"),
-      cloud_credentials: (prompt("Enter cloud username", "admin")) + ":" + (prompt("Enter cloud password", "admin"))
-    });
-    Coconut.config.save();
-    console.log(Coconut.config.toJSON());
-    sync = new Sync;
-    return sync.replicateApplicationDocs({
-      error: function(error) {
-        return console.error("Updating application docs failed: " + (JSON.stringify(error)));
+    cloudDefault = "";
+    usernameDefault = "";
+    passwordDefault = "";
+    return $.ajax({
+      url: "defaults.json",
+      success: function(result) {
+        var _ref;
+        if (result) {
+          cloudDefault = result.cloud;
+          return _ref = result.cloud_credentials.split(":"), usernameDefault = _ref[0], passwordDefault = _ref[1], _ref;
+        }
       },
-      success: function() {
-        database.put({
-          _id: '_local/initial_load_complete'
-        }, function(error, result) {
-          if (error) {
-            return console.log(error);
+      complete: function() {
+        var cloudUrl, sync;
+        cloudUrl = prompt("Enter cloud URL", cloudDefault);
+        cloudUrl = cloudUrl.replace(/http:\/\//, "");
+        Coconut.config = new Config({
+          cloud: cloudUrl,
+          cloud_database_name: prompt("Enter application name"),
+          cloud_credentials: (prompt("Enter cloud username", usernameDefault)) + ":" + (prompt("Enter cloud password", passwordDefault))
+        });
+        Coconut.config.save();
+        sync = new Sync;
+        return sync.replicateApplicationDocs({
+          error: function(error) {
+            return console.error("Updating application docs failed: " + (JSON.stringify(error)));
+          },
+          success: function() {
+            database.put({
+              _id: '_local/initial_load_complete'
+            }, function(error, result) {
+              if (error) {
+                return console.log(error);
+              }
+            });
+            Coconut.router.startApp();
+            return _.delay(function() {
+              return $("#log").html("");
+            }, 5000);
           }
         });
-        Coconut.router.startApp();
-        return _.delay(function() {
-          return $("#log").html("");
-        }, 5000);
       }
     });
   } else {
