@@ -7,13 +7,12 @@ shell = require 'gulp-shell'
 gutil = require 'gulp-util'
 debug = require 'gulp-debug'
 
-base_dir = "/var/www/coconut-mobile/"
 
 gulp.task 'coffee', ->
-  gulp.src ["#{base_dir}/app/**/*.coffee","#{base_dir}/app/*.coffee"]
+  gulp.src ["./app/**/*.coffee","./app/*.coffee"]
   .pipe coffee
     bare: true
-  .pipe gulp.dest "#{base_dir}/app/"
+  .pipe gulp.dest "./app/"
 
 gulp.task 'css', ->
   css = [
@@ -22,12 +21,12 @@ gulp.task 'css', ->
     "jquery.dataTables.min.css"
     "dataTables.tableTools.min.css"
   ]
-  css = ("#{base_dir}/css/#{file}" for file in css)
+  css = ("./css/#{file}" for file in css)
 
   gulp.src css
     .pipe cssmin()
     .pipe concat "style.min.css"
-    .pipe gulp.dest "#{base_dir}/css/"
+    .pipe gulp.dest "./css/"
 
 gulp.task 'libs', ->
   libs = [
@@ -60,12 +59,12 @@ gulp.task 'libs', ->
     "geo.js"
   ]
 
-  libs = ("#{base_dir}/js-libraries/#{file}" for file in libs)
+  libs = ("./js-libraries/#{file}" for file in libs)
 
   gulp.src libs
     .pipe uglify()
     .pipe concat "libs.min.js"
-    .pipe gulp.dest "#{base_dir}/js/"
+    .pipe gulp.dest "./js/"
 
 gulp.task 'app', ->
   app = [
@@ -94,13 +93,13 @@ gulp.task 'app', ->
     'app.js'
   ]
 
-  app = ("#{base_dir}/app/#{file}" for file in app)
+  app = ("./app/#{file}" for file in app)
     
   gulp.src app
 #  .pipe debug()
   .pipe uglify()
   .pipe concat "app.min.js"
-  .pipe gulp.dest "#{base_dir}/js/"
+  .pipe gulp.dest "./js/"
 
 gulp.task 'default', [
   'coffee'
