@@ -123,7 +123,7 @@ class Sync extends Backbone.Model
           success: (result) =>
             doc_ids = _.pluck result.rows, "id"
             doc_ids = _(doc_ids).without "_design/coconut"
-            @log "Updating #{doc_ids.length} docs (users and forms). Please wait."
+            @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(',')})</small>. Please wait."
             database.replicate.from Coconut.config.cloud_url_with_credentials(),
               doc_ids: doc_ids
             .on 'change', (info) =>

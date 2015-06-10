@@ -6,30 +6,27 @@ cssmin = require 'gulp-cssmin'
 shell = require 'gulp-shell'
 gutil = require 'gulp-util'
 debug = require 'gulp-debug'
+sourcemaps = require 'gulp-sourcemaps'
+watch = require 'gulp-watch'
+livereload = require 'gulp-livereload'
 
+# CONFIGURATION #
 
-gulp.task 'coffee', ->
-  gulp.src ["./app/**/*.coffee","./app/*.coffee"]
-  .pipe coffee
-    bare: true
-  .pipe gulp.dest "./app/"
+js_library_file = "libs.min.js"
+compiled_js_directory = "./js/"
+app_file = "app.min.js"
+css_file = "style.min.css"
+css_file_dir = "./css/"
 
-gulp.task 'css', ->
-  css = [
+css_files = ("./css/#{file}" for file in [
     "jquery.mobile-1.1.0.min.css"
     "leaflet.css"
     "jquery.dataTables.min.css"
     "dataTables.tableTools.min.css"
-  ]
-  css = ("./css/#{file}" for file in css)
+  ])
 
-  gulp.src css
-    .pipe cssmin()
-    .pipe concat "style.min.css"
-    .pipe gulp.dest "./css/"
 
-gulp.task 'libs', ->
-  libs = [
+js_library_files = ("./js-libraries/#{file}" for file in [
     "appcache-nanny.js"
     "jquery-2.1.0.min.js"
     "jquery-migrate-1.2.1.min.js"
@@ -57,57 +54,99 @@ gulp.task 'libs', ->
     "sha1.js"
     "markdown.min.js"
     "geo.js"
-  ]
+  ])
 
-  libs = ("./js-libraries/#{file}" for file in libs)
+app_files = ("./app/#{file}" for file in [
+    'utils.coffee'
+    'config.coffee'
+    'models/Case.coffee'
+    'models/Config.coffee'
+    'models/Help.coffee'
+    'models/LocalConfig.coffee'
+    'models/Question.coffee'
+    'models/QuestionCollection.coffee'
+    'models/Result.coffee'
+    'models/ResultCollection.coffee'
+    'models/Sync.coffee'
+    'models/User.coffee'
+    'models/UserCollection.coffee'
+    'views/CsvView.coffee'
+    'views/HelpView.coffee'
+    'views/LocalConfigView.coffee'
+    'views/LoginView.coffee'
+    'views/MenuView.coffee'
+    'views/QuestionView.coffee'
+    'views/ResultsView.coffee'
+    'views/SyncView.coffee'
+    'views/UsersView.coffee'
+    'app.coffee'
+  ])
 
-  gulp.src libs
-    .pipe uglify()
-    .pipe concat "libs.min.js"
-    .pipe gulp.dest "./js/"
+compile_and_concat = () ->
+  gutil.log "Combining javascript libraries into #{js_library_file}"
+  gulp.src js_library_files
+    .pipe sourcemaps.init()
+    .pipe concat js_library_file
+    .pipe sourcemaps.write()
+    .pipe gulp.dest compiled_js_directory
 
-gulp.task 'app', ->
-  app = [
-    'utils.js'
-    'config.js'
-    'models/Case.js'
-    'models/Config.js'
-    'models/Help.js'
-    'models/LocalConfig.js'
-    'models/Question.js'
-    'models/QuestionCollection.js'
-    'models/Result.js'
-    'models/ResultCollection.js'
-    'models/Sync.js'
-    'models/User.js'
-    'models/UserCollection.js'
-    'views/CsvView.js'
-    'views/HelpView.js'
-    'views/LocalConfigView.js'
-    'views/LoginView.js'
-    'views/MenuView.js'
-    'views/QuestionView.js'
-    'views/ResultsView.js'
-    'views/SyncView.js'
-    'views/UsersView.js'
-    'app.js'
-  ]
+  gutil.log "Compiling coffeescript and combining into #{app_file}"
+  gulp.src app_files
+    .pipe sourcemaps.init()
+    .pipe coffee
+      bare: true
+    .on 'error', gutil.log
+    .pipe concat app_file
+    .pipe sourcemaps.write()
+    .pipe gulp.dest compiled_js_directory
 
-  app = ("./app/#{file}" for file in app)
-    
-  gulp.src app
-#  .pipe debug()
-  .pipe uglify()
-  .pipe concat "app.min.js"
-  .pipe gulp.dest "./js/"
+  gutil.log "Combining css into #{css_file}"
+  gulp.src css_files
+    .pipe concat css_file
+    .pipe gulp.dest css_file_dir
 
-gulp.task 'default', [
-  'coffee'
-  'libs'
-  'css'
-  'app'
-]
+couchapp_push = (destination = "default") ->
+  gutil.log "Pushing to couchdb"
+  gulp.src("").pipe shell(["couchapp push #{destination}"])
 
-#gulp.watch "#{base_dir}/*.html", ['app']
-#gulp.watch ["#{base_dir}/app/**/*.coffee","#{base_dir}/app/*.coffee"], ['coffee','app']
+minify = () ->
+  for file in [js_library_file, app_file]
+    gutil.log "uglifying: #{file}"
+    gulp.src "#{compiled_js_directory}#{file}"
+      .pipe uglify()
+      .pipe concat file
+      .pipe gulp.dest compiled_js_directory
 
+  # Note that cssmin doesn't reduce file size much
+  gutil.log "cssmin'ing #{css_file_dir}#{css_file}"
+  gulp.src "#{css_file_dir}#{css_file}"
+    .pipe cssmin()
+    .pipe concat css_file
+    .pipe gulp.dest css_file_dir
+
+develop = () ->
+  compile_and_concat()
+  couchapp_push()
+  gutil.log "Refreshing browser"
+# TODO write gulp-couchapp to push so we don't have to guess here
+  setTimeout livereload.reload, 3000
+
+gulp.task 'minify', ->
+  compile_and_concat()
+  minify()
+
+gulp.task 'deploy', ->
+  compile_and_concat()
+  minify()
+  couchapp_push("cloud")
+
+gulp.task 'develop', ->
+  compile_and_concat()
+  couchapp_push()
+  livereload.listen
+    start: true
+  gulp.watch app_files.concat(js_library_files).concat(css_files), develop
+
+gulp.task 'default', ->
+  compile_and_concat()
+  minify()

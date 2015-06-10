@@ -1,5 +1,7 @@
 CACHE MANIFEST
-# VERSION A
+# VERSION C
+# VERSION C
+# VERSION C
 
 # defaults.json is added to couchapp during deployment
 defaults.json
@@ -52,17 +54,3 @@ http://*
 
 FALLBACK:
 / /
-# VERSION 
-# VERSION 
-# VERSION 
-# VERSION 
-# VERSION 
-# VERSION 
-# VERSION 91e23e6
-# VERSION 91e23e6
-# VERSION 91e23e6
-# VERSION 91e23e6
-# VERSION 91e23e6
-# VERSION 91e23e6
-# VERSION 91e23e6
-# VERSION 9fd30a4
