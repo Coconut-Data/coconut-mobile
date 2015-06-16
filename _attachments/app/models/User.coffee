@@ -1,3 +1,9 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+Cookie = require 'js-cookie'
+
 class User extends Backbone.Model
   url: "/user"
 
@@ -21,7 +27,7 @@ class User extends Backbone.Model
 
   login: ->
     User.currentUser = @
-    $.cookie('current_user', @username())
+    Cookie('current_user', @username())
     $("span#user").html @username()
     $('#district').html @get "district"
     $("a[href=#logout]").show()
@@ -35,30 +41,28 @@ class User extends Backbone.Model
     @login()
 
 User.isAuthenticated = (options) ->
-  current_user_cookie = $.cookie('current_user')
+  current_user_cookie = Cookie('current_user')
   if current_user_cookie? and current_user_cookie isnt ""
     user = new User
-      _id: "user.#{$.cookie('current_user')}"
+      _id: "user.#{Cookie('current_user')}"
     user.fetch
       success: =>
         user.refreshLogin()
         options.success(user)
       error: (error) ->
         # current user is invalid (should not get here)
-        console.error "Could not fetch user.#{$.cookie('current_user')}: #{error}"
+        console.error "Could not fetch user.#{Cookie('current_user')}: #{error}"
         options?.error()
   else
     # Not logged in
     options.error() if options.error?
 
 User.logout = ->
-  $.cookie('current_user',"")
+  Cookie('current_user',"")
   $("span#user").html ""
   $('#district').html ""
   $("a[href=#logout]").hide()
   $("a[href=#login]").show()
   User.currentUser = null
 
-class UserCollection extends Backbone.Collection
-  model: User
-  url: '/user'
+module.exports = User

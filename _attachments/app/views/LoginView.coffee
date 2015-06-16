@@ -1,3 +1,12 @@
+$ = require 'jquery'
+
+Backbone = require 'backbone'
+Backbone.$  = $
+
+Form2js = require 'form2js'
+
+User = require '../models/User'
+
 class LoginView extends Backbone.View
 
   el: '#content'
@@ -34,8 +43,8 @@ class LoginView extends Backbone.View
         </form>
       </div>
     "
-    $("input[type=text],input[type=password]").textinput()
-    $("input[type=submit]").button()
+    #$("input[type=text],input[type=password]").textinput()
+    #$("input[type=submit]").button()
 
   events:
     "submit form#login_form": "login"
@@ -44,7 +53,8 @@ class LoginView extends Backbone.View
 
   # Note this needs hashing and salt for real security
   login: ->
-    loginData = $('#login_form').toObject()
+    loginData = Form2js.form2js('login_form')
+    #loginData = $('#login_form').toObject()
     user = new User
       _id: "user.#{loginData.username}"
 
@@ -60,3 +70,5 @@ class LoginView extends Backbone.View
       error: =>
         $('#login_message').html "Wrong username"
     return false
+
+module.exports = LoginView

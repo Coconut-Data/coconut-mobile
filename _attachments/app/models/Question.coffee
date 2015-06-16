@@ -1,3 +1,9 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+
 class Question extends Backbone.Model
   initialize: ->
     @set
@@ -88,3 +94,4 @@ Question.fromDomNode = (domNode) ->
       return result
     .compact().value()
 
+module.exports = Question

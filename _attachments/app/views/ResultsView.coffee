@@ -1,3 +1,13 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+$.DataTable = require('datatables')
+
+Question = require '../models/Question'
+ResultCollection = require '../models/ResultCollection'
+
 class ResultsView extends Backbone.View
   initialize: ->
     @question = new Question()
@@ -99,9 +109,9 @@ class ResultsView extends Backbone.View
       </div>
     "
 
-    $("a").button()
+    #$("a").button()
 
-    $('[data-role=collapsible]').collapsible()
+    #$('[data-role=collapsible]').collapsible()
     $('.complete').bind "expand", =>
       @loadResults(true)
 
@@ -143,11 +153,13 @@ class ResultsView extends Backbone.View
           "
   
           if index+1 is results.length
-            $("table a").button()
+            #$("table a").button()
             $("table").trigger("update")
           _.each $('table tr'), (row, index) ->
             $(row).addClass("odd") if index%2 is 1
 
         $('table').dataTable()
 
-        $(".dataTables_filter input").textinput()
+        #$(".dataTables_filter input").textinput()
+
+module.exports = ResultsView

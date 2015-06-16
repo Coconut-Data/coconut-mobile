@@ -1,3 +1,11 @@
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+Coconut = require '../Coconut'
+Sync = require '../models/Sync'
+User = require '../models/User'
+
 class HelpView extends Backbone.View
 
   el: '#content'
@@ -45,3 +53,4 @@ class HelpView extends Backbone.View
 
     return false
     
+module.exports = HelpView

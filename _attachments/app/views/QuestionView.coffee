@@ -1,4 +1,6 @@
-window.SkipTheseWhen = ( argQuestions, result ) ->
+# These need to be available to the window object for form logic
+# # # #
+global.SkipTheseWhen = ( argQuestions, result ) ->
   questions = []
   argQuestions = argQuestions.split(/\s*,\s*/)
   for question in argQuestions
@@ -11,7 +13,20 @@ window.SkipTheseWhen = ( argQuestions, result ) ->
     else
       question.removeClass disabledClass
 
-window.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || null
+global.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || null
+# # # #
+_ = require 'underscore'
+$ = require 'jquery'
+Cookie = require 'js-cookie'
+
+Backbone = require 'backbone'
+Backbone.$  = $
+CoffeeScript = require 'coffee-script'
+Form2js = require 'form2js'
+moment = require 'moment'
+
+Coconut = require '../Coconut'
+ResultCollection = require '../models/ResultCollection'
 
 class QuestionView extends Backbone.View
 
@@ -103,14 +118,14 @@ class QuestionView extends Backbone.View
       </div>
       <h1>#{@model.id}</h1>
       <div id='question-view'>
-        <form>
+        <form id='questions'>
           #{@toHTMLForm(@model)}
         </form>
       </div>
     "
 
     #Load data into form
-    js2form($('form').get(0), @result.toJSON())
+    Form2js.js2form 'questions', @result.toJSON()
 
     @updateCache()
 
@@ -131,6 +146,7 @@ class QuestionView extends Backbone.View
     # Trigger a change event for each of the questions that contain skip logic in their actionOnChange code
     @triggerChangeIn skipperList
 
+    ###
     @$el.find("input[type=text],input[type=number],input[type='autocomplete from previous entries'],input[type='autocomplete from list'],input[type='autocomplete from code']").textinput()
     @$el.find('input[type=checkbox]').checkboxradio()
     @$el.find('ul').listview()
@@ -139,6 +155,7 @@ class QuestionView extends Backbone.View
     @$el.find('input[type=date]').datebox
       mode: "calbox"
       dateFormat: "%d-%m-%Y"
+    ###
 
     autocompleteElements = []
     _.each $("input[type='autocomplete from list']"), (element) ->
@@ -277,7 +294,7 @@ class QuestionView extends Backbone.View
       $message.show().html("
         #{message}
         #{button}
-      ").find("button").button()
+      ").find("button")
       # undo autoscrolling - horrible hack but it works!
       @scrollToQuestion($question)
       return false
@@ -421,16 +438,16 @@ class QuestionView extends Backbone.View
       else
         $question[0].style.display = ""
 
-
-
   # We throttle to limit how fast save can be repeatedly called
   save: _.throttle( ->
+
+      currentData = Form2js.form2js('questions', ".", false)
       
-      currentData = $('form').toObject(skipEmpty: false)
+      #currentData = $('form').toObject(skipEmpty: false)
 
       # Make sure lastModifiedAt is always updated on save
       currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "datetime_format")
-      currentData.savedBy = $.cookie('current_user')
+      currentData.savedBy = Cookie('current_user')
       @result.save currentData,
         success: (model) =>
           $("#messageText").slideDown().fadeOut()
@@ -697,3 +714,5 @@ class QuestionView extends Backbone.View
 
 
 )($)
+
+module.exports = QuestionView

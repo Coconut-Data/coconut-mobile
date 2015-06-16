@@ -1,3 +1,13 @@
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+_ = require 'underscore'
+
+Coconut = require '../Coconut'
+User = require './User'
+Utils = require '../Utils'
+
 class UserCollection extends Backbone.Collection
   model: User
   pouch:
@@ -35,3 +45,4 @@ UserCollection.load = (options) ->
     Utils.addOrUpdateDesignDoc designDoc,
       success: -> finished()
 
+module.exports = UserCollection

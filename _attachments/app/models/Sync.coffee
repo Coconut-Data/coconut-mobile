@@ -1,3 +1,11 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+moment = require 'moment'
+
+Coconut = require '../Coconut'
+
 class Sync extends Backbone.Model
   initialize: ->
     @set
@@ -55,7 +63,7 @@ class Sync extends Backbone.Model
           error: (error) -> options?.error?(error)
           success: =>
             @log "Creating list of all results on the tablet. Please wait."
-            database.query "results", {},
+            Coconut.database.query "results", {},
               (error,result) =>
                 if error
                   @log "Could not retrieve list of results: #{JSON.stringify(error)}"
@@ -66,7 +74,7 @@ class Sync extends Backbone.Model
                   @log "Synchronizing #{result.rows.length} results. Please wait."
                   resultIDs = _.pluck result.rows, "id"
 
-                  database.replicate.to Coconut.config.cloud_url_with_credentials(),
+                  Coconut.database.replicate.to Coconut.config.cloud_url_with_credentials(),
                     doc_ids: resultIDs
                   .on 'complete', (info) =>
                     @log "Success! Send data finished: created, updated or deleted #{info.docs_written} results on the server."
@@ -124,7 +132,7 @@ class Sync extends Backbone.Model
             doc_ids = _.pluck result.rows, "id"
             doc_ids = _(doc_ids).without "_design/coconut"
             @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(',')})</small>. Please wait."
-            database.replicate.from Coconut.config.cloud_url_with_credentials(),
+            Coconut.database.replicate.from Coconut.config.cloud_url_with_credentials(),
               doc_ids: doc_ids
             .on 'change', (info) =>
               $("#content").html "
@@ -144,3 +152,5 @@ class Sync extends Backbone.Model
             .on 'error', (error) =>
               @log "Error while updating application documents: #{JSON.stringify error}"
               options.error?(error)
+
+module.exports = Sync

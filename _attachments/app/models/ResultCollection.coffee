@@ -1,3 +1,12 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+
+Coconut = require '../Coconut'
+Utils = require '../Utils'
+
 class ResultCollection
 
   fetch: (options) =>
@@ -68,4 +77,4 @@ class ResultCollection
             success: -> finished()
 
 
-
+module.exports = ResultCollection

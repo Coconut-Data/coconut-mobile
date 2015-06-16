@@ -1,3 +1,11 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+Coconut = require '../Coconut'
+User = require '../models/User'
+
 class MenuView extends Backbone.View
 
   el: '.question-buttons'
@@ -19,7 +27,7 @@ class MenuView extends Backbone.View
           "<li><a id='menu-#{index}' href='#show/results/#{escape(question.id)}'><h2>#{question.id}<div id='menu-partial-amount'></div></h2></a></li>"
         .join(" "))
 
-        $(".question-buttons").navbar()
+#        $(".question-buttons").navbar()
         @update()
 
   update: ->
@@ -29,7 +37,7 @@ class MenuView extends Backbone.View
           Coconut.questions.each (question,index) =>
 
             
-            database.query "resultsByQuestionNotCompleteNotTransferredOut",
+            Coconut.database.query "resultsByQuestionNotCompleteNotTransferredOut",
               key: question.id
               include_docs: false
               (error,result) =>
@@ -46,9 +54,10 @@ class MenuView extends Backbone.View
 
                 $("#menu-#{index} #menu-partial-amount").html total
 
-    database.get "version", (error,result) ->
+    Coconut.database.get "version", (error,result) ->
       if error
         $("#version").html "-"
       else
         $("#version").html result.version
 
+module.exports = MenuView

@@ -1,3 +1,15 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Cookie = require 'js-cookie'
+
+Backbone = require 'backbone'
+Backbone.$  = $
+moment = require 'moment'
+sha1 = require 'sha1'
+
+Coconut = require '../Coconut'
+User = require './User'
+
 class Result extends Backbone.Model
   initialize: ->
     @set
@@ -58,7 +70,7 @@ class Result extends Backbone.Model
 
     if original? and User.currentUser.hasRole "reports"
       if _.contains(Coconut.identifyingAttributes, attribute)
-        return b64_sha1(original)
+        return sha1(original)
 
     return original
 
@@ -68,13 +80,13 @@ class Result extends Backbone.Model
     if User.currentUser.hasRole "reports"
       _.each json, (value, key) =>
         if value? and _.contains(Coconut.identifyingAttributes, key)
-          json[key] = b64_sha1(value)
+          json[key] = sha1(value)
 
     return json
 
   save: (key,value,options) ->
     @set
-      user: $.cookie('current_user')
+      user: Cookie('current_user')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
     super(key,value,options)
 
@@ -85,3 +97,5 @@ class Result extends Backbone.Model
       if transferredTo isnt User.currentUser.id
         return true
     return false
+
+module.exports = Result

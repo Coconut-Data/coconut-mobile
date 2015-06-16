@@ -1,13 +1,19 @@
+$           = require('jquery')
+Backbone    = require('backbone')
+Backbone.$  = $
+
+Coconut = require '../Coconut'
+
 class Config extends Backbone.Model
   initialize: ->
     @set
       _id: "coconut.config"
 
   fetch: (options) =>
-    database.get "coconut.config",
+    Coconut.database.get "coconut.config",
       (error,result) =>
         @set(result)
-        database.get "coconut.config.local",
+        Coconut.database.get "coconut.config.local",
           (error,result) =>
             Coconut.config.local = new Backbone.Model()
             Coconut.config.local.set(result)
@@ -16,7 +22,7 @@ class Config extends Backbone.Model
   title: -> @get("title") || "Coconut"
 
   # See app/config.js
-  database_name: -> database._db_name
+  database_name: -> Coconut.database._db_name
   cloud_database_name: => @get("cloud_database_name") || @database_name()
 
   cloud_url: ->
@@ -29,3 +35,5 @@ class Config extends Backbone.Model
     "http://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}-log"
 
   cloud_url_no_http: => @get("cloud").replace(/http:\/\//,"")
+
+module.exports =  Config

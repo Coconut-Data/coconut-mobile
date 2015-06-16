@@ -1,3 +1,13 @@
+_ = require 'underscore'
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+Coconut = require '../Coconut'
+
+Question = require './Question'
+Utils = require '../Utils'
+
 class QuestionCollection extends Backbone.Collection
   model: Question
   pouch:
@@ -20,3 +30,5 @@ class QuestionCollection extends Backbone.Collection
       success: ->
         Coconut.questions.fetch
           success: -> options.success()
+
+module.exports = QuestionCollection

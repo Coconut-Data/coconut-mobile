@@ -1,3 +1,9 @@
+$ = require 'jquery'
+Backbone = require 'backbone'
+Backbone.$  = $
+
+Sync = require '../models/Sync'
+
 class SyncView extends Backbone.View
   initialize: ->
     @sync = new Sync()
@@ -5,8 +11,8 @@ class SyncView extends Backbone.View
   el: '#content'
 
   render: =>
-      @$el.html ""
-      $("#log").html ""
+    @$el.html ""
+    $("#log").html ""
 
   update: =>
     @sync.fetch
@@ -17,3 +23,5 @@ class SyncView extends Backbone.View
         console.log "synclog doesn't exist yet, create it and re-render"
         @sync.save()
         _.delay(@update,1000)
+
+module.exports = SyncView
