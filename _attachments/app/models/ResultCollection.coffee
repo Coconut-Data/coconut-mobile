@@ -6,6 +6,7 @@ Backbone.$  = $
 
 Coconut = require '../Coconut'
 Utils = require '../Utils'
+Result = require './Result'
 
 class ResultCollection
 
@@ -22,7 +23,7 @@ class ResultCollection
       question.id is options.question
     ).summaryFieldKeys()
 
-    database.query "results", queryOptions,
+    Coconut.database.query "results", queryOptions,
       (error,result) =>
         @results = _(result.rows).map (row) ->
           returnVal = _.object(fields,row.value)
@@ -37,16 +38,19 @@ class ResultCollection
     Coconut.questions.fetch
       error: (error) -> console.log "Error loading Coconut.questions: #{JSON.stringify error}"
       success: ->
-        return if Coconut.questions.length is 0
+        options.success() if Coconut.questions.length is 0
 
         designDocs = {
           results: """
             (doc) ->
               if doc.collection is "result" and doc.question and (doc.complete or doc.complete is null) and doc.createdAt
                 summaryFields = (#{
-                  Coconut.questions.map (question) ->
-                    "if doc.question is '#{question.id}' then #{JSON.stringify question.summaryFieldKeys()}"
-                  .join " else "
+                  if Coconut.questions.length is 0
+                    "[]"
+                  else
+                    Coconut.questions.map (question) ->
+                      "if doc.question is '#{question.id}' then #{JSON.stringify question.summaryFieldKeys()}"
+                    .join " else "
                 })
 
                 summaryResults = []
@@ -72,6 +76,7 @@ class ResultCollection
           options.success()
         
         _(designDocs).each (designDoc,name) ->
+          console.log designDoc
           designDoc = Utils.createDesignDoc name, designDoc
           Utils.addOrUpdateDesignDoc designDoc,
             success: -> finished()

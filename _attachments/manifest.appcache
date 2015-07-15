@@ -1,14 +1,17 @@
 CACHE MANIFEST
-# VERSION C
-# VERSION C
-# VERSION C
+# VERSION material design 0.5
 
 # defaults.json is added to couchapp during deployment
 defaults.json
 /
-/js/app.min.js
-/js/libs.min.js
+/node_modules/material-design-lite/material.min.js
+/bundle.js
+/js-libraries/coffee-script.js
 /css/style.min.css
+/css/fonts/fonts.css
+/node_modules/material-design-lite/material.css
+/css/styles.css
+
 /appcache-nanny.js
 /images/back_disabled.png
 /images/back_enabled_hover.png

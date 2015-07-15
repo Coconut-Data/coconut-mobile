@@ -8,12 +8,6 @@ User = require '../models/User'
 
 class MenuView extends Backbone.View
 
-  el: '.question-buttons'
-
-  events:
-    "change" : "render"
-
-
   render: =>
     @$el.html "
       <div id='navbar' data-role='navbar'>
@@ -23,36 +17,41 @@ class MenuView extends Backbone.View
 
     Coconut.questions.fetch
       success: =>
-        @$el.find("ul").html(Coconut.questions.map (question,index) ->
-          "<li><a id='menu-#{index}' href='#show/results/#{escape(question.id)}'><h2>#{question.id}<div id='menu-partial-amount'></div></h2></a></li>"
-        .join(" "))
+        $(".mdl-layout__header-row").html(
+          Coconut.questions.map (question,index) ->
+            "
+              <span class='mdl-layout-title'>#{question.id}</span>
+              <button onClick='document.location=\"#new/result/#{escape(question.id)}\"' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon'>
+                <i class='material-icons'>add</i>
+              </button>
+              <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='hdrbtn'>
+                <i class='material-icons'>more_vert</i>
+              </button>
+              <ul class='mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right' for='hdrbtn'>
+                <li class='mdl-menu__item'>
+                  <a href='#show/results/#{escape(question.id)}'>Results (<span id='complete_results'></span>)</a>
+                </li>
+              </ul>
+            "
+          .join(" ")
+        )
 
-#        $(".question-buttons").navbar()
+        componentHandler.upgradeDom()
+
         @update()
 
   update: ->
-    if Coconut.config.local.get("mode") is "mobile"
-      User.isAuthenticated
-        success: () ->
-          Coconut.questions.each (question,index) =>
+    User.isAuthenticated
+      success: () ->
+        Coconut.questions.each (question,index) =>
+          
+          Coconut.database.query "results",
+            key: [question.id, true]
+            include_docs: false
+            (error,result) =>
+              console.log error if error
 
-            
-            Coconut.database.query "resultsByQuestionNotCompleteNotTransferredOut",
-              key: question.id
-              include_docs: false
-              (error,result) =>
-                console.log error if error
-
-                total = 0
-                _(result.rows).each (row) =>
-                  transferredTo = row.value
-                  if transferredTo?
-                    if User.currentUser.id is transferredTo
-                      total += 1
-                  else
-                    total += 1
-
-                $("#menu-#{index} #menu-partial-amount").html total
+              $("#complete_results").html result.rows.length
 
     Coconut.database.get "version", (error,result) ->
       if error

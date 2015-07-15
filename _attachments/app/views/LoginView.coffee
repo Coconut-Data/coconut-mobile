@@ -22,32 +22,44 @@ class LoginView extends Backbone.View
         #login_message{
           margin-top: 20px;
           margin-bottom: 20px;
-
         }
         #login_form input{
-          font-size: 100%;
+          font-size: 200%;
           display: block;
         }
-        #login_form input[type=submit]{
-          height: 2em;
+        .coconut-mdl-card{
+          padding:10px;
+        }
+        #login_button{
+          font-size:200%
+
         }
       </style>
-      <div id='login_wrapper'>
-        <div id='login_message'>Please login to continue:</div>
+      <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
+        <div class='mdl-card__title coconut-mdl-card__title'></div>
         <form id='login_form'>
-          <label for='username'>Username</label>
-          <input type='text' id='username' name='username'>
-          <label for='password'>Password</label>
-          <input id='password' name='password' type='password'>
-          <input type='submit' value='Login'>
+
+          <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+            <input class='mdl-textfield__input' type='text' id='username' name='username'>
+            <label class='mdl-textfield__label' for='username'>Username</label>
+          </div>
+
+          <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+            <input class='mdl-textfield__input' type='password' id='password' name='password'>
+            <label class='mdl-textfield__label' for='password'>Password</label>
+          </div>
+
+          <div class='mdl-card__actions'>
+            <button type='button' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--accent' id='login_button'>Login</button>
+          </div>
         </form>
       </div>
     "
-    #$("input[type=text],input[type=password]").textinput()
-    #$("input[type=submit]").button()
+
+    componentHandler.upgradeDom()
 
   events:
-    "submit form#login_form": "login"
+    "click #login_button": "login"
 
   updateNavBar: ->
 
@@ -66,9 +78,8 @@ class LoginView extends Backbone.View
 
           @callback.success()
         else
-          $('#login_message').html "Wrong password"
+          $('.coconut-mdl-card__title').html "Wrong password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
       error: =>
-        $('#login_message').html "Wrong username"
-    return false
+          $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
 
 module.exports = LoginView

@@ -21,9 +21,12 @@ Cookie = require 'js-cookie'
 
 Backbone = require 'backbone'
 Backbone.$  = $
-CoffeeScript = require 'coffee-script'
+#CoffeeScript = require 'coffee-script'
+
 Form2js = require 'form2js'
 moment = require 'moment'
+
+typeahead = require 'typeahead.js'
 
 Coconut = require '../Coconut'
 ResultCollection = require '../models/ResultCollection'
@@ -47,18 +50,39 @@ class QuestionView extends Backbone.View
 
   render: =>
 
+    
+
+    primary1 = "rgb(63,81,181)"
+    primary2 = "rgb(48,63,159)"
+
+    accent1 = "rgb(230,33,90)"
+    accent2 = "rgb(194,24,91)"
+
     @$el.html "
     <style>
       .message
       {
-        color: grey;
+        color: white;
         font-weight: bold;
         padding: 10px;
-        border: 1px yellow dotted;
-        background: yellow;
+        border: 1px #{accent2} dotted;
+        background: #{accent2};
         display: none;
       }
 
+      .message, label.radio{
+        max-width: 600px;
+      }
+
+
+      label {
+        display:block;
+        padding-top: 15px;
+        font-size: 2em;
+        padding-bottom: 1em;
+        padding-top: 2em;
+        font-decoration: bold;
+      }
 
       label.radio {
         border-radius:20px;   
@@ -67,21 +91,40 @@ class QuestionView extends Backbone.View
         border: 1px solid black;
         cursor: pointer;
         text-decoration: none;
+        height: 2em;
+        line-height: 2em;
+      }
+
+      input{
+        font-size: 2em;
       }
 
       input[type='radio']:checked + label {
+        color: white;
         background-color:#ddd;
-        background: #5393c5;
-        background-image: -webkit-gradient(linear,left top,left bottom,from(#5393c5),to(#6facd5));
-        background-image: -webkit-linear-gradient(#5393c5,#6facd5);
-        background-image: -moz-linear-gradient(#5393c5,#6facd5);
-        background-image: -ms-linear-gradient(#5393c5,#6facd5);
-        background-image: -o-linear-gradient(#5393c5,#6facd5);
-        background-image: linear-gradient(#5393c5,#6facd5);
+        background: #{primary1};
+        background-image: -webkit-gradient(linear,left top,left bottom,from(#{primary1}),to(#{primary2}));
+        background-image: -webkit-linear-gradient(#{primary1},#{primary2});
+        background-image: -moz-linear-gradient(#{primary1},#{primary2});
+        background-image: -ms-linear-gradient(#{primary1},#{primary2});
+        background-image: -o-linear-gradient(#{primary1},#{primary2});
+earchCompleteStop()
+
       }
       input[type='radio']{
         height: 0px;
       }
+
+      input[type=checkbox]
+      {
+        /* Triple-sized Checkboxes */
+        -ms-transform: scale(3); /* IE */
+        -moz-transform: scale(3); /* FF */
+        -webkit-transform: scale(3); /* Safari and Chrome */
+        -o-transform: scale(3); /* Opera */
+        padding: 10px;
+      }
+
       div.question.radio{
         padding-top: 8px;
         padding-bottom: 8px;
@@ -110,13 +153,17 @@ class QuestionView extends Backbone.View
     </style>
 
       <div style='position:fixed; right:5px; color:white; padding:20px; z-index:5' id='messageText'>
-        <a href='#help/#{@model.id}'>Help</a>
       </div>
 
       <div style='position:fixed; right:5px; color:white; background-color: #333; padding:20px; display:none; z-index:10' id='messageText'>
         Saving...
       </div>
-      <h1>#{@model.id}</h1>
+      <!--
+      <div style='background-color: #{primary2}'>
+      <h2 style='font-weight:100; color: #{accent1}' >#{@model.id}</h2>
+      </div>
+      -->
+      <hr/>
       <div id='question-view'>
         <form id='questions'>
           #{@toHTMLForm(@model)}
@@ -469,8 +516,23 @@ class QuestionView extends Backbone.View
     questions = [questions] unless questions.length?
     _.map(questions, (question) =>
 
-      if question.repeatable() == "true" then repeatable = "<button>+</button>" else repeatable = ""
-      if question.type()? and question.label()? and question.label() != ""
+      repeatable = if question.repeatable() == "true" then "<button>+</button>" else ""
+
+      unless question.type()? and question.label()? and question.label() != ""
+        newGroupId = question_id
+        newGroupId = newGroupId + "[0]" if question.repeatable()
+        return "
+          <div data-group-id='#{question_id}' class='question group'>
+            #{@toHTMLForm(question.questions(), newGroupId)}
+            <hr/>
+            <div style='padding-top:20px'>
+              <input name='complete' id='question-set-complete' type='checkbox'></input>
+              <label style='padding-left: 15px; display:inline' for='question-set-complete'>Complete</label>
+            </div>
+          </div>
+          #{repeatable}
+        "
+      else
         name = question.safeLabel()
         window.skipLogicCache[name] = if question.skipLogic() isnt '' then CoffeeScript.compile(question.skipLogic(),bare:true) else ''
         question_id = question.get("id")
@@ -599,10 +661,6 @@ class QuestionView extends Backbone.View
           </div>
           #{repeatable}
         "
-      else
-        newGroupId = question_id
-        newGroupId = newGroupId + "[0]" if question.repeatable()
-        return "<div data-group-id='#{question_id}' class='question group'>" + @toHTMLForm(question.questions(), newGroupId) + "</div>" + repeatable
     ).join("")
 
   updateCache: ->
