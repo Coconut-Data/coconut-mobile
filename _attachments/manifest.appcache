@@ -1,18 +1,24 @@
 CACHE MANIFEST
-# VERSION material design 0.5
+# VERSION material design 0.6
 
-# defaults.json is added to couchapp during deployment
-defaults.json
 /
-/node_modules/material-design-lite/material.min.js
 /bundle.js
+/js-libraries/material.min.js
 /js-libraries/coffee-script.js
 /css/style.min.css
 /css/fonts/fonts.css
 /node_modules/material-design-lite/material.css
 /css/styles.css
+/css/fonts/Roboto-Thin.ttf
+/css/fonts/Roboto-Light.ttf
+/css/fonts/Roboto-Regular.ttf
+/css/fonts/Roboto-Medium.ttf
+/css/fonts/Roboto-Bold.ttf
+/css/fonts/Roboto-Black.ttf
+/css/fonts/Roboto-Italic.ttf
+/css/fonts/Roboto-BoldItalic.ttf
 
-/appcache-nanny.js
+
 /images/back_disabled.png
 /images/back_enabled_hover.png
 /images/back_enabled.png
@@ -26,10 +32,6 @@ defaults.json
 /images/forward_enabled_hover.png
 /images/forward_enabled.png
 /images/group.png
-/images/householdIncomplete.png
-/images/householdMemberIncomplete.png
-/images/householdMember.png
-/images/household.png
 /images/layers.png
 /images/loading.gif
 /images/marker-icon-2x.png

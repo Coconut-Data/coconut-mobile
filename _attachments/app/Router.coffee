@@ -252,15 +252,20 @@ class Router extends Backbone.Router
             Coconut.resultsView.render()
 
   resetDatabase: () ->
+    confirmReset = ->
+      if confirm "Are you sure you want to reset the database? All data that has not yet been sent to the cloud will be lost."
+        Coconut.database.destroy (error, result) ->
+          Coconut.router.navigate("",true)
+          document.location.reload()
+
+    # Allow database reset if there are no users to login as
+    confirmReset() if Coconut.users.length is 0
     @userLoggedIn
-      success: ->
-        if confirm "Are you sure you want to reset the database? All data that has not yet been sent to the cloud will be lost."
-          Coconut.database.destroy (error, result) ->
-            Coconut.router.navigate("",true)
-            document.location.reload()
+      success: -> confirmReset()
 
 
   startApp: ->
+
     Coconut.config = new Config()
     Coconut.config.fetch
       error: ->
@@ -286,7 +291,6 @@ class Router extends Backbone.Router
         classesToLoad = [UserCollection, ResultCollection]
 
         startApplication = _.after classesToLoad.length, ->
-          console.log "ZZZZ"
           Coconut.loginView = new LoginView()
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
@@ -300,7 +304,6 @@ class Router extends Backbone.Router
           error: (error) ->
             alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
           success: ->
-
             _.each classesToLoad, (ClassToLoad) ->
               ClassToLoad.load
                 success: ->

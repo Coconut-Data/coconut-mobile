@@ -76,7 +76,6 @@ class ResultCollection
           options.success()
         
         _(designDocs).each (designDoc,name) ->
-          console.log designDoc
           designDoc = Utils.createDesignDoc name, designDoc
           Utils.addOrUpdateDesignDoc designDoc,
             success: -> finished()

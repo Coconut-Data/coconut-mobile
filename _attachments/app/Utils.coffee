@@ -19,7 +19,6 @@ Utils.addOrUpdateDesignDoc = (designDoc,options) ->
 Utils.createDesignDoc = (name, mapFunction) ->
   # Allows coffeescript string to get compiled into functions for extra dynamic-ness - use heredocs """
   if not _.isFunction(mapFunction)
-    console.log mapFunction
     mapFunction = CoffeeScript.compile(mapFunction, bare:on)
   else
     mapFunction = mapFunction.toString()

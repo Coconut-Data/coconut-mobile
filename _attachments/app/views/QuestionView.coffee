@@ -52,21 +52,27 @@ class QuestionView extends Backbone.View
 
     
 
-    primary1 = "rgb(63,81,181)"
-    primary2 = "rgb(48,63,159)"
+    @primary1 = "rgb(63,81,181)"
+    @primary2 = "rgb(48,63,159)"
 
-    accent1 = "rgb(230,33,90)"
-    accent2 = "rgb(194,24,91)"
+    @accent1 = "rgb(230,33,90)"
+    @accent2 = "rgb(194,24,91)"
 
     @$el.html "
     <style>
+
+      label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
+        font-size:200%;
+
+      }
+
       .message
       {
         color: white;
         font-weight: bold;
         padding: 10px;
-        border: 1px #{accent2} dotted;
-        background: #{accent2};
+        border: 1px #{@accent2} dotted;
+        background: #{@accent2};
         display: none;
       }
 
@@ -74,25 +80,21 @@ class QuestionView extends Backbone.View
         max-width: 600px;
       }
 
-
-      label {
+      label.mdl-nontextfield__label{
         display:block;
-        padding-top: 15px;
-        font-size: 2em;
-        padding-bottom: 1em;
-        padding-top: 2em;
-        font-decoration: bold;
+        color: #{@primary1}
       }
 
-      label.radio {
-        border-radius:20px;   
-        display:block;
-        padding:4px 11px;
-        border: 1px solid black;
-        cursor: pointer;
-        text-decoration: none;
-        height: 2em;
-        line-height: 2em;
+      label.mdl-textfield__label{
+       font-size:150%;
+      }
+
+      .coconut-radio{
+        margin: 10px;
+      }
+
+      .mdl-radio__label{
+        line-height:normal;
       }
 
       input{
@@ -102,12 +104,12 @@ class QuestionView extends Backbone.View
       input[type='radio']:checked + label {
         color: white;
         background-color:#ddd;
-        background: #{primary1};
-        background-image: -webkit-gradient(linear,left top,left bottom,from(#{primary1}),to(#{primary2}));
-        background-image: -webkit-linear-gradient(#{primary1},#{primary2});
-        background-image: -moz-linear-gradient(#{primary1},#{primary2});
-        background-image: -ms-linear-gradient(#{primary1},#{primary2});
-        background-image: -o-linear-gradient(#{primary1},#{primary2});
+        background: #{@primary1};
+        background-image: -webkit-gradient(linear,left top,left bottom,from(#{@primary1}),to(#{@primary2}));
+        background-image: -webkit-linear-gradient(#{@primary1},#{@primary2});
+        background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
+        background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
+        background-image: -o-linear-gradient(#{@primary1},#{@primary2});
 earchCompleteStop()
 
       }
@@ -115,8 +117,7 @@ earchCompleteStop()
         height: 0px;
       }
 
-      input[type=checkbox]
-      {
+      #question-set-complete{
         /* Triple-sized Checkboxes */
         -ms-transform: scale(3); /* IE */
         -moz-transform: scale(3); /* FF */
@@ -147,9 +148,9 @@ earchCompleteStop()
       }
       .tt-suggestion .{
       }
-      
-
-
+      #{
+        @model.get("styles") or ""
+      }
     </style>
 
       <div style='position:fixed; right:5px; color:white; padding:20px; z-index:5' id='messageText'>
@@ -159,8 +160,8 @@ earchCompleteStop()
         Saving...
       </div>
       <!--
-      <div style='background-color: #{primary2}'>
-      <h2 style='font-weight:100; color: #{accent1}' >#{@model.id}</h2>
+      <div style='background-color: #{@primary2}'>
+      <h2 style='font-weight:100; color: #{@accent1}' >#{@model.id}</h2>
       </div>
       -->
       <hr/>
@@ -170,6 +171,8 @@ earchCompleteStop()
         </form>
       </div>
     "
+
+    componentHandler.upgradeDom()
 
     #Load data into form
     Form2js.js2form 'questions', @result.toJSON()
@@ -239,7 +242,7 @@ earchCompleteStop()
 
   runValidate: -> @validateAll()
 
-  onChange: (event) ->
+  onChange: (event) =>
     $target = $(event.target)
 
     #
@@ -255,19 +258,25 @@ earchCompleteStop()
     targetName = $target.attr("name")
 
     if targetName == "complete"
-      if @changedComplete
-        @changedComplete = false
-        return
 
-      @validateAll()
+      allQuestionsPassValidation = @validateAll()
 
       # Update the menu
       Coconut.menuView.update()
       @save()
       @updateSkipLogic()
       @actionOnChange(event)
+
+      if allQuestionsPassValidation
+        onValidatedComplete = @model.get("onValidatedComplete")
+        if onValidatedComplete
+          console.log "Evaling: #{onValidatedComplete}"
+          _.delay ->
+            CoffeeScript.eval onValidatedComplete
+          ,1000
+      else
+        $("#question-set-complete").prop("checked", false)
     else
-      @changedComplete = false
       messageVisible = window.questionCache[targetName].find(".message").is(":visible")
 # Hack by Mike to solve problem with autocomplete fields being validated before
       _.delay =>
@@ -506,7 +515,6 @@ earchCompleteStop()
     , 1000)
 
   completeButton: ( value ) ->
-    @changedComplete = true
     if $('[name=complete]').prop("checked") isnt value
       $('[name=complete]').click()
 
@@ -527,7 +535,7 @@ earchCompleteStop()
             <hr/>
             <div style='padding-top:20px'>
               <input name='complete' id='question-set-complete' type='checkbox'></input>
-              <label style='padding-left: 15px; display:inline' for='question-set-complete'>Complete</label>
+              <label style='color:#{@accent1};padding-left: 15px; display:inline' for='question-set-complete'>Complete</label>
             </div>
           </div>
           #{repeatable}
@@ -550,16 +558,16 @@ earchCompleteStop()
               ""
             } 
             data-required='#{question.required()}'
-            class='question #{question.type?() or ''}'
+            class='question #{question.type?() or ''} question-#{question_id} mdl-textfield mdl-js-textfield mdl-textfield--floating-label'
             data-question-name='#{name}'
             data-question-id='#{question_id}'
             data-action_on_change='#{_.escape(question.actionOnChange())}'
 
           >
-          #{
-          "<label type='#{question.type()}' for='#{question_id}'>#{question.label()} <span></span></label>" unless ~question.type().indexOf('hidden')
-          }
           <div class='message'></div>
+          #{
+          "<label class='#{question.type()} #{if question.type().match(/text|number/) then "mdl-textfield__label" else "mdl-nontextfield__label" }' type='#{question.type()}' for='#{question_id}'>#{question.label()} <span></span></label>" unless ~question.type().indexOf('hidden')
+          }
           #{
             switch question.type()
               when "textarea"
@@ -590,20 +598,11 @@ earchCompleteStop()
                   options = question.get("radio-options")
                   _.map(options.split(/, */), (option,index) ->
                     "
-                      <input class='radio' type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
-                      <label class='radio' for='#{question_id}-#{index}'>#{option}</label>
 
-<!--
-                      <div class='ui-radio'>
-                        <label for=''#{question_id}-#{index}' data-corners='true' data-shadow='false' data-iconshadow='true' data-wrapperels='span' data-icon='radio-off' data-theme='c' class='ui-btn ui-btn-corner-all ui-btn-icon-left ui-radio-off ui-btn-up-c'>
-                          <span class='ui-btn-inner ui-btn-corner-all'>
-                            <span class='ui-btn-text'>#{option}</span>
-                            <span class='ui-icon ui-icon-radio-off ui-icon-shadow'>&nbsp;</span>
-                          </span>
-                        </label>
-                        <input type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
-                      </div>
--->
+                      <label class='coconut-radio mdl-radio mdl-js-radio mdl-js-ripple-effect' for='#{question_id}-#{index}'>
+                        <input type='radio' id='#{question_id}-#{index}'' class='mdl-radio__button' name='#{name}' value='#{_.escape(option)}' />
+                        <span class='mdl-radio__label'>#{option}</span>
+                      </label>
 
                     "
                   ).join("")
@@ -611,9 +610,20 @@ earchCompleteStop()
 
               when "checkbox"
                 if @readonly
-                  "<input name='#{name}' type='text' id='#{question_id}' value='#{_.escape(question.value())}'></input>"
+                  "<input class='radioradio' name='#{name}' type='text' id='#{question_id}' value='#{question.value()}'></input>"
                 else
-                  "<input style='display:none' name='#{name}' id='#{question_id}' type='checkbox' value='true'></input>"
+                  options = question.get("checkbox-options")
+                  _.map(options.split(/, */), (option,index) ->
+                    "
+
+                      <label class='coconut-checkbox mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect' for='#{question_id}-#{index}'>
+                        <input type='checkbox' id='#{question_id}-#{index}'' class='coconut-checkbox mdl-checkbox__input' name='#{name}' value='#{_.escape(option)}' />
+                        <span class='mdl-checkbox__label'>#{_.escape(option)}</span>
+                      </label>
+
+                    "
+                  ).join("")
+
               when "autocomplete from list", "autocomplete from previous entries", "autocomplete from code"
                 "
                   <!-- autocomplete='off' disables browser completion -->
@@ -655,6 +665,10 @@ earchCompleteStop()
                 "<img style='#{question.get "image-style"}' src='#{question.get "image-path"}'/>"
               when "label"
                 ""
+              when "text"
+                "<input name='#{name}' id='#{question_id}' type='text' class='mdl-textfield__input' value='#{question.value()}'></input>"
+              when "number"
+                "<input name='#{name}' id='#{question_id}' type='number' class='mdl-textfield__input' value='#{question.value()}'></input>"
               else
                 "<input name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}'></input>"
           }
@@ -662,6 +676,7 @@ earchCompleteStop()
           #{repeatable}
         "
     ).join("")
+
 
   updateCache: ->
     window.questionCache = {}

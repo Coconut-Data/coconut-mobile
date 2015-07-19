@@ -27,37 +27,53 @@ Coconut.database.get '_local/initial_load_complete', (error, result) ->
   else
     throw error if (error.status isnt 404)
 
-    cloudDefault = ""
-    usernameDefault = ""
-    passwordDefault = ""
+    getParameterByName = (name) ->
+      match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search)
+      match && decodeURIComponent(match[1].replace(/\+/g, ' '))
 
-    $.ajax
-      url: "defaults.json",
-      success: (result) ->
-        if result
-          cloudDefault = result.cloud
-          [usernameDefault,passwordDefault] = result.cloud_credentials.split(":")
+    configureApplicationAndSync = (cloudUrl, appName, username,password) ->
+      Coconut.config = new Config
+        cloud: cloudUrl
+        cloud_database_name: appName
+        cloud_credentials: "#{username}:#{password}"
 
-      complete: ->
-        cloudUrl = prompt "Enter cloud URL", cloudDefault
-        cloudUrl = cloudUrl.replace(/http:\/\//,"")
-        Coconut.config = new Config
-          cloud: cloudUrl
-          cloud_database_name: prompt("Enter application name")
-          cloud_credentials: "#{prompt "Enter cloud username", usernameDefault}:#{prompt "Enter cloud password", passwordDefault}"
+      Coconut.config.save()
 
-        Coconut.config.save()
+      sync = new Sync
+      sync.replicateApplicationDocs
+        error: (error) ->
+          console.error "Updating application docs failed: #{JSON.stringify error}"
+        success: ->
+          Coconut.database.put {_id: '_local/initial_load_complete'}, (error, result) ->
+            console.log error if error
+          Coconut.router.startApp()
+          _.delay ->
+            # Use this to remove configuration params from the URL
+            document.location = document.location.origin
+          ,5000
 
-        sync = new Sync
-        sync.replicateApplicationDocs
-          error: (error) ->
-            console.error "Updating application docs failed: #{JSON.stringify error}"
-          success: ->
-            Coconut.database.put {_id: '_local/initial_load_complete'}, (error, result) ->
-              console.log error if error
-            Coconut.router.startApp()
-            _.delay ->
-              $("#log").html ""
-            ,5000
+    [cloudUrl, appName, username, password] = [getParameterByName("cloudUrl"), getParameterByName("appName"), getParameterByName("username"), getParameterByName("password")]
 
+    if cloudUrl and appName and username and password
+      configureApplicationAndSync(cloudUrl,appName,username,password)
+    else
 
+      cloudDefault = ""
+      usernameDefault = ""
+      passwordDefault = ""
+
+      $.ajax
+        url: "defaults.json",
+        success: (result) ->
+          if result
+            cloudDefault = result.cloud
+            [usernameDefault,passwordDefault] = result.cloud_credentials.split(":")
+
+        complete: ->
+          cloudUrl = prompt "Enter cloud URL", cloudDefault
+          cloudUrl = cloudUrl.replace(/http:\/\//,"")
+          appName = prompt("Enter application name")
+          username = prompt "Enter cloud username", usernameDefault
+          password = prompt "Enter cloud password", passwordDefault
+
+          configureApplicationAndSync(cloudUrl, appName, username,password)
