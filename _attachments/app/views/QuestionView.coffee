@@ -780,7 +780,7 @@ earchCompleteStop()
             if type is "radio"
               do (name, $qC) -> accessorFunction = -> $("input:checked", $qC).safeVal()
             else if type is "checkbox"
-              do (name, $qC) -> accessorFunction = -> $("input", $qC).map( -> $(this).safeVal())
+              do (name, $qC) -> accessorFunction = -> $("input:checked", $qC).map( -> $(this).safeVal())
             else
               do (inputs) -> accessorFunction = -> inputs.safeVal()
           else # inputs is 0
