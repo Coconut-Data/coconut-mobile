@@ -82,11 +82,32 @@ class QuestionView extends Backbone.View
 
       label.mdl-nontextfield__label{
         display:block;
-        color: #{@primary1}
+        color: #{@accent1};
+        padding-bottom:20px;
+        font-size:150%;
+      }
+
+      label.mdl-nontextfield__label.has-value{
+        color: #{@primary1};
+        font-size:100%;
+      }
+
+      .mdl-textfield--floating-label.is-focused .mdl-textfield__label, .mdl-textfield--floating-label.is-dirty .mdl-textfield__label{
+        font-size:100%;
       }
 
       label.mdl-textfield__label{
+        color:#{@accent1};
+        font-size:125%;
+      }
+
+      div.radio label.mdl-textfield__label{
        font-size:150%;
+       color:#{@accent1};
+      }
+
+      .is-dirty label.mdl-textfield__label{
+       color:#{@primary1};
       }
 
       .coconut-radio{
@@ -101,6 +122,17 @@ class QuestionView extends Backbone.View
         font-size: 2em;
       }
 
+      label.radio-option,label.checkbox-option {
+        border-radius:20px;   
+        display:inline-block;
+        padding:4px 11px;
+        border: 1px solid black;
+        cursor: pointer;
+        text-decoration: none;
+        width:250px;
+        line-height:100%;
+      }
+
       input[type='radio']:checked + label {
         color: white;
         background-color:#ddd;
@@ -113,10 +145,43 @@ class QuestionView extends Backbone.View
 earchCompleteStop()
 
       }
-      input[type='radio']{
+
+      input[type='radio'],input[type='checkbox']{
+        height: 0px;
+        width: 0px;
+        margin: 0px;
+      }
+
+      input[type='radio'],input[type='checkbox']{
+        height: 0px;
+        width: 0px;
+        margin: 0px;
+      }
+
+      input[type='checkbox']:checked + label {
+        color: white;
+        background-color:#ddd;
+        background: #{@primary1};
+        background-image: -webkit-gradient(linear,left top,left bottom,from(#{@primary1}),to(#{@primary2}));
+        background-image: -webkit-linear-gradient(#{@primary1},#{@primary2});
+        background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
+        background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
+        background-image: -o-linear-gradient(#{@primary1},#{@primary2});
+earchCompleteStop()
+
+      }
+      input[type='checkbox']{
         height: 0px;
       }
 
+      #question-set-complete:checked + label {
+        color: #{@primary1};
+        background:none;
+      }
+
+      .question-set-complete-label{
+        color: #{@accent2};
+      }
       #question-set-complete{
         /* Triple-sized Checkboxes */
         -ms-transform: scale(3); /* IE */
@@ -124,6 +189,9 @@ earchCompleteStop()
         -webkit-transform: scale(3); /* Safari and Chrome */
         -o-transform: scale(3); /* Opera */
         padding: 10px;
+        height:20px;
+        width: 15px;
+        margin: 10px;
       }
 
       div.question.radio{
@@ -151,6 +219,7 @@ earchCompleteStop()
       #{
         @model.get("styles") or ""
       }
+
     </style>
 
       <div style='position:fixed; right:5px; color:white; padding:20px; z-index:5' id='messageText'>
@@ -173,6 +242,12 @@ earchCompleteStop()
     "
 
     componentHandler.upgradeDom()
+    # Hack since upgradeDom doesn't add is-dirty class to previously filled in fields
+    _.delay =>
+      $('input[type=text]').filter( -> this.value isnt "").closest('div').addClass('is-dirty')
+      $('input[type=number]').filter( -> this.value isnt "").closest('div').addClass('is-dirty')
+      @updateLabelClass()
+    , 500
 
     #Load data into form
     Form2js.js2form 'questions', @result.toJSON()
@@ -243,6 +318,9 @@ earchCompleteStop()
   runValidate: -> @validateAll()
 
   onChange: (event) =>
+
+    @updateLabelClass()
+
     $target = $(event.target)
 
     #
@@ -535,7 +613,7 @@ earchCompleteStop()
             <hr/>
             <div style='padding-top:20px'>
               <input name='complete' id='question-set-complete' type='checkbox'></input>
-              <label style='color:#{@accent1};padding-left: 15px; display:inline' for='question-set-complete'>Complete</label>
+              <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
             </div>
           </div>
           #{repeatable}
@@ -566,6 +644,7 @@ earchCompleteStop()
           >
           <div class='message'></div>
           #{
+
           "<label class='#{question.type()} #{if question.type().match(/text|number/) then "mdl-textfield__label" else "mdl-nontextfield__label" }' type='#{question.type()}' for='#{question_id}'>#{question.label()} <span></span></label>" unless ~question.type().indexOf('hidden')
           }
           #{
@@ -598,13 +677,10 @@ earchCompleteStop()
                   options = question.get("radio-options")
                   _.map(options.split(/, */), (option,index) ->
                     "
-
-                      <label class='coconut-radio mdl-radio mdl-js-radio mdl-js-ripple-effect' for='#{question_id}-#{index}'>
-                        <input type='radio' id='#{question_id}-#{index}'' class='mdl-radio__button' name='#{name}' value='#{_.escape(option)}' />
-                        <span class='mdl-radio__label'>#{option}</span>
-                      </label>
-
+                      <input class='radio' type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
+                      <label class='radio radio-option' for='#{question_id}-#{index}'>#{option}</label>
                     "
+
                   ).join("")
 
 
@@ -615,11 +691,8 @@ earchCompleteStop()
                   options = question.get("checkbox-options")
                   _.map(options.split(/, */), (option,index) ->
                     "
-
-                      <label class='coconut-checkbox mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect' for='#{question_id}-#{index}'>
-                        <input type='checkbox' id='#{question_id}-#{index}'' class='coconut-checkbox mdl-checkbox__input' name='#{name}' value='#{_.escape(option)}' />
-                        <span class='mdl-checkbox__label'>#{_.escape(option)}</span>
-                      </label>
+                      <input class='checkbox' type='checkbox' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
+                      <label class='checkbox checkbox-option' for='#{question_id}-#{index}'>#{option}</label>
 
                     "
                   ).join("")
@@ -677,6 +750,13 @@ earchCompleteStop()
         "
     ).join("")
 
+  updateLabelClass: ->
+
+    _(["radio","checkbox"]).each (type) ->
+      if $("input[type=#{type}]").filter( -> @checked is true ).length > 0
+        $("input[type=#{type}]").siblings('label.mdl-nontextfield__label').addClass "has-value"
+      else
+        $("input[type=#{type}]").siblings('label.mdl-nontextfield__label').removeClass "has-value"
 
   updateCache: ->
     window.questionCache = {}
