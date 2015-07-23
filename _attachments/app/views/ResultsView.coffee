@@ -78,16 +78,18 @@ class ResultsView extends Backbone.View
           </tr></thead>
           <tbody>
           </tbody>
+          <!--
           <tfoot><tr>
             " + _.map(@question.summaryFieldNames(), (summaryField) ->
               "<th class='header'>#{summaryField}</th>"
             ).join("") + "
             <th></th>
           </tr></tfoot>
+          -->
         </table>
       </div>
       <div class='complete' data-role='collapsible'>
-        <h2>'#{@question.id}' Items Completed (or transferred out) (<span class='count-complete-true'></span>)</h2>
+        <h2>'#{@question.id}' Items Completed (<span class='count-complete-true'></span>)</h2>
         <table class='results complete-true tablesorter'>
           <thead><tr>
             " + _.map(@question.summaryFieldNames(), (summaryField) ->
@@ -98,6 +100,7 @@ class ResultsView extends Backbone.View
           </tr></thead>
           <tbody>
           </tbody>
+          <!--
           <tfoot><tr>
             " + _.map(@question.summaryFieldNames(), (summaryField) ->
               "<th class='header'>#{summaryField}</th>"
@@ -105,6 +108,7 @@ class ResultsView extends Backbone.View
             <th></th>
 
           </tr></tfoot>
+          -->
         </table>
       </div>
     "

@@ -131,6 +131,7 @@ class QuestionView extends Backbone.View
         text-decoration: none;
         width:250px;
         line-height:100%;
+        vertical-align: top;
       }
 
       input[type='radio']:checked + label {
@@ -612,7 +613,7 @@ earchCompleteStop()
             #{@toHTMLForm(question.questions(), newGroupId)}
             <hr/>
             <div style='padding-top:20px'>
-              <input name='complete' id='question-set-complete' type='checkbox'></input>
+              <input name='complete' id='question-set-complete' type='checkbox' value='true'></input>
               <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
             </div>
           </div>
