@@ -285,6 +285,9 @@ class Router extends Backbone.Router
             "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text--accent material-icons'>#{icon}</i>#{linktext}</a><br/>"
           .join("")
 
+          $("nav.coconut-navigation").on "click",".mdl-navigation__link", ->
+            $(".mdl-layout__drawer").removeClass("is-visible")
+
         )
 
         # This makes sure all views are created and loads any classes that are necessary
