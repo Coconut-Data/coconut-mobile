@@ -68,18 +68,17 @@ class LoginView extends Backbone.View
   updateNavBar: ->
 
   # Note this needs hashing and salt for real security
-  login: ->
+  login: =>
     loginData = Form2js.form2js('login_form')
-    #loginData = $('#login_form').toObject()
     user = new User
       _id: "user.#{loginData.username}"
 
     user.fetch
       success: =>
         # User exists
-        if user.passwordIsValid loginData.password
+        if user.passwordIsValid(loginData.password)
           user.login()
-
+          Coconut.menuView.render()
           @callback.success()
         else
           $('.coconut-mdl-card__title').html "Wrong password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"

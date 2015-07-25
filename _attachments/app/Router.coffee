@@ -41,6 +41,7 @@ class Router extends Backbone.Router
   userLoggedIn: (callback) ->
     User.isAuthenticated
       success: (user) ->
+        Coconut.menuView.render()
         callback.success(user)
       error: ->
         Coconut.loginView.callback = callback
@@ -298,8 +299,6 @@ class Router extends Backbone.Router
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
           Coconut.syncView = new SyncView()
-          Coconut.loginView = new LoginView()
-          Coconut.menuView.render()
           Coconut.syncView.update()
           Backbone.history.start()
 
