@@ -26,7 +26,7 @@ Backbone.$  = $
 Form2js = require 'form2js'
 moment = require 'moment'
 
-typeahead = require 'typeahead.js'
+#typeahead = require 'typeahead.js'
 
 Coconut = require '../Coconut'
 ResultCollection = require '../models/ResultCollection'

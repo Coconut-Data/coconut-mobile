@@ -69,20 +69,24 @@ class LoginView extends Backbone.View
 
   # Note this needs hashing and salt for real security
   login: =>
-    loginData = Form2js.form2js('login_form')
-    user = new User
-      _id: "user.#{loginData.username}"
+    # Useful for reusing the login screen - like for database encryption
+    if @alternativeLoginCallback?
+      @alternativeLoginCallback()
+    else
+      loginData = Form2js.form2js('login_form')
+      user = new User
+        _id: "user.#{loginData.username}"
 
-    user.fetch
-      success: =>
-        # User exists
-        if user.passwordIsValid(loginData.password)
-          user.login()
-          Coconut.menuView.render()
-          @callback.success()
-        else
-          $('.coconut-mdl-card__title').html "Wrong password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
-      error: =>
-          $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
+      user.fetch
+        success: =>
+          # User exists
+          if user.passwordIsValid(loginData.password)
+            user.login()
+            Coconut.menuView.render()
+            @callback.success()
+          else
+            $('.coconut-mdl-card__title').html "Wrong password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
+        error: =>
+            $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
 
-module.exports = LoginView
+  module.exports = LoginView

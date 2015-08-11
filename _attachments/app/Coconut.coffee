@@ -1,11 +1,17 @@
 $ = require 'jquery'
 PouchDB = require 'pouchdb'
 
+# Need to make it global for crypto-pouch plugin to work...I think
+window.PouchDB = PouchDB
+require 'crypto-pouch'
 
-module.exports = {
-  database: PouchDB "coconut"
+throw "Must define global.username before intializing Coconut and the database" unless global.username?
 
-  debug: (string) ->
-    console.log string
-    $("#log").append string + "<br/>"
-}
+module.exports =
+  {
+    database: PouchDB global.username
+
+    debug: (string) ->
+      console.log string
+      $("#log").append string + "<br/>"
+  }

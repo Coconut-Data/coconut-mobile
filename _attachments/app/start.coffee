@@ -5,75 +5,105 @@ Backbone.$  = $
 BackbonePouch = require 'backbone-pouch'
 appCacheNanny = require 'appcache-nanny'
 
-Coconut = require './Coconut'
-global.Coconut = Coconut # useful for debugging
-Config = require './models/Config'
-Router = require './Router'
-Sync = require './models/Sync'
+Cookie = require 'js-cookie'
+LoginView = require './views/LoginView'
 
-Backbone.sync = BackbonePouch.sync
-  db: Coconut.database
-  fetch: 'query'
+currentUser = Cookie('current_user')
+currentPassword = Cookie('current_password')
 
-Backbone.Model.prototype.idAttribute = '_id'
+# Note that this function is called below
 
-Coconut.router = new Router()
+initializeDatabaseAndStart = (user,password) ->
+  global.username = user
 
-Coconut.database.get '_local/initial_load_complete', (error, result) ->
+  Coconut = require('./Coconut')
+  global.Coconut = Coconut # useful for debugging
+  Config = require './models/Config'
+  Router = require './Router'
+  Sync = require './models/Sync'
 
-  if not error
-    _.delay appCacheNanny.start, 5000
-    Coconut.router.startApp()
-  else
-    throw error if (error.status isnt 404)
+  Coconut.database.crypto(password).then ->
 
-    getParameterByName = (name) ->
-      match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search)
-      match && decodeURIComponent(match[1].replace(/\+/g, ' '))
+    Backbone.sync = BackbonePouch.sync
+      db: Coconut.database
+      fetch: 'query'
 
-    configureApplicationAndSync = (cloudUrl, appName, username,password) ->
-      Coconut.config = new Config
-        cloud: cloudUrl
-        cloud_database_name: appName
-        cloud_credentials: "#{username}:#{password}"
+    Backbone.Model.prototype.idAttribute = '_id'
 
-      Coconut.config.save()
+    Coconut.router = new Router()
 
-      sync = new Sync
-      sync.replicateApplicationDocs
-        error: (error) ->
-          console.error "Updating application docs failed: #{JSON.stringify error}"
-        success: ->
-          Coconut.database.put {_id: '_local/initial_load_complete'}, (error, result) ->
-            console.log error if error
-          Coconut.router.startApp()
-          _.delay ->
-            # Use this to remove configuration params from the URL
-            document.location = document.location.origin
-          ,5000
+    Coconut.database.get '_local/initial_load_complete', (error, result) ->
 
-    [cloudUrl, appName, username, password] = [getParameterByName("cloudUrl"), getParameterByName("appName"), getParameterByName("username"), getParameterByName("password")]
+      if not error
+        _.delay appCacheNanny.start, 5000
+        Coconut.router.startApp()
+      else
+        throw error if (error.status isnt 404)
 
-    if cloudUrl and appName and username and password
-      configureApplicationAndSync(cloudUrl,appName,username,password)
-    else
+        getParameterByName = (name) ->
+          match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search)
+          match && decodeURIComponent(match[1].replace(/\+/g, ' '))
 
-      cloudDefault = ""
-      usernameDefault = ""
-      passwordDefault = ""
+        configureApplicationAndSync = (cloudUrl, appName, username,password) ->
+          Coconut.config = new Config
+            cloud: cloudUrl
+            cloud_database_name: appName
+            cloud_credentials: "#{username}:#{password}"
 
-      $.ajax
-        url: "defaults.json",
-        success: (result) ->
-          if result
-            cloudDefault = result.cloud
-            [usernameDefault,passwordDefault] = result.cloud_credentials.split(":")
+          Coconut.config.save()
 
-        complete: ->
-          cloudUrl = prompt "Enter cloud URL", cloudDefault
-          cloudUrl = cloudUrl.replace(/http:\/\//,"")
-          appName = prompt("Enter application name")
-          username = prompt "Enter cloud username", usernameDefault
-          password = prompt "Enter cloud password", passwordDefault
+          console.log Coconut.config.toJSON()
 
-          configureApplicationAndSync(cloudUrl, appName, username,password)
+          sync = new Sync
+          sync.replicateApplicationDocs
+            error: (error) ->
+              console.error "Updating application docs failed: #{JSON.stringify error}"
+            success: ->
+              Coconut.database.put {_id: '_local/initial_load_complete'}, (error, result) ->
+                console.log error if error
+              Coconut.router.startApp()
+              _.delay ->
+                # Use this to remove configuration params from the URL
+                document.location = document.location.origin
+              ,5000
+
+        [cloudUrl, appName, username, password] = [getParameterByName("cloudUrl"), getParameterByName("appName"), getParameterByName("username"), getParameterByName("password")]
+
+        if cloudUrl and appName and username and password
+          configureApplicationAndSync(cloudUrl,appName,username,password)
+        else
+
+          cloudDefault = ""
+          usernameDefault = ""
+          passwordDefault = ""
+
+          $.ajax
+            url: "defaults.json",
+            success: (result) ->
+              if result
+                cloudDefault = result.cloud
+                [usernameDefault,passwordDefault] = result.cloud_credentials.split(":")
+
+            complete: ->
+              cloudUrl = prompt "Enter cloud URL", cloudDefault
+              cloudUrl = cloudUrl.replace(/http:\/\//,"")
+              appName = prompt("Enter application name")
+              username = prompt "Enter cloud username", usernameDefault
+              password = prompt "Enter cloud password", passwordDefault
+
+              configureApplicationAndSync(cloudUrl, appName, username,password)
+
+
+if currentUser? and currentUser isnt "" and currentPassword?
+  initializeDatabaseAndStart(currentUser,currentPassword)
+else
+  console.log "No user/pass in cookie"
+  anotherLoginView = new LoginView()
+  anotherLoginView.alternativeLoginCallback = () ->
+    username = $('#username').val()
+    password = $('#password').val()
+    Cookie('current_user', username)
+    Cookie('current_password', password)
+    initializeDatabaseAndStart(username,password)
+
+  anotherLoginView.render()
