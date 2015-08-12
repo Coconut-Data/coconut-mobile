@@ -11,6 +11,7 @@ Result = require './Result'
 class ResultCollection
 
   fetch: (options) =>
+    console.log options
 
     queryOptions = _.extend {
       # defaults, overridden by options
@@ -57,7 +58,7 @@ class ResultCollection
                 for field in summaryFields
                   summaryResults.push doc[field]
 
-                emit([doc.question, doc.complete is "true", doc.createdAt], summaryResults)
+                emit([doc.question, doc.complete is true, doc.createdAt], summaryResults)
           """
           resultsByQuestionNotCompleteNotTransferredOut: (document) ->
             if document.collection is "result"

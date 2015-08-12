@@ -18768,6 +18768,7 @@ ResultCollection = (function() {
 
   ResultCollection.prototype.fetch = function(options) {
     var fields, queryOptions;
+    console.log(options);
     queryOptions = _.extend({
       include_docs: false,
       startkey: [options.question, options.isComplete === true],
@@ -18806,7 +18807,7 @@ ResultCollection = (function() {
         designDocs = {
           results: "(doc) ->\n  if doc.collection is \"result\" and doc.question and (doc.complete or doc.complete is null) and doc.createdAt\n    summaryFields = (" + (Coconut.questions.length === 0 ? "[]" : Coconut.questions.map(function(question) {
             return "if doc.question is '" + question.id + "' then " + (JSON.stringify(question.summaryFieldKeys()));
-          }).join(" else ")) + ")\n\n    summaryResults = []\n    for field in summaryFields\n      summaryResults.push doc[field]\n\n    emit([doc.question, doc.complete is \"true\", doc.createdAt], summaryResults)",
+          }).join(" else ")) + ")\n\n    summaryResults = []\n    for field in summaryFields\n      summaryResults.push doc[field]\n\n    emit([doc.question, doc.complete is true, doc.createdAt], summaryResults)",
           resultsByQuestionNotCompleteNotTransferredOut: function(document) {
             if (document.collection === "result") {
               if (document.complete !== "true") {
@@ -19199,7 +19200,14 @@ User.isAuthenticated = function(options) {
       })(this),
       error: function(error) {
         console.error("Could not fetch user." + (Cookie('current_user')) + ": " + error);
-        return options != null ? options.error() : void 0;
+        return Coconut.database.info().then(function(databaseInfo) {
+          if (Cookie('current_user') === databaseInfo.db_name) {
+            $('.coconut-mdl-card__title').html("Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>");
+            return _.delay(function() {
+              return Coconut.router.navigate("logout", true);
+            }, 2000);
+          }
+        });
       }
     });
   } else {
@@ -19653,7 +19661,8 @@ MenuView = (function(superClass) {
         return Coconut.questions.each((function(_this) {
           return function(question, index) {
             return Coconut.database.query("results", {
-              key: [question.id, true],
+              startkey: [question.id, true],
+              endkey: [question.id, true, {}],
               include_docs: false
             }, function(error, result) {
               if (error) {
@@ -20432,7 +20441,7 @@ module.exports = QuestionView;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../Coconut":166,"../models/ResultCollection":173,"backbone":186,"form2js":250,"jquery":253,"js-cookie":254,"moment":255,"underscore":345}],182:[function(require,module,exports){
-var $, Backbone, Question, ResultCollection, ResultsView, _,
+var $, Backbone, Question, ResultCollection, ResultsView, _, moment,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -20444,6 +20453,8 @@ $ = require('jquery');
 Backbone = require('backbone');
 
 Backbone.$ = $;
+
+moment = require('moment');
 
 $.DataTable = require('datatables');
 
@@ -20466,33 +20477,52 @@ ResultsView = (function(superClass) {
   ResultsView.prototype.el = '#content';
 
   ResultsView.prototype.render = function() {
-    this.$el.html(("<style> table.results th.header, table.results td{ font-size:150%; } .dataTables_wrapper .dataTables_length{ display: none; } .dataTables_filter input{ display:inline; width:300px; } a[role=button]{ background-color: white; margin-right:5px; -moz-border-radius: 1em; -webkit-border-radius: 1em; border: solid gray 1px; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: #222; text-shadow: 0 1px 0 #fff; -webkit-background-clip: padding-box; -moz-background-clip: padding; background-clip: padding-box; padding: .6em 20px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; zoom: 1; } a[role=button].paginate_disabled_previous, a[role=button].paginate_disabled_next{ color:gray; } .dataTables_info{ float:right; } .dataTables_paginate{ margin-bottom:20px; } </style> <a href='#new/result/" + (escape(this.question.id)) + "'>Add new '" + this.question.id + "'</a> <div class='not-complete' data-collapsed='false' data-role='collapsible'> <h2>'" + this.question.id + "' Items Not Completed (<span class='count-complete-false'></span>)</h2> <table class='results complete-false tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
-      return "<th class='header'>" + summaryField + "</th>";
-    }).join("") + "<th></th> </tr></thead> <tbody> </tbody> <!-- <tfoot><tr>" + _.map(this.question.summaryFieldNames(), function(summaryField) {
-      return "<th class='header'>" + summaryField + "</th>";
-    }).join("") + ("<th></th> </tr></tfoot> --> </table> </div> <div class='complete' data-role='collapsible'> <h2>'" + this.question.id + "' Items Completed (<span class='count-complete-true'></span>)</h2> <table class='results complete-true tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
-      return "<th class='header'>" + summaryField + "</th>";
-    }).join("") + "<th></th> </tr></thead> <tbody> </tbody> <!-- <tfoot><tr>" + _.map(this.question.summaryFieldNames(), function(summaryField) {
-      return "<th class='header'>" + summaryField + "</th>";
-    }).join("") + "<th></th> </tr></tfoot> --> </table> </div>");
-    $('.complete').bind("expand", (function(_this) {
-      return function() {
-        return _this.loadResults(true);
+    var metrics;
+    this.$el.html(("<!-- <style> table.results th.header, table.results td{ font-size:150%; } .dataTables_wrapper .dataTables_length{ display: none; } .dataTables_filter input{ display:inline; width:300px; } a[role=button]{ background-color: white; margin-right:5px; -moz-border-radius: 1em; -webkit-border-radius: 1em; border: solid gray 1px; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: #222; text-shadow: 0 1px 0 #fff; -webkit-background-clip: padding-box; -moz-background-clip: padding; background-clip: padding-box; padding: .6em 20px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; zoom: 1; } a[role=button].paginate_disabled_previous, a[role=button].paginate_disabled_next{ color:gray; } .dataTables_info{ float:right; } .dataTables_paginate{ margin-bottom:20px; } </style> --> <h3>Results for '" + this.question.id + "'</h3> <table id='results_metrics'> </table> " + (metrics = {
+      "Total completed": 0,
+      "Total completed for week": 0,
+      "Total completed today": 0,
+      "Most recently completed result": null,
+      "Total not completed": 0
+    }, Coconut.database.query("results", {
+      startkey: [this.question.id],
+      endkey: [this.question.id, {}, {}]
+    }, (function(_this) {
+      return function(error, result) {
+        _(result.rows).each(function(row) {
+          var resultDate;
+          console.log(row);
+          if (row.key[1] === false) {
+            return metrics["Total not completed"] += 1;
+          } else {
+            resultDate = moment(row.key[2]);
+            metrics["Total completed"] += 1;
+            return metrics["Most recently completed result"] = resultDate.fromNow();
+          }
+        });
+        return $("#results_metrics").html(_(metrics).map(function(value, metric) {
+          return "<tr> <td>" + metric + "</td> <td>" + value + "</td> </tr>";
+        }).join(""));
       };
-    })(this));
+    })(this)), "") + " <div class='not-complete'> <h2>'" + this.question.id + "' Items Not Completed (<span class='count-complete-false'></span>)</h2> <table class='results complete-false tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
+      return "<th class='header'>" + summaryField + "</th>";
+    }).join("") + ("<th></th> </tr></thead> <tbody> </tbody> </table> </div> <div class='complete'> <h2>'" + this.question.id + "' Items Completed (<span class='count-complete-true'></span>)</h2> <table class='results complete-true tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
+      return "<th class='header'>" + summaryField + "</th>";
+    }).join("") + "<th></th> </tr></thead> <tbody> </tbody> </table> </div>");
     this.loadResults(false);
+    this.loadResults(true);
     return this.updateCountComplete();
   };
 
   ResultsView.prototype.updateCountComplete = function() {
     var results;
-    console.log("ZZZ");
     results = new ResultCollection();
     return results.fetch({
       question: this.question.id,
       isComplete: true,
       success: (function(_this) {
         return function() {
+          console.log(results);
           return $(".count-complete-true").html(results.results.length);
         };
       })(this)
@@ -20509,24 +20539,12 @@ ResultsView = (function(superClass) {
       success: (function(_this) {
         return function() {
           $(".count-complete-" + complete).html(results.results.length);
-          results.each(function(result, index) {
-            if (complete !== "true" && result.wasTransferredOut()) {
-              $(".count-complete-" + complete).html(parseInt($(".count-complete-" + complete).html()) - 1);
-              return;
-            }
-            $("table.complete-" + complete + " tbody").append("<tr> " + (_.map(result.summaryValues(_this.question), function(value) {
+          results.each(function(result) {
+            return $("table.complete-" + complete + " tbody").append("<tr> " + (_.map(result.summaryValues(_this.question), function(value) {
               return "<td><a href='#edit/result/" + result.id + "'>" + value + "</a></td>";
             }).join("")) + " <td><a href='#delete/result/" + result.id + "' data-icon='delete' data-iconpos='notext'>Delete</a></td> </tr>");
-            if (index + 1 === results.length) {
-              $("table").trigger("update");
-            }
-            return _.each($('table tr'), function(row, index) {
-              if (index % 2 === 1) {
-                return $(row).addClass("odd");
-              }
-            });
           });
-          return $('table').dataTable();
+          return $("table.complete-" + complete).dataTable();
         };
       })(this)
     });
@@ -20539,7 +20557,7 @@ ResultsView = (function(superClass) {
 module.exports = ResultsView;
 
 
-},{"../models/Question":170,"../models/ResultCollection":173,"backbone":186,"datatables":249,"jquery":253,"underscore":345}],183:[function(require,module,exports){
+},{"../models/Question":170,"../models/ResultCollection":173,"backbone":186,"datatables":249,"jquery":253,"moment":255,"underscore":345}],183:[function(require,module,exports){
 var $, Backbone, Sync, SyncView, _,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },

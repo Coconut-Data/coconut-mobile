@@ -87,6 +87,6 @@ class LoginView extends Backbone.View
           else
             $('.coconut-mdl-card__title').html "Wrong password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
         error: =>
-            $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
+          $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
 
   module.exports = LoginView

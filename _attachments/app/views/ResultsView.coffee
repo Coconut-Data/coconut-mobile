@@ -2,6 +2,7 @@ _ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
+moment = require 'moment'
 
 $.DataTable = require('datatables')
 
@@ -17,6 +18,7 @@ class ResultsView extends Backbone.View
   render: =>
     # 3 options: edit partials, edit complete, create new
     @$el.html "
+      <!--
       <style>
         table.results th.header, table.results td{
           font-size:150%;
@@ -63,11 +65,53 @@ class ResultsView extends Backbone.View
           margin-bottom:20px;
         }
 
-
       </style>
+      -->
 
-      <a href='#new/result/#{escape(@question.id)}'>Add new '#{@question.id}'</a>
-      <div class='not-complete' data-collapsed='false' data-role='collapsible'>
+      <h3>Results for '#{@question.id}'</h3>
+
+      <table id='results_metrics'>
+      </table>
+      #{
+        # Fill in the results_metrics table
+        metrics = {
+          "Total completed": 0
+          "Total completed for week": 0
+          "Total completed today": 0
+          "Most recently completed result": null
+          "Total not completed": 0
+        }
+
+        Coconut.database.query "results",
+          {
+            startkey: [@question.id],
+            endkey: [@question.id,{},{}]
+          },
+          (error,result) =>
+            _(result.rows).each (row) ->
+              console.log row
+              if row.key[1] is false
+                metrics["Total not completed"] += 1
+              else
+                resultDate = moment(row.key[2])
+
+                metrics["Total completed"] +=1
+                #metrics["Total completed for week"] +=1 if resultDate > #TODO
+                #metrics["Total completed today"] +=1 if resultDate is #TODO
+                metrics["Most recently completed result"] = resultDate.fromNow()
+
+            $("#results_metrics").html _(metrics).map( (value, metric) ->
+              "
+                <tr>
+                  <td>#{metric}</td>
+                  <td>#{value}</td>
+                </tr>
+              "
+            ).join("")
+        ""
+      }
+
+      <div class='not-complete'>
         <h2>'#{@question.id}' Items Not Completed (<span class='count-complete-false'></span>)</h2>
         <table class='results complete-false tablesorter'>
           <thead><tr>
@@ -78,17 +122,9 @@ class ResultsView extends Backbone.View
           </tr></thead>
           <tbody>
           </tbody>
-          <!--
-          <tfoot><tr>
-            " + _.map(@question.summaryFieldNames(), (summaryField) ->
-              "<th class='header'>#{summaryField}</th>"
-            ).join("") + "
-            <th></th>
-          </tr></tfoot>
-          -->
         </table>
       </div>
-      <div class='complete' data-role='collapsible'>
+      <div class='complete'>
         <h2>'#{@question.id}' Items Completed (<span class='count-complete-true'></span>)</h2>
         <table class='results complete-true tablesorter'>
           <thead><tr>
@@ -100,35 +136,21 @@ class ResultsView extends Backbone.View
           </tr></thead>
           <tbody>
           </tbody>
-          <!--
-          <tfoot><tr>
-            " + _.map(@question.summaryFieldNames(), (summaryField) ->
-              "<th class='header'>#{summaryField}</th>"
-            ).join("") + "
-            <th></th>
-
-          </tr></tfoot>
-          -->
         </table>
       </div>
     "
 
-    #$("a").button()
-
-    #$('[data-role=collapsible]').collapsible()
-    $('.complete').bind "expand", =>
-      @loadResults(true)
-
     @loadResults(false)
+    @loadResults(true)
     @updateCountComplete()
 
   updateCountComplete: ->
-    console.log "ZZZ"
     results = new ResultCollection()
     results.fetch
       question: @question.id
       isComplete: true
       success: =>
+        console.log results
         $(".count-complete-true").html results.results.length
   
   loadResults: (complete) ->
@@ -139,11 +161,7 @@ class ResultsView extends Backbone.View
       isComplete: complete
       success: =>
         $(".count-complete-#{complete}").html results.results.length
-        results.each (result,index) =>
-          # Ignore incomplete transferred results and reduce the count by 1 
-          if complete isnt "true" and result.wasTransferredOut()
-            $(".count-complete-#{complete}").html(parseInt($(".count-complete-#{complete}").html())-1)
-            return
+        results.each (result) =>
 
           $("table.complete-#{complete} tbody").append "
             <tr>
@@ -155,15 +173,7 @@ class ResultsView extends Backbone.View
               <td><a href='#delete/result/#{result.id}' data-icon='delete' data-iconpos='notext'>Delete</a></td>
             </tr>
           "
-  
-          if index+1 is results.length
-            #$("table a").button()
-            $("table").trigger("update")
-          _.each $('table tr'), (row, index) ->
-            $(row).addClass("odd") if index%2 is 1
 
-        $('table').dataTable()
-
-        #$(".dataTables_filter input").textinput()
+        $("table.complete-#{complete}").dataTable()
 
 module.exports = ResultsView

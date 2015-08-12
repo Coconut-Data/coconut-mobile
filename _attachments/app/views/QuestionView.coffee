@@ -577,7 +577,7 @@ earchCompleteStop()
   save: _.throttle( ->
 
       currentData = Form2js.form2js('questions', ".", false)
-      
+
       #currentData = $('form').toObject(skipEmpty: false)
 
       # Make sure lastModifiedAt is always updated on save

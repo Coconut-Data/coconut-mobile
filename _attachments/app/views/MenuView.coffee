@@ -44,9 +44,10 @@ class MenuView extends Backbone.View
     User.isAuthenticated
       success: () ->
         Coconut.questions.each (question,index) =>
-          
+
           Coconut.database.query "results",
-            key: [question.id, true]
+            startkey: [question.id, true]
+            endkey: [question.id, true, {}]
             include_docs: false
             (error,result) =>
               console.log error if error
