@@ -16,59 +16,22 @@ class ResultsView extends Backbone.View
   el: '#content'
 
   render: =>
-    # 3 options: edit partials, edit complete, create new
+
     @$el.html "
-      <!--
       <style>
-        table.results th.header, table.results td{
-          font-size:150%;
-        }
-        .dataTables_wrapper .dataTables_length{
-          display: none;
-        }
-
-        .dataTables_filter input{
-          display:inline;
-          width:300px;
-        }
-
-        a[role=button]{
-          background-color: white;
-          margin-right:5px;
-          -moz-border-radius: 1em;
-          -webkit-border-radius: 1em;
-          border: solid gray 1px;
-          font-family: Helvetica,Arial,sans-serif;
-          font-weight: bold;
-          color: #222;
-          text-shadow: 0 1px 0 #fff;
-          -webkit-background-clip: padding-box;
-          -moz-background-clip: padding;
-          background-clip: padding-box;
-          padding: .6em 20px;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-          position: relative;
-          zoom: 1;
-        }
-
-        a[role=button].paginate_disabled_previous, a[role=button].paginate_disabled_next{
-          color:gray;
-        }
-
-        .dataTables_info{
+        h3{ 
+          margin-top:0px;
           float:right;
+          color: #{Coconut.colors.accent1};
         }
 
-        .dataTables_paginate{
-          margin-bottom:20px;
+        h4{ 
+          color: #{Coconut.colors.primary1};
         }
-
       </style>
-      -->
 
-      <h3>Results for '#{@question.id}'</h3>
+      <h3>#{@question.id}</h3>
+      <h4>Summary statistics</h4>
 
       <table id='results_metrics'>
       </table>
@@ -76,7 +39,7 @@ class ResultsView extends Backbone.View
         # Fill in the results_metrics table
         metrics = {
           "Total completed": 0
-          "Total completed for week": 0
+          "Total completed this week": 0
           "Total completed today": 0
           "Most recently completed result": null
           "Total not completed": 0
@@ -96,62 +59,65 @@ class ResultsView extends Backbone.View
                 resultDate = moment(row.key[2])
 
                 metrics["Total completed"] +=1
-                #metrics["Total completed for week"] +=1 if resultDate > #TODO
-                #metrics["Total completed today"] +=1 if resultDate is #TODO
+                metrics["Total completed this week"] +=1 if moment().isSame(resultDate, 'week')
+                metrics["Total completed today"] +=1 if moment().isSame(resultDate, 'day')
                 metrics["Most recently completed result"] = resultDate.fromNow()
 
             $("#results_metrics").html _(metrics).map( (value, metric) ->
               "
                 <tr>
                   <td>#{metric}</td>
-                  <td>#{value}</td>
+                  <td style='color:#{Coconut.colors.accent1}'>#{value}</td>
                 </tr>
               "
             ).join("")
+            $("#total-completed").html metrics["Total completed"]
+            $("#total-not-completed").html metrics["Total not completed"]
         ""
       }
+      <h4>Detailed results</h4>
 
-      <div class='not-complete'>
-        <h2>'#{@question.id}' Items Not Completed (<span class='count-complete-false'></span>)</h2>
-        <table class='results complete-false tablesorter'>
-          <thead><tr>
-            " + _.map(@question.summaryFieldNames(), (summaryField) ->
-              "<th class='header'>#{summaryField}</th>"
-            ).join("") + "
-            <th></th>
-          </tr></thead>
-          <tbody>
-          </tbody>
-        </table>
-      </div>
-      <div class='complete'>
-        <h2>'#{@question.id}' Items Completed (<span class='count-complete-true'></span>)</h2>
-        <table class='results complete-true tablesorter'>
-          <thead><tr>
-            " + _.map(@question.summaryFieldNames(), (summaryField) ->
-              "<th class='header'>#{summaryField}</th>"
-            ).join("") + "
-            <th></th>
+      <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
-          </tr></thead>
-          <tbody>
-          </tbody>
-        </table>
+        <div class='mdl-tabs__tab-bar'>
+          <a href='#complete-panel' class='mdl-tabs__tab is-active'>Complete (<span id='total-completed''></span>)</a>
+          <a href='#not-complete-panel' class='mdl-tabs__tab'>Not Complete (<span id='total-not-completed'></span>)</a>
+        </div>
+
+        <div class='mdl-tabs__panel is-active complete' id='complete-panel'>
+          <br/>
+          <table class='results complete-true tablesorter'>
+            <thead><tr>
+              " + _.map(@question.summaryFieldNames(), (summaryField) ->
+                "<th class='header'>#{summaryField}</th>"
+              ).join("") + "
+              <th></th>
+
+            </tr></thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
+        <div class='mdl-tabs__panel not-complete' id='not-complete-panel'>
+          <br/>
+          <table class='results complete-false tablesorter'>
+            <thead><tr>
+              " + _.map(@question.summaryFieldNames(), (summaryField) ->
+                "<th class='header'>#{summaryField}</th>"
+              ).join("") + "
+              <th></th>
+            </tr></thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
       </div>
     "
 
     @loadResults(false)
     @loadResults(true)
-    @updateCountComplete()
-
-  updateCountComplete: ->
-    results = new ResultCollection()
-    results.fetch
-      question: @question.id
-      isComplete: true
-      success: =>
-        console.log results
-        $(".count-complete-true").html results.results.length
   
   loadResults: (complete) ->
     results = new ResultCollection()

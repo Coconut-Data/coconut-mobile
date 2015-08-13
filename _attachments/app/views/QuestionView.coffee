@@ -578,6 +578,14 @@ earchCompleteStop()
 
       currentData = Form2js.form2js('questions', ".", false)
 
+      # HACK Form2js doesn't work for checkboxes with multiple values
+      # Check if any values are checkboxes, then overwrite with correct value
+      _(currentData).each (value,key) ->
+        if $(".checkbox[name=#{key}]").length > 0
+          currentData[key] = _($(".checkbox[name=#{key}]:checked")).map (element) ->
+            $(element).val()
+
+
       #currentData = $('form').toObject(skipEmpty: false)
 
       # Make sure lastModifiedAt is always updated on save

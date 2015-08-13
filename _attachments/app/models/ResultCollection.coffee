@@ -11,8 +11,6 @@ Result = require './Result'
 class ResultCollection
 
   fetch: (options) =>
-    console.log options
-
     queryOptions = _.extend {
       # defaults, overridden by options
       include_docs: false
@@ -44,7 +42,7 @@ class ResultCollection
         designDocs = {
           results: """
             (doc) ->
-              if doc.collection is "result" and doc.question and (doc.complete or doc.complete is null) and doc.createdAt
+              if doc.collection is "result" and doc.question and doc.createdAt
                 summaryFields = (#{
                   if Coconut.questions.length is 0
                     "[]"

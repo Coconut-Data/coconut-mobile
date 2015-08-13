@@ -17709,6 +17709,8 @@ PouchDB = require('pouchdb');
 
 window.PouchDB = PouchDB;
 
+window.$ = $;
+
 require('crypto-pouch');
 
 if (global.username == null) {
@@ -17720,6 +17722,12 @@ module.exports = {
   debug: function(string) {
     console.log(string);
     return $("#log").append(string + "<br/>");
+  },
+  colors: {
+    primary1: "rgb(63,81,181)",
+    primary2: "rgb(48,63,159)",
+    accent1: "rgb(230,33,90)",
+    accent2: "rgb(194,24,91)"
   }
 };
 
@@ -18768,7 +18776,6 @@ ResultCollection = (function() {
 
   ResultCollection.prototype.fetch = function(options) {
     var fields, queryOptions;
-    console.log(options);
     queryOptions = _.extend({
       include_docs: false,
       startkey: [options.question, options.isComplete === true],
@@ -18805,7 +18812,7 @@ ResultCollection = (function() {
           options.success();
         }
         designDocs = {
-          results: "(doc) ->\n  if doc.collection is \"result\" and doc.question and (doc.complete or doc.complete is null) and doc.createdAt\n    summaryFields = (" + (Coconut.questions.length === 0 ? "[]" : Coconut.questions.map(function(question) {
+          results: "(doc) ->\n  if doc.collection is \"result\" and doc.question and doc.createdAt\n    summaryFields = (" + (Coconut.questions.length === 0 ? "[]" : Coconut.questions.map(function(question) {
             return "if doc.question is '" + question.id + "' then " + (JSON.stringify(question.summaryFieldKeys()));
           }).join(" else ")) + ")\n\n    summaryResults = []\n    for field in summaryFields\n      summaryResults.push doc[field]\n\n    emit([doc.question, doc.complete is true, doc.createdAt], summaryResults)",
           resultsByQuestionNotCompleteNotTransferredOut: function(document) {
@@ -20152,6 +20159,15 @@ QuestionView = (function(superClass) {
   QuestionView.prototype.save = _.throttle(function() {
     var currentData;
     currentData = Form2js.form2js('questions', ".", false);
+    console.log(currentData);
+    _(currentData).each(function(value, key) {
+      if ($(".checkbox[name=" + key + "]").length > 0) {
+        return currentData[key] = _($(".checkbox[name=" + key + "]:checked")).map(function(element) {
+          return $(element).val();
+        });
+      }
+    });
+    console.log(currentData);
     currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get("date_format"));
     currentData.savedBy = Cookie('current_user');
     return this.result.save(currentData, {
@@ -20478,9 +20494,9 @@ ResultsView = (function(superClass) {
 
   ResultsView.prototype.render = function() {
     var metrics;
-    this.$el.html(("<!-- <style> table.results th.header, table.results td{ font-size:150%; } .dataTables_wrapper .dataTables_length{ display: none; } .dataTables_filter input{ display:inline; width:300px; } a[role=button]{ background-color: white; margin-right:5px; -moz-border-radius: 1em; -webkit-border-radius: 1em; border: solid gray 1px; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: #222; text-shadow: 0 1px 0 #fff; -webkit-background-clip: padding-box; -moz-background-clip: padding; background-clip: padding-box; padding: .6em 20px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; zoom: 1; } a[role=button].paginate_disabled_previous, a[role=button].paginate_disabled_next{ color:gray; } .dataTables_info{ float:right; } .dataTables_paginate{ margin-bottom:20px; } </style> --> <h3>Results for '" + this.question.id + "'</h3> <table id='results_metrics'> </table> " + (metrics = {
+    this.$el.html(("<style> h3{ margin-top:0px; float:right; color: " + Coconut.colors.accent1 + "; } h4{ color: " + Coconut.colors.primary1 + "; } </style> <h3>" + this.question.id + "</h3> <h4>Summary statistics</h4> <table id='results_metrics'> </table> " + (metrics = {
       "Total completed": 0,
-      "Total completed for week": 0,
+      "Total completed this week": 0,
       "Total completed today": 0,
       "Most recently completed result": null,
       "Total not completed": 0
@@ -20497,36 +20513,28 @@ ResultsView = (function(superClass) {
           } else {
             resultDate = moment(row.key[2]);
             metrics["Total completed"] += 1;
+            if (moment().isSame(resultDate, 'week')) {
+              metrics["Total completed this week"] += 1;
+            }
+            if (moment().isSame(resultDate, 'day')) {
+              metrics["Total completed today"] += 1;
+            }
             return metrics["Most recently completed result"] = resultDate.fromNow();
           }
         });
-        return $("#results_metrics").html(_(metrics).map(function(value, metric) {
-          return "<tr> <td>" + metric + "</td> <td>" + value + "</td> </tr>";
+        $("#results_metrics").html(_(metrics).map(function(value, metric) {
+          return "<tr> <td>" + metric + "</td> <td style='color:" + Coconut.colors.accent1 + "'>" + value + "</td> </tr>";
         }).join(""));
+        $("#total-completed").html(metrics["Total completed"]);
+        return $("#total-not-completed").html(metrics["Total not completed"]);
       };
-    })(this)), "") + " <div class='not-complete'> <h2>'" + this.question.id + "' Items Not Completed (<span class='count-complete-false'></span>)</h2> <table class='results complete-false tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
+    })(this)), "") + " <h4>Detailed results</h4> <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'> <div class='mdl-tabs__tab-bar'> <a href='#complete-panel' class='mdl-tabs__tab is-active'>Complete (<span id='total-completed''></span>)</a> <a href='#not-complete-panel' class='mdl-tabs__tab'>Not Complete (<span id='total-not-completed'></span>)</a> </div> <div class='mdl-tabs__panel is-active complete' id='complete-panel'> <br/> <table class='results complete-true tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
       return "<th class='header'>" + summaryField + "</th>";
-    }).join("") + ("<th></th> </tr></thead> <tbody> </tbody> </table> </div> <div class='complete'> <h2>'" + this.question.id + "' Items Completed (<span class='count-complete-true'></span>)</h2> <table class='results complete-true tablesorter'> <thead><tr>") + _.map(this.question.summaryFieldNames(), function(summaryField) {
+    }).join("") + "<th></th> </tr></thead> <tbody> </tbody> </table> </div> <div class='mdl-tabs__panel not-complete' id='not-complete-panel'> <br/> <table class='results complete-false tablesorter'> <thead><tr>" + _.map(this.question.summaryFieldNames(), function(summaryField) {
       return "<th class='header'>" + summaryField + "</th>";
-    }).join("") + "<th></th> </tr></thead> <tbody> </tbody> </table> </div>");
+    }).join("") + "<th></th> </tr></thead> <tbody> </tbody> </table> </div> </div>");
     this.loadResults(false);
-    this.loadResults(true);
-    return this.updateCountComplete();
-  };
-
-  ResultsView.prototype.updateCountComplete = function() {
-    var results;
-    results = new ResultCollection();
-    return results.fetch({
-      question: this.question.id,
-      isComplete: true,
-      success: (function(_this) {
-        return function() {
-          console.log(results);
-          return $(".count-complete-true").html(results.results.length);
-        };
-      })(this)
-    });
+    return this.loadResults(true);
   };
 
   ResultsView.prototype.loadResults = function(complete) {
