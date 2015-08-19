@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# VERSION 0.8.5
+# VERSION 0.8.12
 
 /
 /bundle.js
@@ -9,6 +9,7 @@ CACHE MANIFEST
 /css/fonts/fonts.css
 /css/material.css
 /css/styles.css
+/css/jquery.dataTables.min.css
 /css/fonts/Roboto-Thin.ttf
 /css/fonts/Roboto-Light.ttf
 /css/fonts/Roboto-Regular.ttf
@@ -45,13 +46,14 @@ CACHE MANIFEST
 /images/sort_desc.png
 /images/ungroup.png
 /images/ussd.png
+/images/2sq.gif
+/images/3sq.gif
 /css/images/ajax-loader.gif
 /css/images/ajax-loader.png
 /css/images/icons-18-black.png
 /css/images/icons-18-white.png
 /css/images/icons-36-black.png
 /css/images/icons-36-white.png
-
 
 NETWORK:
 *

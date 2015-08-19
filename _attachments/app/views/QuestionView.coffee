@@ -16,6 +16,7 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
 global.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || null
 # # # #
 _ = require 'underscore'
+global._ = _
 $ = require 'jquery'
 Cookie = require 'js-cookie'
 
@@ -307,6 +308,9 @@ earchCompleteStop()
         @autoscroll autocompeteElement
     $('input, textarea').attr("readonly", "true") if @readonly
 
+    # Without this re-using the view results in staying at the old scroll position
+    $("main").scrollTop(0)
+
   events:
     "change #question-view input"    : "onChange"
     "change #question-view select"   : "onChange"
@@ -531,7 +535,8 @@ earchCompleteStop()
         $(event.target).parent().parent().parent().find("input,textarea,select")
 
     # don't do anything if the target is invisible
-    return unless $target.is(":visible")
+    # For some reason radios aren't visible - could be a bug here if a radio is hidden and this shouldn't run
+    return unless $target.is(":visible") or $target.attr("type") is "radio"
 
     name = $target.attr("name")
     $divQuestion = $(".question [data-question-name=#{name}]")
