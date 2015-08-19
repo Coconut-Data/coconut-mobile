@@ -71,8 +71,15 @@ class Sync extends Backbone.Model
                   @save
                     last_send_error: true
                 else
-                  @log "Synchronizing #{result.rows.length} results. Please wait."
-                  resultIDs = _.pluck result.rows, "id"
+                  resultIDs = if options.completeResultsOnly? and options.completeResultsOnly is true
+                    _.chain(result.rows)
+                    .filter (row) ->
+                      row.key[1] is true # Only get complete results
+                    .pluck("id").value()
+                  else
+                    _.pluck result.rows, "id"
+
+                  @log "Synchronizing #{resultIDs.length} results. Please wait."
 
                   Coconut.database.replicate.to Coconut.config.cloud_url_with_credentials(),
                     doc_ids: resultIDs
@@ -84,6 +91,7 @@ class Sync extends Backbone.Model
                       last_send_time: new Date().getTime()
                     options.success()
                   .on 'error', (error) ->
+                    console.error error
                     options.error(error)
 
 
