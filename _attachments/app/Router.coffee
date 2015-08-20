@@ -258,8 +258,12 @@ class Router extends Backbone.Router
     confirmReset = ->
       if confirm "Are you sure you want to reset the database? All data that has not yet been sent to the cloud will be lost."
         Coconut.database.destroy (error, result) ->
+          cloudUrl = Coconut.config.get("cloud")
+          appName = Coconut.config.get("cloud_database_name")
+          [username,password] = Coconut.config.get("cloud_credentials").split(":")
           Coconut.router.navigate("",true)
-          document.location.reload()
+
+          document.location = document.location.origin + document.location.pathname + "?cloudUrl=#{cloudUrl}&appName=#{appName}&username=#{username}&password=#{password}&showPrompt=yes"
 
     # Allow database reset if there are no users to login as
     confirmReset() if Coconut.users.length is 0

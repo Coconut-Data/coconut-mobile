@@ -67,31 +67,20 @@ initializeDatabaseAndStart = (user,password) ->
                 document.location = document.location.origin
               ,5000
 
-        [cloudUrl, appName, username, password] = [getParameterByName("cloudUrl"), getParameterByName("appName"), getParameterByName("username"), getParameterByName("password")]
+        [cloudUrl, appName, username, password, showPrompt] = [getParameterByName("cloudUrl"), getParameterByName("appName"), getParameterByName("username"), getParameterByName("password"), getParameterByName("showPrompt")]
 
-        if cloudUrl and appName and username and password
+        if showPrompt is "yes" or not (cloudUrl and appName and username and password)
+          cloudUrl = prompt "Enter cloud URL", cloudUrl or ""
+          cloudUrl = cloudUrl.replace(/http:\/\//,"")
+          appName = prompt "Enter application name", appName or ""
+          username = prompt "Enter cloud username", username or ""
+          password = prompt "Enter cloud password", password or ""
+
+          configureApplicationAndSync(cloudUrl, appName, username,password)
+
+        else if cloudUrl and appName and username and password
           configureApplicationAndSync(cloudUrl,appName,username,password)
-        else
 
-          cloudDefault = ""
-          usernameDefault = ""
-          passwordDefault = ""
-
-          $.ajax
-            url: "defaults.json",
-            success: (result) ->
-              if result
-                cloudDefault = result.cloud
-                [usernameDefault,passwordDefault] = result.cloud_credentials.split(":")
-
-            complete: ->
-              cloudUrl = prompt "Enter cloud URL", cloudDefault
-              cloudUrl = cloudUrl.replace(/http:\/\//,"")
-              appName = prompt("Enter application name")
-              username = prompt "Enter cloud username", usernameDefault
-              password = prompt "Enter cloud password", passwordDefault
-
-              configureApplicationAndSync(cloudUrl, appName, username,password)
 
 
 if currentUser? and currentUser isnt "" and currentPassword?
