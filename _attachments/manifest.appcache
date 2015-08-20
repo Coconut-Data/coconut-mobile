@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# VERSION 0.8.12
+# VERSION 0.8.13
 
 /
 /bundle.js
@@ -18,7 +18,10 @@ CACHE MANIFEST
 /css/fonts/Roboto-Black.ttf
 /css/fonts/Roboto-Italic.ttf
 /css/fonts/Roboto-BoldItalic.ttf
-
+/css/fonts/MaterialIcons-Regular.eot
+/css/fonts/MaterialIcons-Regular.ttf
+/css/fonts/MaterialIcons-Regular.woff
+/css/fonts/MaterialIcons-Regular.woff2
 
 /images/back_disabled.png
 /images/back_enabled_hover.png
