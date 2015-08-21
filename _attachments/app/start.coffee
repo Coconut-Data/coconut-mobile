@@ -5,6 +5,9 @@ Backbone.$  = $
 BackbonePouch = require 'backbone-pouch'
 appCacheNanny = require 'appcache-nanny'
 
+window.PouchDB = require 'pouchdb'
+require('pouchdb-all-dbs')(window.PouchDB)
+
 Cookie = require 'js-cookie'
 LoginView = require './views/LoginView'
 
@@ -93,3 +96,5 @@ else
     initializeDatabaseAndStart(username,password)
 
   anotherLoginView.render()
+  # Destroys all CouchDBs for this domain
+  $("nav").append("<button type='button' onClick='if(prompt(\"Enter reset password\")===\"newclear\"){PouchDB.allDbs().then(function(dbs){var db,_i,_len,_results;_results=[];for(_i=0,_len=dbs.length;_i<_len;_i++){db=dbs[_i];_results.push((new PouchDB(db)).destroy())}return _results})}'>RESET ALL</button>")
