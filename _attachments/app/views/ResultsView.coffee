@@ -28,6 +28,10 @@ class ResultsView extends Backbone.View
         h4{ 
           color: #{Coconut.colors.primary1};
         }
+        /* Fixes problem with android's refresh on swipe 'feature' */
+        body{
+          overflow-y: hidden;
+        }
       </style>
 
       <h3>#{@question.id}</h3>

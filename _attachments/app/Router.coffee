@@ -92,7 +92,8 @@ class Router extends Backbone.Router
       success: ->
         if User.currentUser.hasRole "reports"
           Coconut.router.navigate("reports",true)
-        $("#content").html ""
+        else
+          Coconut.router.navigate "show/results/#{Coconut.questions.first().id}"
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
@@ -305,6 +306,8 @@ class Router extends Backbone.Router
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
           Coconut.syncView = new SyncView()
+          # After 5 minutes, start the backgroundSync process
+          _.delay Coconut.syncView.sync.backgroundSync, 5*60*1000
           Coconut.syncView.update()
           Backbone.history.start()
 

@@ -41,6 +41,37 @@ class Sync extends Backbone.Model
     else
       return "never"
 
+  backgroundSync: =>
+    @lastSuccessfulSync = moment("2000-01-01") unless @lastSuccessfulSync? # TODO save this in PouchDB or use existing one
+    console.log "backgroundSync called at #{moment().toString()} lastSuccessfulSync was #{@lastSuccessfulSync.toString()}}"
+    minimumMinutesBetweenSync = 15
+
+    _.delay @backgroundSync, minimumMinutesBetweenSync*60*1000
+
+    Coconut.questions.each (question) =>
+      Coconut.database.query "results",
+        startkey: [question.id,true,@lastSuccessfulSync.format(Coconut.config.get("date_format"))]
+        endkey: [question.id,true,{}]
+      .then (result) =>
+        if result.rows.length > 0 and moment().diff(@lastSuccessfulSync,'minutes') > minimumMinutesBetweenSync
+          console.log "Initiating background sync"
+          $("div#log").hide()
+          @sendToCloud
+            completeResultsOnly: true
+            error: (error) ->
+              console.log "Error: #{JSON.stringify error}"
+              $("div#log").html("")
+              $("div#log").show()
+            success: =>
+              @lastSuccessfulSync = moment()
+              $("div#log").html("")
+              $("div#log").show()
+        else
+          console.log "No new results for #{question.id} so not syncing"
+  
+
+    # Check if there are new results
+    # Send results if new results and timeout
 
   checkForInternet: (options) =>
     @log "Checking for internet. (Is #{Coconut.config.cloud_url()} is reachable?) Please wait."
