@@ -52,8 +52,6 @@ initializeDatabaseAndStart = (user,password) ->
 
           Coconut.config.save()
 
-          console.log Coconut.config.toJSON()
-
           sync = new Sync
           sync.replicateApplicationDocs
             error: (error) ->
@@ -71,7 +69,6 @@ initializeDatabaseAndStart = (user,password) ->
 
         if showPrompt is "yes" or not (cloudUrl and appName and username and password)
           cloudUrl = prompt "Enter cloud URL", cloudUrl or ""
-          cloudUrl = cloudUrl.replace(/http:\/\//,"")
           appName = prompt "Enter application name", appName or ""
           username = prompt "Enter cloud username", username or ""
           password = prompt "Enter cloud password", password or ""

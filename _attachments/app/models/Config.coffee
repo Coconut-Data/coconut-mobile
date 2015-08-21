@@ -26,14 +26,20 @@ class Config extends Backbone.Model
   cloud_database_name: => @get("cloud_database_name") || @database_name()
 
   cloud_url: ->
-    "http://#{@cloud_url_no_http()}/#{@cloud_database_name()}"
+    "#{@httpOrHttps()}://#{@cloud_url_no_http()}/#{@cloud_database_name()}"
 
   cloud_url_with_credentials: ->
-    "http://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}"
+    "#{@httpOrHttps()}://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}"
 
   cloud_log_url_with_credentials: ->
-    "http://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}-log"
+    "#{@httpOrHttps()}://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}-log"
 
-  cloud_url_no_http: => @get("cloud").replace(/http:\/\//,"")
+  cloud_url_no_http: => @get("cloud").replace(/^https{0,1}:\/\//,"")
+
+  httpOrHttps: =>
+    if @get("cloud").match(/^https/)
+      "https"
+    else
+      "http"
 
 module.exports =  Config
