@@ -17,12 +17,7 @@ class Sync extends Backbone.Model
     return @get("last_send_result")
 
   was_last_send_successful: =>
-    return false if @get("last_send_error") is true
-    # even if last_send_error was false need to check log
-    last_send_data = @last_send()
-    return false unless last_send_data?
-    return true if last_send_data.no_changes? and last_send_data.no_changes is true
-    return (last_send_data.docs_read is last_send_data.docs_written) and last_send_data.doc_write_failures is 0
+    return not @get("last_send_error") or false
 
   last_send_time: =>
     result = @get("last_send_time")
