@@ -93,7 +93,7 @@ class Router extends Backbone.Router
         if User.currentUser.hasRole "reports"
           Coconut.router.navigate("reports",true)
         else
-          Coconut.router.navigate "show/results/#{Coconut.questions.first().id}"
+          Coconut.router.navigate "show/results/#{Coconut.questions.first().id}", true
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
