@@ -55,6 +55,8 @@ initializeDatabaseAndStart = (user,password) ->
 
           Coconut.config.save()
 
+          console.log Coconut.config.toJSON()
+
           sync = new Sync
           sync.replicateApplicationDocs
             error: (error) ->
@@ -64,6 +66,8 @@ initializeDatabaseAndStart = (user,password) ->
                 console.log error if error
               Coconut.router.startApp()
               _.delay ->
+
+
                 # Use this to remove configuration params from the URL
                 document.location = document.location.origin
               ,5000
@@ -97,4 +101,25 @@ else
 
   anotherLoginView.render()
   # Destroys all CouchDBs for this domain
-  $("nav").append("<button type='button' onClick='if(prompt(\"Enter reset password\")===\"newclear\"){PouchDB.allDbs().then(function(dbs){var db,_i,_len,_results;_results=[];for(_i=0,_len=dbs.length;_i<_len;_i++){db=dbs[_i];_results.push((new PouchDB(db)).destroy())}return _results})}'>RESET ALL</button>")
+  $("nav").append("<button id='resetAll' type='button'>RESET ALL</button>")
+
+  $("#resetAll").click  ->
+    if prompt("Enter reset password") is "newclear"
+      $(".mdl-layout__drawer").toggleClass("is-visible")
+      $("#content").html ""
+      PouchDB.allDbs().then (dbs) ->
+        for db in dbs
+          (new PouchDB(db)).destroy()
+          .then () -> $("#content").append "<h2>Deleted #{db}</h2>"
+          .catch (error) -> $("#content").append "Error deleting #{db}: #{JSON.stringify error}"
+      _.delay ->
+        $('#content').append "<h1>Refreshing in 1 second</h1>"
+        Cookie('current_user', '')
+        Cookie('current_password', '')
+      , 4000
+
+      _.delay ->
+        document.location.reload()
+      , 5000
+    else
+      alert "Incorrect reset password"

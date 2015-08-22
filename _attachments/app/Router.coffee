@@ -18,6 +18,7 @@ SyncView = require './views/SyncView'
 User = require './models/User'
 UserCollection = require './models/UserCollection'
 
+Cookie = require 'js-cookie'
 
 class Router extends Backbone.Router
   routes:
@@ -90,10 +91,7 @@ class Router extends Backbone.Router
   default: ->
     @userLoggedIn
       success: ->
-        if User.currentUser.hasRole "reports"
-          Coconut.router.navigate("reports",true)
-        else
-          Coconut.router.navigate "show/results/#{Coconut.questions.first().id}", true
+        Coconut.router.navigate "show/results/#{Coconut.questions.first().id}", true
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
@@ -259,6 +257,11 @@ class Router extends Backbone.Router
     confirmReset = ->
       if confirm "Are you sure you want to reset the database? All data that has not yet been sent to the cloud will be lost."
         Coconut.database.destroy (error, result) ->
+
+          # Forces a new login to occur
+          Cookie('current_user', '')
+          Cookie('current_password', '')
+
           cloudUrl = Coconut.config.get("cloud")
           appName = Coconut.config.get("cloud_database_name")
           [username,password] = Coconut.config.get("cloud_credentials").split(":")

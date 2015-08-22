@@ -20,13 +20,20 @@ Utils.addOrUpdateDesignDoc = (designDoc,options) ->
         console.log "Error. Current Result:"
         console.log result
 
-        #Coconut.database.get "_design/#{name}", (error,result) ->
-        #  console.log "GETTING AGAIN"
-        #  console.log result
-
         console.log error
         console.log "^^^^^ Error updating designDoc for #{name}:"
         console.log designDoc
+
+        if confirm("Database Error. Do you want to reset the database?")
+          Coconut.database.destroy().then ->
+
+            cloudUrl = Coconut.config.get("cloud")
+            appName = Coconut.config.get("cloud_database_name")
+            [username,password] = Coconut.config.get("cloud_credentials").split(":")
+            Coconut.router.navigate("",true)
+
+            document.location = document.location.origin + document.location.pathname + "?cloudUrl=#{cloudUrl}&appName=#{appName}&username=#{username}&password=#{password}&showPrompt=yes"
+          
 
 Utils.createDesignDoc = (name, mapFunction) ->
   # Allows coffeescript string to get compiled into functions for extra dynamic-ness - use heredocs """
