@@ -74,6 +74,8 @@ class LoginView extends Backbone.View
       @alternativeLoginCallback()
     else
       loginData = Form2js.form2js('login_form')
+      loginData.username = loginData.username.toLowerCase()
+
       user = new User
         _id: "user.#{loginData.username}"
 

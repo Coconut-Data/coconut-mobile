@@ -17877,7 +17877,7 @@ Router = (function(superClass) {
   Router.prototype["default"] = function() {
     return this.userLoggedIn({
       success: function() {
-        return Coconut.router.navigate("show/results/" + (Coconut.questions.first().id), true);
+        return $("#content").html("");
       }
     });
   };
@@ -19411,6 +19411,8 @@ currentPassword = Cookie('current_password');
 
 initializeDatabaseAndStart = function(user, password) {
   var Coconut, Config, Router, Sync;
+  console.log(user);
+  console.log(password);
   global.username = user;
   Coconut = require('./Coconut');
   global.Coconut = Coconut;
@@ -19440,6 +19442,7 @@ initializeDatabaseAndStart = function(user, password) {
         };
         configureApplicationAndSync = function(cloudUrl, appName, username, password) {
           var sync;
+          console.log(cloudUrl);
           Coconut.config = new Config({
             cloud: cloudUrl,
             cloud_database_name: appName,
@@ -19489,7 +19492,7 @@ if ((currentUser != null) && currentUser !== "" && (currentPassword != null)) {
   anotherLoginView = new LoginView();
   anotherLoginView.alternativeLoginCallback = function() {
     var password, username;
-    username = $('#username').val();
+    username = $('#username').val().toLowerCase();
     password = $('#password').val();
     Cookie('current_user', username);
     Cookie('current_password', password);
@@ -19666,6 +19669,7 @@ LoginView = (function(superClass) {
       return this.alternativeLoginCallback();
     } else {
       loginData = Form2js.form2js('login_form');
+      loginData.username = loginData.username.toLowerCase();
       user = new User({
         _id: "user." + loginData.username
       });

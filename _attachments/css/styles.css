@@ -17,6 +17,22 @@
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
 }
+
+header .material-icons{
+  font-size: 48px;
+  margin-left: -10px;
+}
+
+header .mdl-button--icon {
+  height: 60px;
+  width: 60px;
+}
+
+header .mdl-layout-title{
+  padding-left:50px;
+  font-size: 40px;
+}
+
 .coconut-avatar {
   width: 48px;
   height: 48px;
@@ -29,6 +45,11 @@ html, body {
 .mdl-layout__drawer .avatar {
   margin-bottom: 16px;
 }
+
+.coconut-layout .coconut-drawer.is-visible {
+  width: 400px;
+}
+
 .coconut-drawer {
   border: none;
 }
@@ -92,9 +113,14 @@ html, body {
   font-weight: 500;
 }
 .coconut-navigation .mdl-navigation__link .material-icons {
-  font-size: 24px;
+  font-size: 60px;
   color: rgba(255, 255, 255, 0.56);
   margin-right: 32px;
+}
+
+.coconut-navigation .mdl-navigation__link {
+  font-size: 36px;
+  line-height:36px;
 }
 
 .coconut-content {

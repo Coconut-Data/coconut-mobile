@@ -91,7 +91,8 @@ class Router extends Backbone.Router
   default: ->
     @userLoggedIn
       success: ->
-        Coconut.router.navigate "show/results/#{Coconut.questions.first().id}", true
+        $("#content").html ""
+        #Coconut.router.navigate "show/results/#{Coconut.questions.first().id}", true
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)

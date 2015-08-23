@@ -14,9 +14,13 @@ LoginView = require './views/LoginView'
 currentUser = Cookie('current_user')
 currentPassword = Cookie('current_password')
 
+
 # Note that this function is called below
 
 initializeDatabaseAndStart = (user,password) ->
+  console.log user
+  console.log password
+
   global.username = user
 
   Coconut = require('./Coconut')
@@ -43,11 +47,15 @@ initializeDatabaseAndStart = (user,password) ->
       else
         throw error if (error.status isnt 404)
 
+
         getParameterByName = (name) ->
           match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search)
           match && decodeURIComponent(match[1].replace(/\+/g, ' '))
 
         configureApplicationAndSync = (cloudUrl, appName, username,password) ->
+      
+          console.log cloudUrl
+
           Coconut.config = new Config
             cloud: cloudUrl
             cloud_database_name: appName
@@ -85,15 +93,13 @@ initializeDatabaseAndStart = (user,password) ->
         else if cloudUrl and appName and username and password
           configureApplicationAndSync(cloudUrl,appName,username,password)
 
-
-
 if currentUser? and currentUser isnt "" and currentPassword?
   initializeDatabaseAndStart(currentUser,currentPassword)
 else
   console.log "No user/pass in cookie"
   anotherLoginView = new LoginView()
   anotherLoginView.alternativeLoginCallback = () ->
-    username = $('#username').val()
+    username = $('#username').val().toLowerCase()
     password = $('#password').val()
     Cookie('current_user', username)
     Cookie('current_password', password)
