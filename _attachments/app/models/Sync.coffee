@@ -157,7 +157,7 @@ class Sync extends Backbone.Model
         @log "Getting list of application documents to replicate"
         # Updating design_doc, users & forms
         $.ajax
-          url: "#{Coconut.config.cloud_url()}/_design/coconut/_view/docIDsForUpdating"
+          url: "#{Coconut.config.cloud_url_with_credentials()}/_design/coconut/_view/docIDsForUpdating"
           dataType: "json"
           include_docs: false
           error: (a,b,error) =>
