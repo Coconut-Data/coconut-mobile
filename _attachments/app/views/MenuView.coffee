@@ -18,7 +18,7 @@ class MenuView extends Backbone.View
     Coconut.questions.fetch
       success: =>
         $(".mdl-layout__header-row").html(
-          Coconut.questions.map (question,index) ->
+          "<a style='position:absolute; top:0px; right:0px;' class='mdl-navigation__link' href='#sync'><i class='mdl-color-text--accent material-icons'>sync</i>Sync</a><br/>" + Coconut.questions.map (question,index) ->
             "
               <span class='mdl-layout-title'>#{question.id}</span>
               <button onClick='document.location=\"#new/result/#{escape(question.id)}\"' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon'>

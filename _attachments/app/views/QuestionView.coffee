@@ -452,9 +452,10 @@ earchCompleteStop()
     question        = $("[name=#{question_id}]", questionWrapper)
 
     type            = $(questionWrapper.find("input").get(0)).attr("type")
-    labelText       = 
-      if type is "radio"
-        $("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).text() || ""
+    labelText       =
+      if type is "radio" or "checkbox"
+        #$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).text() || ""
+        $("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0].nodeValue or ""
       else
         $("label[for=#{question.attr("id")}]", questionWrapper)?.text()
     required        = questionWrapper.attr("data-required") is "true"
@@ -473,7 +474,7 @@ earchCompleteStop()
     # "" = true
     return "" if question.find("input").length != 0 and (type == "checkbox" or type == "radio")
 
-    result.push "'#{labelText}' is required." if required && (value is "" or value is null) unless question_id is "Location"
+    result.push "'#{labelText}' is required." if required && (value.length is 0 or value is null) unless question_id is "Location"
 
     if validation? && validation isnt ""
 
