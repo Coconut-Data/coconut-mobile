@@ -11,15 +11,14 @@ require('pouchdb-all-dbs')(window.PouchDB)
 Cookie = require 'js-cookie'
 LoginView = require './views/LoginView'
 
+User = require './models/User'
+
 currentUser = Cookie('current_user')
 currentPassword = Cookie('current_password')
-
 
 # Note that this function is called below
 
 initializeDatabaseAndStart = (user,password) ->
-  console.log user
-  console.log password
 
   global.username = user
 
@@ -42,8 +41,33 @@ initializeDatabaseAndStart = (user,password) ->
     Coconut.database.get '_local/initial_load_complete', (error, result) ->
 
       if not error
-        _.delay appCacheNanny.start, 5000
-        Coconut.router.startApp()
+
+        startApp = ->
+          _.delay appCacheNanny.start, 5000
+          Coconut.router.startApp()
+
+        resetDatabase = (message) ->
+          if $('.coconut-mdl-card__title')
+            $('.coconut-mdl-card__title').html message
+            _.delay ->
+              Cookie('current_user',"")
+              Cookie('current_password',"")
+              Coconut.database.destroy().then ->
+                document.location.reload()
+            ,3000
+
+        user = new User
+          _id: "user.#{user}"
+        user.fetch
+          success: =>
+            if user.passwordIsValid password
+              startApp()
+            else
+              # Encryption key is wrong, so destroy it and try again
+              resetDatabase "Password is invalid, database must be configured with a valid username and password. Resetting in 3 seconds."
+          error: (error) ->
+            resetDatabase "Username and password aren't in database, database must be configured with a valid username and password. Resetting in 3 seconds."
+
       else
         throw error if (error.status isnt 404)
 

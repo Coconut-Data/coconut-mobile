@@ -53,20 +53,14 @@ User.isAuthenticated = (options) ->
       error: (error) ->
         # current user is invalid (should not get here)
         console.error "Could not fetch user.#{Cookie('current_user')}: #{error}"
-        # If username is invalid then we need to logout because the current encrypted database has the same username and will never allow access
-        Coconut.database.info().then (databaseInfo) ->
-          if Cookie('current_user') is databaseInfo.db_name
-            $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
-            _.delay ->
-              Coconut.router.navigate("logout",true)
-            ,2000
-        #options?.error()
+        options?.error()
   else
     # Not logged in
     options.error() if options.error?
 
 User.logout = ->
   Cookie('current_user',"")
+  Cookie('current_password',"")
   $("span#user").html ""
   $('#district').html ""
   $("a[href=#logout]").hide()

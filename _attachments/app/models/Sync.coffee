@@ -71,7 +71,8 @@ class Sync extends Backbone.Model
   checkForInternet: (options) =>
     @log "Checking for internet. (Is #{Coconut.config.cloud_url()} is reachable?) Please wait."
     $.ajax
-      url: Coconut.config.cloud_url()
+      url: Coconut.config.cloud_url_with_credentials()
+      xhrFields: {withCredentials: true}
       error: (error) =>
         @log "ERROR! #{Coconut.config.cloud_url()} is not reachable. Do you have enough airtime? Are you on WIFI?  Either the internet is not working or the site is down: #{JSON.stringify(error)}"
         options.error()
@@ -158,6 +159,7 @@ class Sync extends Backbone.Model
         # Updating design_doc, users & forms
         $.ajax
           url: "#{Coconut.config.cloud_url_with_credentials()}/_design/coconut/_view/docIDsForUpdating"
+          xhrFields: {withCredentials: true}
           dataType: "json"
           include_docs: false
           error: (a,b,error) =>
