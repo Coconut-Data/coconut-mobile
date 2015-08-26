@@ -70,6 +70,8 @@ class LoginView extends Backbone.View
   # Note this needs hashing and salt for real security
   login: =>
     # Useful for reusing the login screen - like for database encryption
+    if $("#username").val() is "" or $("#password").val() is ""
+      return $('.coconut-mdl-card__title').html "Please enter a username and password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
     if @alternativeLoginCallback?
       @alternativeLoginCallback()
     else

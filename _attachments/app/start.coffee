@@ -9,6 +9,7 @@ window.PouchDB = require 'pouchdb'
 require('pouchdb-all-dbs')(window.PouchDB)
 
 Cookie = require 'js-cookie'
+window.Cookie = Cookie
 LoginView = require './views/LoginView'
 
 User = require './models/User'
@@ -47,14 +48,17 @@ initializeDatabaseAndStart = (user,password) ->
           Coconut.router.startApp()
 
         resetDatabase = (message) ->
-          if $('.coconut-mdl-card__title')
-            $('.coconut-mdl-card__title').html message
-            _.delay ->
-              Cookie('current_user',"")
-              Cookie('current_password',"")
-              Coconut.database.destroy().then ->
-                document.location.reload()
-            ,3000
+          console.log "RESETTING DATABASE"
+          console.log message
+          $('.coconut-mdl-card__title').html message
+          $('#content').html "<h2>#{message}</h2>"
+
+          _.delay ->
+            Cookie('current_user',"")
+            Cookie('current_password',"")
+            Coconut.database.destroy().then ->
+              document.location.reload()
+          ,3000
 
         user = new User
           _id: "user.#{user}"
@@ -64,9 +68,9 @@ initializeDatabaseAndStart = (user,password) ->
               startApp()
             else
               # Encryption key is wrong, so destroy it and try again
-              resetDatabase "Password is invalid, database must be configured with a valid username and password. Resetting in 3 seconds."
+              resetDatabase "Password is invalid, resetting database in 3 seconds."
           error: (error) ->
-            resetDatabase "Username and password aren't in database, database must be configured with a valid username and password. Resetting in 3 seconds."
+            resetDatabase "Username and password aren't in database, resetting database in 3 seconds."
 
       else
         throw error if (error.status isnt 404)
@@ -78,8 +82,6 @@ initializeDatabaseAndStart = (user,password) ->
 
         configureApplicationAndSync = (cloudUrl, appName, username,password) ->
       
-          console.log cloudUrl
-
           Coconut.config = new Config
             cloud: cloudUrl
             cloud_database_name: appName
@@ -87,7 +89,7 @@ initializeDatabaseAndStart = (user,password) ->
 
           Coconut.config.save()
 
-          console.log Coconut.config.toJSON()
+          Cookie("coconut.config", JSON.stringify Coconut.config.toJSON())
 
           sync = new Sync
           sync.replicateApplicationDocs
@@ -98,13 +100,21 @@ initializeDatabaseAndStart = (user,password) ->
                 console.log error if error
               Coconut.router.startApp()
               _.delay ->
-
-
                 # Use this to remove configuration params from the URL
+                console.log "Clearing configuration params"
                 document.location = document.location.origin
               ,5000
 
+        # First check the URL for configuration, then check cookie, finally prompt
         [cloudUrl, appName, username, password, showPrompt] = [getParameterByName("cloudUrl"), getParameterByName("appName"), getParameterByName("username"), getParameterByName("password"), getParameterByName("showPrompt")]
+
+        configFromCookie = JSON.parse Cookie('coconut.config') if Cookie('coconut.config') and Cookie('coconut.config') isnt ""
+        console.log configFromCookie
+        if configFromCookie? and configFromCookie.cloud? and configFromCookie.cloud_database_name? and configFromCookie.cloud_credentials?
+          cloudUrl = cloudUrl or configFromCookie.cloud
+          appName = appName or configFromCookie.cloud_database_name
+          username = username or configFromCookie.cloud_credentials.split(":")[0]
+          password = password or configFromCookie.cloud_credentials.split(":")[1]
 
         if showPrompt is "yes" or not (cloudUrl and appName and username and password)
           cloudUrl = prompt "Enter cloud URL", cloudUrl or ""
@@ -120,7 +130,6 @@ initializeDatabaseAndStart = (user,password) ->
 if currentUser? and currentUser isnt "" and currentPassword?
   initializeDatabaseAndStart(currentUser,currentPassword)
 else
-  console.log "No user/pass in cookie"
   anotherLoginView = new LoginView()
   anotherLoginView.alternativeLoginCallback = () ->
     username = $('#username').val().toLowerCase()
@@ -146,6 +155,7 @@ else
         $('#content').append "<h1>Refreshing in 1 second</h1>"
         Cookie('current_user', '')
         Cookie('current_password', '')
+        Cookie('coconut.config', '')
       , 4000
 
       _.delay ->

@@ -309,7 +309,7 @@ earchCompleteStop()
     $('input, textarea').attr("readonly", "true") if @readonly
 
     # Without this re-using the view results in staying at the old scroll position
-    $("main").scrollTop(0)
+    #$("main").scrollTop(0)
 
   events:
     "change #question-view input"    : "onChange"
@@ -474,7 +474,7 @@ earchCompleteStop()
     # "" = true
     return "" if question.find("input").length != 0 and (type == "checkbox" or type == "radio")
 
-    result.push "'#{labelText}' is required." if required && (value.length is 0 or value is null) unless question_id is "Location"
+    result.push "'#{labelText}' is required." if required && (value is null or value.length is 0) unless question_id is "Location"
 
     if validation? && validation isnt ""
 
@@ -496,6 +496,9 @@ earchCompleteStop()
 
   autoscroll: (event) ->
 
+    console.log "SCROLLING based on"
+    console.log event
+
     clearTimeout @autoscrollTimer
 
     # Some hacks in here to try and make it work
@@ -506,6 +509,8 @@ earchCompleteStop()
       $target = $(event.target)
       window.scrollTargetName = $target.attr("name")
       $div = window.questionCache[window.scrollTargetName]
+
+    console.log $div
 
     @$next = $div.next()
 
@@ -863,7 +868,7 @@ earchCompleteStop()
 
   $.fn.scrollTo = (speed = 500, callback) ->
     try
-      $('html, body').animate {
+      $('main').animate {
         scrollTop: $(@).offset().top + 'px'
         }, speed, null, callback
     catch e

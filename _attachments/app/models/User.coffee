@@ -52,6 +52,7 @@ User.isAuthenticated = (options) ->
         options.success(user)
       error: (error) ->
         # current user is invalid (should not get here)
+        $('.coconut-mdl-card__title').html "Username is invalid."
         console.error "Could not fetch user.#{Cookie('current_user')}: #{error}"
         options?.error()
   else
