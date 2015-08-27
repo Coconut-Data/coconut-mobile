@@ -19882,6 +19882,7 @@ QuestionView = (function(superClass) {
   extend(QuestionView, superClass);
 
   function QuestionView() {
+    this.validateOne = bind(this.validateOne, this);
     this.onChange = bind(this.onChange, this);
     this.render = bind(this.render, this);
     return QuestionView.__super__.constructor.apply(this, arguments);
@@ -19991,8 +19992,9 @@ QuestionView = (function(superClass) {
       };
     })(this));
     if (this.readonly) {
-      return $('input, textarea').attr("readonly", "true");
+      $('input, textarea').attr("readonly", "true");
     }
+    return $("main").scrollTop(0);
   };
 
   QuestionView.prototype.events = {
@@ -20124,10 +20126,22 @@ QuestionView = (function(superClass) {
       return true;
     } else {
       $message.show().html(message + " " + button).find("button");
-      this.scrollToQuestion($question);
+      try {
+        this.scrollToElement($message);
+      } catch (_error) {
+        e = _error;
+        console.log("error", e);
+        console.log("Scroll error with 'this'", this);
+      }
       return false;
     }
   };
+
+  QuestionView.prototype.scrollToElement = _.debounce(function(element) {
+    return $('main').animate({
+      scrollTop: $("main").scrollTop() + element.offset().top - $("header").height()
+    });
+  }, 500, true);
 
   QuestionView.prototype.isValid = function(question_id) {
     var error, labelText, question, questionWrapper, ref, required, result, type, validation, validationFunctionResult, value;
@@ -20189,8 +20203,7 @@ QuestionView = (function(superClass) {
 
   QuestionView.prototype.autoscroll = function(event) {
     var $div, $target, safetyCounter;
-    console.log("SCROLLING based on");
-    console.log(event);
+    return;
     clearTimeout(this.autoscrollTimer);
     if (event.jquery) {
       $div = event;
@@ -20564,9 +20577,7 @@ QuestionView = (function(superClass) {
       speed = 500;
     }
     try {
-      $('main').animate({
-        scrollTop: $(this).offset().top + 'px'
-      }, speed, null, callback);
+
     } catch (_error) {
       e = _error;
       console.log("error", e);

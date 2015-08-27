@@ -309,7 +309,7 @@ earchCompleteStop()
     $('input, textarea').attr("readonly", "true") if @readonly
 
     # Without this re-using the view results in staying at the old scroll position
-    #$("main").scrollTop(0)
+    $("main").scrollTop(0)
 
   events:
     "change #question-view input"    : "onChange"
@@ -405,7 +405,7 @@ earchCompleteStop()
     return isValid
 
 
-  validateOne: ( options ) ->
+  validateOne: ( options ) =>
 
     key          = options.key          || ''
     autoscroll   = options.autoscroll   || false
@@ -434,9 +434,19 @@ earchCompleteStop()
         #{message}
         #{button}
       ").find("button")
-      # undo autoscrolling - horrible hack but it works!
-      @scrollToQuestion($question)
+
+      try
+        @scrollToElement $message
+      catch e
+        console.log "error", e
+        console.log "Scroll error with 'this'", @
+
       return false
+
+  scrollToElement: _.debounce (element) ->
+    $('main').animate
+      scrollTop: $("main").scrollTop() + element.offset().top-$("header").height()
+  , 500, true
 
 
   isValid: ( question_id ) ->
@@ -495,9 +505,8 @@ earchCompleteStop()
     @autoscroll $(question).prev()
 
   autoscroll: (event) ->
-
-    console.log "SCROLLING based on"
-    console.log event
+    # DISABLED!!
+    return
 
     clearTimeout @autoscrollTimer
 
@@ -868,9 +877,9 @@ earchCompleteStop()
 
   $.fn.scrollTo = (speed = 500, callback) ->
     try
-      $('main').animate {
-        scrollTop: $(@).offset().top + 'px'
-        }, speed, null, callback
+      #$('main').animate {
+      #  scrollTop: $(@).offset().top + 'px'
+      #  }, speed, null, callback
     catch e
       console.log "error", e
       console.log "Scroll error with 'this'", @
