@@ -17914,16 +17914,23 @@ Router = (function(superClass) {
     return this.userLoggedIn({
       success: function() {
         Coconut.syncView.render();
+        $("#status").html("Sending data...");
         return Coconut.syncView.sync.sendToCloud({
           completeResultsOnly: true,
           success: function() {
+            $("#status").html("Receiving data...");
             return Coconut.syncView.sync.getFromCloud({
               success: function() {
+                $("#status").html("Finished, refresh in 5 seconds...");
                 return Coconut.debug("Refreshing app in 5 seconds, please wait");
+              },
+              error: function() {
+                return $("#log").show();
               }
             });
           },
           error: function(error) {
+            $("#log").show();
             Coconut.debug("Error sending data to cloud, proceeding to get updates from cloud.");
             return Coconut.syncView.sync.getFromCloud();
           }
@@ -20741,8 +20748,10 @@ SyncView = (function(superClass) {
   SyncView.prototype.el = '#content';
 
   SyncView.prototype.render = function() {
-    this.$el.html("");
-    return $("#log").html("");
+    this.$el.html("<center> <h2>Syncing</h2> <h3 id='status'></h3> <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div> </center>");
+    componentHandler.upgradeDom();
+    $("#log").html("");
+    return $("#log").hide();
   };
 
   SyncView.prototype.update = function() {

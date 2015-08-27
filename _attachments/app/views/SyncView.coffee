@@ -12,8 +12,16 @@ class SyncView extends Backbone.View
   el: '#content'
 
   render: =>
-    @$el.html ""
+    @$el.html "
+      <center>
+      <h2>Syncing</h2>
+      <h3 id='status'></h3>
+      <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+      </center>
+    "
+    componentHandler.upgradeDom()
     $("#log").html ""
+    $("#log").hide()
 
   update: =>
     @sync.fetch
