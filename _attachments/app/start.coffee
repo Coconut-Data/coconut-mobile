@@ -95,6 +95,7 @@ initializeDatabaseAndStart = (user,password) ->
           sync.replicateApplicationDocs
             error: (error) ->
               console.error "Updating application docs failed: #{JSON.stringify error}"
+              Cookie("coconut.config", '')
             success: ->
               Coconut.database.put {_id: '_local/initial_load_complete'}, (error, result) ->
                 console.log error if error

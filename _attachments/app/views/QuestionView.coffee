@@ -62,6 +62,10 @@ class QuestionView extends Backbone.View
     @$el.html "
     <style>
 
+      div.question .mdl-textfield{
+        width: inherit;
+      }
+
       label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
         font-size:200%;
 
@@ -218,6 +222,16 @@ earchCompleteStop()
       }
       .tt-suggestion .{
       }
+
+      button.next_error.mdl-button{
+        bottom: 0px;
+        position: relative;
+      }
+
+      div.message {
+        font-size:20px;
+      }
+
       #{
         @model.get("styles") or ""
       }
@@ -409,7 +423,7 @@ earchCompleteStop()
 
     key          = options.key          || ''
     autoscroll   = options.autoscroll   || false
-    button       = options.button       || "<button type='button' class='next_error'>Next Error</button>"
+    button       = options.button       || "<button type='button' class='next_error mdl-button mdl-js-button mdl-button--raised mdl-button--colored'>Next Error</button>"
     leaveMessage = options.leaveMessage || false
 
     $question = window.questionCache[key]
