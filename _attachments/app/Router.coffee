@@ -124,10 +124,14 @@ class Router extends Backbone.Router
             $("#status").html "Receiving data..."
             Coconut.syncView.sync.getFromCloud
               success: ->
-                $("#status").html "Finished, refresh in 5 seconds..."
-                Coconut.debug "Refreshing app in 5 seconds, please wait"
+                $("#status").html "Complete!"
+                document.location.reload()
               error: ->
                 $("#log").show()
+                Coconut.debug "Refreshing app in 5 seconds, please wait"
+                _.delay ->
+                  document.location.reload()
+                , 5000
           error: (error) ->
             $("#log").show()
             Coconut.debug "Error sending data to cloud, proceeding to get updates from cloud."

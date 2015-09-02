@@ -146,9 +146,6 @@ class Sync extends Backbone.Model
                       last_get_success: true
                       last_get_time: new Date().getTime()
                     options?.success?()
-                    _.delay ->
-                      document.location.reload()
-                    , 5000
 
 
   replicateApplicationDocs: (options) =>
