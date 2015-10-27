@@ -2,8 +2,6 @@ $           = require('jquery')
 Backbone    = require('backbone')
 Backbone.$  = $
 
-Coconut = require '../Coconut'
-
 class Config extends Backbone.Model
   initialize: ->
     @set

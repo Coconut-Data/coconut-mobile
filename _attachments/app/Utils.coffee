@@ -1,6 +1,5 @@
 _ = require 'underscore'
-#CoffeeScript = require 'coffee-script'
-Coconut = require './Coconut'
+CoffeeScript = require 'coffee-script'
 
 Utils = {}
 Utils.addOrUpdateDesignDoc = (designDoc,options) ->

@@ -3,7 +3,6 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 
-
 class Question extends Backbone.Model
   initialize: ->
     @set

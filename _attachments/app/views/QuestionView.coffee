@@ -29,7 +29,6 @@ moment = require 'moment'
 
 #typeahead = require 'typeahead.js'
 
-Coconut = require '../Coconut'
 ResultCollection = require '../models/ResultCollection'
 
 class QuestionView extends Backbone.View

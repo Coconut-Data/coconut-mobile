@@ -4,8 +4,6 @@ Backbone = require 'backbone'
 Backbone.$  = $
 moment = require 'moment'
 
-Coconut = require '../Coconut'
-
 class Sync extends Backbone.Model
   initialize: ->
     @set
@@ -155,32 +153,26 @@ class Sync extends Backbone.Model
         @log "Getting list of application documents to replicate"
         # Updating design_doc, users & forms
         $.ajax
-          url: "#{Coconut.config.cloud_url_with_credentials()}/_design/coconut/_view/docIDsForUpdating"
+          url: "#{Coconut.config.cloud_url_with_credentials()}/_design/docIDsForUpdating/_view/docIDsForUpdating"
           xhrFields: {withCredentials: true}
           dataType: "json"
           include_docs: false
           error: (a,b,error) =>
             options.error?(error)
           success: (result) =>
-            doc_ids = _.pluck result.rows, "id"
-            doc_ids = _(doc_ids).without "_design/coconut"
-            @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(',')})</small>. Please wait."
+            doc_ids = _(result.rows).chain().pluck("id").without("_design/coconut").uniq().value()
+            @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(', ')})</small>. Please wait."
             Coconut.database.replicate.from Coconut.config.cloud_url_with_credentials(),
               doc_ids: doc_ids
             .on 'change', (info) =>
+              console.log info
               $("#content").html "
                 <h2>
-                  #{info.docs_written} written out of #{doc_ids.length} (#{parseInt(100*(info.docs_written/doc_ids.length))}%)
+                  #{info.docs_written} written (including revisions) out of #{doc_ids.length} (#{parseInt(100*(info.docs_written/doc_ids.length))}%)
                 </h2>
               "
             .on 'complete', (info) =>
-              resultData = _(info).chain().map (value,property) ->
-                "#{property}: #{value}" if property.match /^doc.*/
-
-              .compact()
-              .value()
-
-              @log "Finished updating application documents: #{JSON.stringify resultData}"
+              console.log "COMPLETE"
               options.success?()
             .on 'error', (error) =>
               @log "Error while updating application documents: #{JSON.stringify error}"

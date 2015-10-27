@@ -2,7 +2,6 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 
-Coconut = require '../Coconut'
 Sync = require '../models/Sync'
 User = require '../models/User'
 

@@ -3,7 +3,9 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 
-Coconut = require './Coconut'
+window.PouchDB = require 'pouchdb'
+require('pouchdb-all-dbs')(window.PouchDB)
+
 Config = require './models/Config'
 HelpView = require './views/HelpView'
 LoginView = require './views/LoginView'
@@ -14,6 +16,8 @@ QuestionView = require './views/QuestionView'
 Result = require './models/Result'
 ResultsView = require './views/ResultsView'
 ResultCollection = require './models/ResultCollection'
+SelectApplicationView = require './views/SelectApplicationView'
+SetupView = require './views/SetupView'
 SyncView = require './views/SyncView'
 User = require './models/User'
 UserCollection = require './models/UserCollection'
@@ -21,248 +25,219 @@ UserCollection = require './models/UserCollection'
 Cookie = require 'js-cookie'
 
 class Router extends Backbone.Router
+  # This gets called before a route is applied
+  execute: (callback, args, name) ->
+    if name is "setup"
+      callback.apply(this, args) if callback
+    else
+      Coconut.databaseName = args.shift()
+      if Coconut.databaseName
+        @userLoggedIn
+          success: ->
+            callback.apply(this, args) if callback
+      else
+        selectDatabaseView = new SelectApplicationView()
+        selectDatabaseView.render()
+  
+
   routes:
-    "login": "login"
-    "logout": "logout"
-    "show/results/:question_id": "showResults"
-    "new/result/:question_id": "newResult"
-    "show/result/:result_id": "showResult"
-    "edit/result/:result_id": "editResult"
-    "delete/result/:result_id": "deleteResult"
-    "delete/result/:result_id/:confirmed": "deleteResult"
-    "reset/database": "resetDatabase"
-    "sync": "sendAndGet"
+    # Note that the database param gets removed from the args pased to the route handler in the execute function
+    ":database/login": "login"
+    ":database/logout": "logout"
+    ":database/show/results/:question_id": "showResults"
+    ":database/new/result/:question_id": "newResult"
+    ":database/show/result/:result_id": "showResult"
+    ":database/edit/result/:result_id": "editResult"
+    ":database/delete/result/:result_id": "deleteResult"
+    ":database/delete/result/:result_id/:confirmed": "deleteResult"
+    ":database/reset/database": "resetDatabase"
+    ":database/sync": "sendAndGet"
 #    "sync/send": "syncSend"
 #    "sync/get": "syncGet"
-    "configure": "configure"
-    "help": "help"
-    "help/:helpDocument": "help"
-    "": "default"
+    ":database/configure": "configure"
+    ":database/help": "help"
+    ":database/help/:helpDocument": "help"
+    "setup": "setup"
+    "setup/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
+    ":database": "showResults"
+    "": "showResults"
 
-  userLoggedIn: (callback) ->
+  setup: (cloudUrl,applicationName,cloudUsername,cloudPassword) ->
+    setupView = new SetupView()
+    setupView.render()
+    setupView.prefill
+      "Cloud URL": cloudUrl
+      "Application Name": applicationName
+      "Cloud Username": cloudUsername
+      "Cloud Password": cloudPassword
+
+  userLoggedIn: (options) ->
     User.isAuthenticated
       success: (user) ->
         Coconut.menuView.render()
-        callback.success(user)
+        options.success(user)
       error: ->
-        Coconut.loginView.callback = callback
+        Coconut.loginView = new LoginView()
+        Coconut.loginView.callback = options.success
         Coconut.loginView.render()
 
   help: (helpDocument) ->
-    @userLoggedIn
-      success: ->
-        Coconut.helpView ?= new HelpView()
-        if helpDocument?
-          Coconut.helpView.helpDocument = helpDocument
-        else
-          Coconut.helpView.helpDocument = null
-        Coconut.helpView.render()
+    Coconut.helpView ?= new HelpView()
+    if helpDocument?
+      Coconut.helpView.helpDocument = helpDocument
+    else
+      Coconut.helpView.helpDocument = null
+    Coconut.helpView.render()
 
   login: ->
+    Coconut.loginView = new LoginView()
     Coconut.loginView.callback =
       success: ->
         Coconut.router.navigate("",true)
     Coconut.loginView.render()
-
-
-  userWithRoleLoggedIn: (role,callback) =>
-    @userLoggedIn
-      success: (user) ->
-        if user.hasRole role
-          callback.success(user)
-        else
-          $("#content").html "<h2>User '#{user.username()}' must have role: '#{role}'</h2>"
-      error: ->
-        $("#content").html "<h2>User '#{user.username()}' must have role: '#{role}'</h2>"
-
-  adminLoggedIn: (callback) ->
-    @userLoggedIn
-      success: (user) ->
-        if user.isAdmin()
-          callback.success(user)
-      error: ->
-        $("#content").html "<h2>Must be an admin user</h2>"
 
   logout: ->
     User.logout()
     Coconut.router.navigate("",true)
     document.location.reload()
 
-  default: ->
-    @userLoggedIn
-      success: ->
-        $("#content").html ""
-        #Coconut.router.navigate "show/results/#{Coconut.questions.first().id}", true
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
-    @userLoggedIn
+    Coconut.syncView.render()
+    Coconut.syncView.sync.sendToCloud
       success: ->
-        Coconut.syncView.render()
-        Coconut.syncView.sync.sendToCloud
-          success: ->
-            Coconut.syncView.update()
-          error: ->
-            Coconut.syncView.update()
+        Coconut.syncView.update()
+      error: ->
+        Coconut.syncView.update()
 
   syncGet: (action) ->
     Coconut.router.navigate("",false)
-    @userLoggedIn
-      success: ->
-        Coconut.syncView.render()
-        Coconut.syncView.sync.getFromCloud()
+    Coconut.syncView.render()
+    Coconut.syncView.sync.getFromCloud()
 
   sendAndGet: (action) ->
     Coconut.router.navigate("",false)
-    @userLoggedIn
+    Coconut.syncView.render()
+    $("#status").html "Sending data..."
+    Coconut.syncView.sync.sendToCloud
+      completeResultsOnly: true
       success: ->
-        Coconut.syncView.render()
-        $("#status").html "Sending data..."
-        Coconut.syncView.sync.sendToCloud
-          completeResultsOnly: true
+        $("#status").html "Receiving data..."
+        Coconut.syncView.sync.getFromCloud
           success: ->
-            $("#status").html "Receiving data..."
-            Coconut.syncView.sync.getFromCloud
-              success: ->
-                $("#status").html "Complete!"
-                document.location.reload()
-              error: ->
-                $("#log").show()
-                Coconut.debug "Refreshing app in 5 seconds, please wait"
-                _.delay ->
-                  document.location.reload()
-                , 5000
-          error: (error) ->
+            $("#status").html "Complete!"
+            document.location.reload()
+          error: ->
             $("#log").show()
-            Coconut.debug "Error sending data to cloud, proceeding to get updates from cloud."
-            Coconut.syncView.sync.getFromCloud()
+            Coconut.debug "Refreshing app in 5 seconds, please wait"
+            _.delay ->
+              document.location.reload()
+            , 5000
+      error: (error) ->
+        $("#log").show()
+        Coconut.debug "Error sending data to cloud, proceeding to get updates from cloud."
+        Coconut.syncView.sync.getFromCloud()
 
 
   newResult: (question_id) ->
-    @userLoggedIn
+    Coconut.questionView.result = new Result
+      question: unescape(question_id)
+    Coconut.questionView.model = new Question {id: unescape(question_id)}
+    Coconut.questionView.model.fetch
       success: ->
-        Coconut.questionView.result = new Result
-          question: unescape(question_id)
-        Coconut.questionView.model = new Question {id: unescape(question_id)}
+        Coconut.questionView.render()
+
+
+  showResult: (result_id) ->
+    Coconut.questionView.readonly = true
+
+    Coconut.questionView.result = new Result
+      _id: result_id
+    Coconut.questionView.result.fetch
+      success: ->
+        question = Coconut.questionView.result.question()
+        Coconut.questionView.model = new Question
+          id: question
         Coconut.questionView.model.fetch
           success: ->
             Coconut.questionView.render()
 
-
-  showResult: (result_id) ->
-    @userLoggedIn
-      success: ->
-        Coconut.questionView.readonly = true
-
-        Coconut.questionView.result = new Result
-          _id: result_id
-        Coconut.questionView.result.fetch
-          success: ->
-            question = Coconut.questionView.result.question()
-            if question?
-              Coconut.questionView.model = new Question
-                id: question
-              Coconut.questionView.model.fetch
-                success: ->
-                  Coconut.questionView.render()
-            else # Reach here for USSD Notifications
-              $("#content").html "
-                <button id='delete' type='button'>Delete</button>
-                <pre>#{JSON.stringify Coconut.questionView.result,null,2}</pre>
-              "
-              $("button#delete").click ->
-                if confirm("Are you sure you want to delete this result?")
-                  Coconut.questionView.result.destroy
-                    success: ->
-                      $("#content").html "Result deleted, redirecting..."
-                      _.delay ->
-                        Coconut.router.navigate("/",true)
-                      , 2000
-
-
-
   editResult: (result_id) ->
-    @userLoggedIn
+    Coconut.questionView.readonly = false
+
+    Coconut.questionView.result = new Result
+      _id: result_id
+    Coconut.questionView.result.fetch
       success: ->
-        Coconut.questionView.readonly = false
+        question = Coconut.questionView.result.question()
+        if question?
+          Coconut.questionView.model = new Question
+            id: question
+          Coconut.questionView.model.fetch
+            success: ->
+              Coconut.questionView.render()
+        else # Reach here for USSD Notifications
+          $("#content").html "
+            <button id='delete' type='button'>Delete</button>
+            <br/>
+            <pre>#{JSON.stringify Coconut.questionView.result,null,2}</pre>
 
-        Coconut.questionView.result = new Result
-          _id: result_id
-        Coconut.questionView.result.fetch
-          success: ->
-            question = Coconut.questionView.result.question()
-            if question?
-              Coconut.questionView.model = new Question
-                id: question
-              Coconut.questionView.model.fetch
+          "
+          $("button#delete").click ->
+            if confirm("Are you sure you want to delete this result?")
+              Coconut.questionView.result.destroy
                 success: ->
-                  Coconut.questionView.render()
-            else # Reach here for USSD Notifications
-              $("#content").html "
-                <button id='delete' type='button'>Delete</button>
-                <br/>
-                (Editing not supported for USSD Notifications)
-                <br/>
-                <pre>#{JSON.stringify Coconut.questionView.result,null,2}</pre>
-
-              "
-              $("button#delete").click ->
-                if confirm("Are you sure you want to delete this result?")
-                  Coconut.questionView.result.destroy
-                    success: ->
-                      $("#content").html "Result deleted, redirecting..."
-                      _.delay ->
-                        Coconut.router.navigate("/",true)
-                      , 2000
+                  $("#content").html "Result deleted, redirecting..."
+                  _.delay ->
+                    Coconut.router.navigate("/",true)
+                  , 2000
 
   deleteResult: (result_id, confirmed) ->
-    @userLoggedIn
-      success: ->
-        Coconut.questionView.readonly = true
+    Coconut.questionView.readonly = true
 
-        Coconut.questionView.result = new Result
-          _id: result_id
-        Coconut.questionView.result.fetch
-          success: ->
-            question = Coconut.questionView.result.question()
-            if question?
-              if confirmed is "confirmed"
-                Coconut.questionView.result.destroy
-                  success: ->
-                    Coconut.menuView.update()
-                    Coconut.router.navigate("show/results/#{escape(Coconut.questionView.result.question())}",true)
-              else
-                Coconut.questionView.model = new Question
-                  id: question
-                Coconut.questionView.model.fetch
-                  success: ->
-                    Coconut.questionView.render()
-                    $("#content").prepend "
-                      <h2>Are you sure you want to delete this result?</h2>
-                      <div id='confirm'>
-                        <a href='#delete/result/#{result_id}/confirmed'>Yes</a>
-                        <a href='#show/results/#{escape(Coconut.questionView.result.question())}'>Cancel</a>
-                      </div>
-                    "
-                    $("#confirm a").button()
-                    $("#content form").css
-                      "background-color": "#333"
-                      "margin":"50px"
-                      "padding":"10px"
-                    $("#content form label").css
-                      "color":"white"
-            else
-              Coconut.router.navigate("edit/result/#{result_id}",true)
+    Coconut.questionView.result = new Result
+      _id: result_id
+    Coconut.questionView.result.fetch
+      success: ->
+        question = Coconut.questionView.result.question()
+        if question?
+          if confirmed is "confirmed"
+            Coconut.questionView.result.destroy
+              success: ->
+                Coconut.menuView.update()
+                Coconut.router.navigate("show/results/#{escape(Coconut.questionView.result.question())}",true)
+          else
+            Coconut.questionView.model = new Question
+              id: question
+            Coconut.questionView.model.fetch
+              success: ->
+                Coconut.questionView.render()
+                $("#content").prepend "
+                  <h2>Are you sure you want to delete this result?</h2>
+                  <div id='confirm'>
+                    <a href='#delete/result/#{result_id}/confirmed'>Yes</a>
+                    <a href='#show/results/#{escape(Coconut.questionView.result.question())}'>Cancel</a>
+                  </div>
+                "
+                $("#confirm a").button()
+                $("#content form").css
+                  "background-color": "#333"
+                  "margin":"50px"
+                  "padding":"10px"
+                $("#content form label").css
+                  "color":"white"
+        else
+          Coconut.router.navigate("edit/result/#{result_id}",true)
 
   showResults:(question_id) ->
-    @userLoggedIn
+    console.log question_id
+    Coconut.resultsView ?= new ResultsView()
+    Coconut.resultsView.question = new Question
+      id: unescape(question_id)
+    Coconut.resultsView.question.fetch
       success: ->
-        Coconut.resultsView ?= new ResultsView()
-        Coconut.resultsView.question = new Question
-          id: unescape(question_id)
-        Coconut.resultsView.question.fetch
-          success: ->
-            Coconut.resultsView.render()
+        Coconut.resultsView.render()
 
   resetDatabase: () ->
     confirmReset = ->
@@ -286,7 +261,7 @@ class Router extends Backbone.Router
       success: -> confirmReset()
 
 
-  startApp: ->
+  startApp: (options) ->
 
     Coconut.config = new Config()
     Coconut.config.fetch
@@ -316,14 +291,13 @@ class Router extends Backbone.Router
         classesToLoad = [UserCollection, ResultCollection]
 
         startApplication = _.after classesToLoad.length, ->
-          Coconut.loginView = new LoginView()
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
           Coconut.syncView = new SyncView()
           # After 5 minutes, start the backgroundSync process
           _.delay Coconut.syncView.sync.backgroundSync, 5*60*1000
           Coconut.syncView.update()
-          Backbone.history.start()
+          options.success()
 
         QuestionCollection.load
           error: (error) ->

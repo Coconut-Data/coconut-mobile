@@ -3,8 +3,6 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 
-Coconut = require '../Coconut'
-
 Question = require './Question'
 Utils = require '../Utils'
 

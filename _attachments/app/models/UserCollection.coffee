@@ -4,7 +4,6 @@ Backbone.$  = $
 
 _ = require 'underscore'
 
-Coconut = require '../Coconut'
 User = require './User'
 Utils = require '../Utils'
 

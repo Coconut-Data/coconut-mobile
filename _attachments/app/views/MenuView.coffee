@@ -3,7 +3,6 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 
-Coconut = require '../Coconut'
 User = require '../models/User'
 
 class MenuView extends Backbone.View
@@ -54,10 +53,12 @@ class MenuView extends Backbone.View
 
               $("#complete_results").html result.rows.length
 
+    ###
     Coconut.database.get "version", (error,result) ->
       if error
         $("#version").html "-"
       else
         $("#version").html result.version
+    ###
 
 module.exports = MenuView

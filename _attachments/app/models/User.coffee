@@ -13,9 +13,6 @@ class User extends Backbone.Model
   district: ->
     @get("district")
 
-  passwordIsValid: (password) ->
-    @get("password") is password
-
   isAdmin: ->
     _(@get("roles")).include "admin"
 
@@ -26,7 +23,7 @@ class User extends Backbone.Model
     @get("name") or @username()
 
   login: ->
-    User.currentUser = @
+    Coconut.currentUser = @
     Cookie('current_user', @username())
     Cookie('current_password', @get "password")
     $("span#user").html @username()
@@ -38,26 +35,49 @@ class User extends Backbone.Model
       $("#top-menu").hide()
       $("#bottom-menu").hide()
 
-  refreshLogin: ->
-    @login()
-
 User.isAuthenticated = (options) ->
-  current_user_cookie = Cookie('current_user')
-  if current_user_cookie? and current_user_cookie isnt ""
-    user = new User
-      _id: "user.#{Cookie('current_user')}"
-    user.fetch
-      success: =>
-        user.refreshLogin()
-        options.success(user)
-      error: (error) ->
-        # current user is invalid (should not get here)
-        $('.coconut-mdl-card__title').html "Username is invalid."
-        console.error "Could not fetch user.#{Cookie('current_user')}: #{error}"
-        options?.error()
-  else
-    # Not logged in
-    options.error() if options.error?
+  Coconut.isValidDatabase
+    error:  (error) ->
+      # See if we have cookies that can login
+      userCookie = Cookie('current_user')
+      passwordCookie = Cookie('current_password')
+
+      if userCookie and userCookie isnt "" and passwordCookie and passwordCookie isnt ""
+        Coconut.openDatabase
+          username: userCookie
+          password: passwordCookie
+          success: ->
+            options.success()
+          error: ->
+            options.error()
+      else
+        options.error()
+    success: ->
+      if Coconut.currentUser?
+        options.success()
+      else
+        options.error()
+
+User.login = (options) ->
+  user = new User
+    _id: "user.#{options.username}"
+  user.fetch
+    success: =>
+      Coconut.currentUser = user
+      Cookie('current_user', user.username())
+      Cookie('current_password',user.get "password")
+      $("span#user").html user.username()
+      $("a[href=#logout]").show()
+      $("a[href=#login]").hide()
+      if user.isAdmin() then $("#manage-button").show() else $("#manage-button").hide()
+      if user.hasRole "reports"
+        $("#top-menu").hide()
+        $("#bottom-menu").hide()
+
+
+      options.success()
+    error: =>
+      options.error()
 
 User.logout = ->
   Cookie('current_user',"")
@@ -66,6 +86,6 @@ User.logout = ->
   $('#district').html ""
   $("a[href=#logout]").hide()
   $("a[href=#login]").show()
-  User.currentUser = null
+  Coconut.currentUser = null
 
 module.exports = User
