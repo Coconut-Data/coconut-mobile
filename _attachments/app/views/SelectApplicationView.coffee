@@ -4,6 +4,8 @@ s = require 'underscore.string'
 Backbone = require 'backbone'
 Backbone.$  = $
 
+SetupView = require './SetupView'
+
 class SelectApplicationView extends Backbone.View
 
   el: '#content'

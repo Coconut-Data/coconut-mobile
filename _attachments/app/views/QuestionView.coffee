@@ -18,11 +18,13 @@ global.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || nu
 _ = require 'underscore'
 global._ = _
 $ = require 'jquery'
+jQuery = require 'jquery'
 Cookie = require 'js-cookie'
+Awesomplete = require 'awesomplete'
 
 Backbone = require 'backbone'
 Backbone.$  = $
-#CoffeeScript = require 'coffee-script'
+CoffeeScript = require 'coffee-script'
 
 Form2js = require 'form2js'
 moment = require 'moment'
@@ -286,29 +288,32 @@ earchCompleteStop()
     # Trigger a change event for each of the questions that contain skip logic in their actionOnChange code
     @triggerChangeIn skipperList
 
-    ###
-    @$el.find("input[type=text],input[type=number],input[type='autocomplete from previous entries'],input[type='autocomplete from list'],input[type='autocomplete from code']").textinput()
-    @$el.find('input[type=checkbox]').checkboxradio()
-    @$el.find('ul').listview()
-    @$el.find('select').selectmenu()
-    @$el.find('a').button()
-    @$el.find('input[type=date]').datebox
-      mode: "calbox"
-      dateFormat: "%d-%m-%Y"
-    ###
-
     autocompleteElements = []
     _.each $("input[type='autocomplete from list']"), (element) ->
       element = $(element)
       element.typeahead
-        local: element.attr("data-autocomplete-options").replace(/\n|\t/,"").split(/, */)
+        hint: true
+        highlight: true
+        minLength: 1
+      ,
+        source: new Bloodhound
+          datumTokenizer: Bloodhound.tokenizers.whitespace
+          queryTokenizer: Bloodhound.tokenizers.whitespace
+          local: element.attr("data-autocomplete-options").replace(/\n|\t/,"").split(/, */)
+
       autocompleteElements.push element
 
     _.each $("input[type='autocomplete from code']"), (element) ->
+      ###
       element = $(element)
       element.typeahead
         local: eval(element.attr("data-autocomplete-options"))
       autocompleteElements.push element
+      ###
+
+      new Awesomplete element,
+        #local: eval(element.attr("data-autocomplete-options"))
+        list: ["a","bb","ccccc","ca","ceee"]
 
     _.each $("input[type='autocomplete from previous entries']"), (element) ->
       element = $(element)
@@ -662,6 +667,7 @@ earchCompleteStop()
         "
       else
         name = question.safeLabel()
+        return if name is "complete" and question.type() is "checkbox" # Complete now added automatically
         window.skipLogicCache[name] = if question.skipLogic() isnt '' then CoffeeScript.compile(question.skipLogic(),bare:true) else ''
         question_id = question.get("id")
         if question.repeatable() == "true"

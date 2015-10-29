@@ -2,7 +2,7 @@
   "name": "coconut-mobile",
   "version": "0.9.0",
   "scripts": {
-    "start": "npm run watch & npm run livereload & npm run static &npm run watchAndTest",
+    "start": "npm run watch & npm run livereload & npm run static",
     "watch": "watchify  -t coffeeify --debug --extension='.coffee' app/start.coffee -o bundle.js",
     "livereload": "livereloadify ./",
     "watchAndTest": "./node_modules/chokidar-cli/index.js bundle.js -c mocha --compilers mocha --compilers coffee:coffee-script/register test/*.coffee",
@@ -11,6 +11,7 @@
   "dependencies": {
     "Base64": "^0.3.0",
     "appcache-nanny": "^1.0.3",
+    "awesomplete": "^1.0.0",
     "backbone": "^1.2.1",
     "backbone-pouch": "^1.4.0",
     "chokidar": "^1.2.0",

@@ -59,8 +59,20 @@ class Router extends Backbone.Router
     ":database/help/:helpDocument": "help"
     "setup": "setup"
     "setup/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
-    ":database": "showResults"
-    "": "showResults"
+    ":database": "default"
+    "": "default"
+    "*noMatch": "noMatch"
+
+  noMatch: ->
+    console.error "Invalid URL, no matching route"
+    $("#content").html "Page not found."
+
+  default: ->
+    defaultQuestion = Coconut.questions.filter (question) ->
+      question.get("default") is true
+    if defaultQuestion.length is 0
+      defaultQuestion = Coconut.questions.first()
+    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: (cloudUrl,applicationName,cloudUsername,cloudPassword) ->
     setupView = new SetupView()
@@ -216,8 +228,8 @@ class Router extends Backbone.Router
                 $("#content").prepend "
                   <h2>Are you sure you want to delete this result?</h2>
                   <div id='confirm'>
-                    <a href='#delete/result/#{result_id}/confirmed'>Yes</a>
-                    <a href='#show/results/#{escape(Coconut.questionView.result.question())}'>Cancel</a>
+                    <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'>Yes</a>
+                    <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}'>Cancel</a>
                   </div>
                 "
                 $("#confirm a").button()
@@ -231,7 +243,6 @@ class Router extends Backbone.Router
           Coconut.router.navigate("edit/result/#{result_id}",true)
 
   showResults:(question_id) ->
-    console.log question_id
     Coconut.resultsView ?= new ResultsView()
     Coconut.resultsView.question = new Question
       id: unescape(question_id)
@@ -240,26 +251,19 @@ class Router extends Backbone.Router
         Coconut.resultsView.render()
 
   resetDatabase: () ->
-    confirmReset = ->
-      if confirm "Are you sure you want to reset the database? All data that has not yet been sent to the cloud will be lost."
-        Coconut.database.destroy (error, result) ->
+    if confirm "Are you sure you want to reset #{Coconut.databaseName}? All data that has not yet been sent to the cloud will be lost."
+      Coconut.destroyApplicationDatabases
+        applicationName: Coconut.databaseName
+        success: ->
 
           # Forces a new login to occur
           Cookie('current_user', '')
           Cookie('current_password', '')
 
           cloudUrl = Coconut.config.get("cloud")
-          appName = Coconut.config.get("cloud_database_name")
+          applicationName = Coconut.config.get("cloud_database_name")
           [username,password] = Coconut.config.get("cloud_credentials").split(":")
-          Coconut.router.navigate("",true)
-
-          document.location = document.location.origin + document.location.pathname + "?cloudUrl=#{cloudUrl}&appName=#{appName}&username=#{username}&password=#{password}&showPrompt=yes"
-
-    # Allow database reset if there are no users to login as
-    confirmReset() if Coconut.users.length is 0
-    @userLoggedIn
-      success: -> confirmReset()
-
+          Coconut.router.navigate("setup/#{cloudUrl}/#{applicationName}/#{username}/#{password}",true)
 
   startApp: (options) ->
 
@@ -274,9 +278,9 @@ class Router extends Backbone.Router
         "
         $("nav.coconut-navigation").html(
           _([
-            "#sync,sync,Sync data"
-            "#logout,person,Logout"
-            "#reset/database,warning,Reset database"
+            "##{Coconut.databaseName}/sync,sync,Sync data"
+            "##{Coconut.databaseName}/logout,person,Logout"
+            "##{Coconut.databaseName}/reset/database,warning,Reset database"
           ]).map (linkData) ->
             [url,icon,linktext] = linkData.split(",")
             "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text--accent material-icons'>#{icon}</i>#{linktext}</a><br/>"

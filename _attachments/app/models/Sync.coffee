@@ -166,11 +166,6 @@ class Sync extends Backbone.Model
               doc_ids: doc_ids
             .on 'change', (info) =>
               console.log info
-              $("#content").html "
-                <h2>
-                  #{info.docs_written} written (including revisions) out of #{doc_ids.length} (#{parseInt(100*(info.docs_written/doc_ids.length))}%)
-                </h2>
-              "
             .on 'complete', (info) =>
               console.log "COMPLETE"
               options.success?()

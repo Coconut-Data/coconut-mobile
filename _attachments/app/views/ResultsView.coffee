@@ -137,10 +137,10 @@ class ResultsView extends Backbone.View
             <tr>
               #{
                 _.map(result.summaryValues(@question), (value) ->
-                  "<td><a href='#edit/result/#{result.id}'>#{value}</a></td>"
+                  "<td><a href='##{Coconut.databaseName}/edit/result/#{result.id}'>#{value}</a></td>"
                 ).join("")
               }
-              <td><a href='#delete/result/#{result.id}' data-icon='delete' data-iconpos='notext'>Delete</a></td>
+              <td><a href='##{Coconut.databaseName}/delete/result/#{result.id}' data-icon='delete' data-iconpos='notext'>Delete</a></td>
             </tr>
           "
 

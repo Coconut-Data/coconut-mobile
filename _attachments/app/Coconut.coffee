@@ -37,15 +37,20 @@ class Coconut
   createDatabases: (options) =>
     databaseName = options["Application Name"]
 
+    $("#status").html "Checking to see if #{databaseName} already exists"
+
     PouchDB.allDbs().then (dbs) =>
       if _(dbs).includes "coconut-#{databaseName}"
         options.actionIfDatabaseExists()
       else
-
         try
           @setConfig(options)
           @downloadEncryptionKey
+            error: (error) ->
+              options.error(error)
             success:  =>
+              console.log "DDOO"
+              $("#status").html "Creating #{databaseName} database"
               new PouchDB("coconut-#{options["Application Name"]}")
               @database = new PouchDB("coconut-#{options["Application Name"]}")
               @database.crypto(@encryptionKey).then =>
@@ -54,20 +59,24 @@ class Coconut
                   "is the value of this clear text": "yes it is"
                 .then =>
                   @createDatabaseForEachUser
+                    error: (error) ->
+                      console.error error
+                      options.error error
                     success: =>
+                      $("#status").html "Downloading forms and other application documents"
                       sync = new Sync
                       sync.replicateApplicationDocs
                         error: (error) ->
                           console.error "Updating application docs failed: #{JSON.stringify error}"
+                          options.error "Updating the application failed: #{JSON.stringify error}"
                         success: =>
                           @config.save
-                          console.log "DONE"
-                          console.log options
                           options.success()
         catch error
           console.error error
           console.error "Removing #{databaseName} due to incomplete setup"
-          @destroyApplicationDatabases databaseName
+          @destroyApplicationDatabases
+            applicationName: databaseName
 
   setupBackbonePouch: ->
     Backbone.sync = BackbonePouch.sync
@@ -79,11 +88,14 @@ class Coconut
     userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
     userDatabase.crypto(options.password).then =>
       userDatabase.get "decryption check"
-      .catch (error) -> console.error error
+      .catch (error) ->
+        console.log "Error opening decryption check doc, probably invalid username"
+        console.log error
+        options.error()
       .then (result) =>
         @encryptionKey = result[""]
         if result["is the value of this clear text"] isnt "yes it is"
-          console.log "Username/password isn't valid"
+          console.log "Decryption check has wrong value, probably invalid password"
           options.error()
         else
           userDatabase.get "encryption key"
@@ -118,7 +130,7 @@ class Coconut
         dbName.match "^coconut-"+options.applicationName
       
       finished = _.after dbsToDestroy.length, ->
-        options.success()
+        options.success?()
 
       _(dbsToDestroy).each (db) ->
         console.log "Deleting #{db}"
@@ -130,11 +142,13 @@ class Coconut
       startkey: "user"
       endkey: "user\ufff0" #https://wiki.apache.org/couchdb/View_collation
     .catch (error) ->
-      console.error error
+      console.error "Error while downloading user information: #{JSON.stringify error}"
     .then (result) =>
       
       callSuccessWhenFinished = _.after result.rows.length, ->
         options.success()
+
+      $("#status").html "Setting up #{result.rows.length} users. "
 
       _(result.rows).each (user) =>
         userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
@@ -147,6 +161,7 @@ class Coconut
               "_id": "decryption check"
               "is the value of this clear text": "yes it is"
             .then ->
+              $("#status").append "*"
               callSuccessWhenFinished()
 
   downloadEncryptionKey: (options) =>
@@ -154,6 +169,7 @@ class Coconut
     @cloudDB.get "client encryption key"
     .catch (error) ->
       console.error error
+      options.error "Couldn't connect to #{@config.cloud_url_with_credentials()} - is there a working internet connection?"
     .then (result) =>
       @encryptionKey = result.key
       options.success()

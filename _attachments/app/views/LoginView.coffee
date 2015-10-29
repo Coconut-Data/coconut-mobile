@@ -83,5 +83,5 @@ class LoginView extends Backbone.View
         Coconut.menuView.render()
         @callback()
       error: =>
-        $('.coconut-mdl-card__title').html "Wrong username <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
+        $('.coconut-mdl-card__title').html "Invalid username/password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
   module.exports = LoginView

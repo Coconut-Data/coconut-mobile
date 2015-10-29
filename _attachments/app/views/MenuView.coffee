@@ -17,10 +17,10 @@ class MenuView extends Backbone.View
     Coconut.questions.fetch
       success: =>
         $(".mdl-layout__header-row").html(
-          "<a style='position:absolute; top:0px; right:0px;' class='mdl-navigation__link' href='#sync'><i class='mdl-color-text--accent material-icons'>sync</i>Sync</a><br/>" + Coconut.questions.map (question,index) ->
+          "<a style='position:absolute; top:0px; right:0px;' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent material-icons'>sync</i>Sync</a><br/>" + Coconut.questions.map (question,index) ->
             "
               <span class='mdl-layout-title'>#{question.id}</span>
-              <button onClick='document.location=\"#new/result/#{escape(question.id)}\"' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon'>
+              <button onClick='document.location=\"##{Coconut.databaseName}/new/result/#{escape(question.id)}\"' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon'>
                 <i class='material-icons'>add</i>
               </button>
               <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='hdrbtn'>
@@ -28,7 +28,7 @@ class MenuView extends Backbone.View
               </button>
               <ul class='mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right' for='hdrbtn'>
                 <li class='mdl-menu__item'>
-                  <a href='#show/results/#{escape(question.id)}'>Results (<span id='complete_results'></span>)</a>
+                  <a href='##{Coconut.databaseName}/show/results/#{escape(question.id)}'>Results (<span id='complete_results'></span>)</a>
                 </li>
               </ul>
             "
