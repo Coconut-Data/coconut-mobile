@@ -14,7 +14,7 @@ class SelectApplicationView extends Backbone.View
     PouchDB.allDbs()
       .then (dbs) =>
         applicationNames = _(dbs).chain().filter (dbName) ->
-          dbName.match(/^coconut/) and not dbName.match(/-user./)
+          dbName.match(/^coconut/) and not dbName.match(/-user./) and not dbName.match(/-plugins/)
         .map (dbName) ->
           dbName.replace(/coconut-/,"")
         .value()

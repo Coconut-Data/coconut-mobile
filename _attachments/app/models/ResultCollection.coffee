@@ -67,6 +67,21 @@ class ResultCollection
           rawNotificationsConvertedToCaseNotifications: (document) ->
             if document.hf and document.hasCaseNotification
               emit document.date, null
+
+          resultsByQuestionAndField: (document) ->
+            if document.collection is "result" and document.question
+              _(document).chain().keys().each (field) ->
+                return if field.substring(0,1) is "_"
+                return if _([
+                  "createdAt"
+                  "lastModifiedAt"
+                  "user"
+                  "question"
+                  "collection"
+                  "savedBy"
+                  "complete"
+                ]).contains field
+                emit [document.question,field], document[field]
         }
 
         finished = _.after _(designDocs).size(), ->

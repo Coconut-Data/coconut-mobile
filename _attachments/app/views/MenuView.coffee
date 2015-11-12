@@ -8,6 +8,25 @@ User = require '../models/User'
 class MenuView extends Backbone.View
 
   render: =>
+    $("header.coconut-drawer-header").html "
+      <h3><span id='user'></span></h3>
+      Last sync: <span class='sync-sent-status'></span>
+    "
+    $("nav.coconut-navigation").html(
+      _([
+        "##{Coconut.databaseName}/sync,sync,Sync data"
+        "##{Coconut.databaseName}/logout,person,Logout"
+        "##{Coconut.databaseName}/reset/database,warning,Reset database"
+      ]).map (linkData) ->
+        [url,icon,linktext] = linkData.split(",")
+        "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text--accent material-icons'>#{icon}</i>#{linktext}</a><br/>"
+      .join("")
+
+      $("nav.coconut-navigation").on "click",".mdl-navigation__link", ->
+        $(".mdl-layout__drawer").removeClass("is-visible")
+
+    )
+
     @$el.html "
       <div id='navbar' data-role='navbar'>
         <ul></ul>

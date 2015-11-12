@@ -218,7 +218,7 @@ class Router extends Backbone.Router
             Coconut.questionView.result.destroy
               success: ->
                 Coconut.menuView.update()
-                Coconut.router.navigate("show/results/#{escape(Coconut.questionView.result.question())}",true)
+                Coconut.router.navigate("#{Coconut.database}/show/results/#{escape(Coconut.questionView.result.question())}",true)
           else
             Coconut.questionView.model = new Question
               id: question
@@ -240,7 +240,7 @@ class Router extends Backbone.Router
                 $("#content form label").css
                   "color":"white"
         else
-          Coconut.router.navigate("edit/result/#{result_id}",true)
+          Coconut.router.navigate("#{Coconut.database}/edit/result/#{result_id}",true)
 
   showResults:(question_id) ->
     Coconut.resultsView ?= new ResultsView()
@@ -272,24 +272,6 @@ class Router extends Backbone.Router
       error: ->
         Coconut.debug "Error loading config"
       success: ->
-        $("header.coconut-drawer-header").html "
-          <h3><span id='user'></span></h3>
-          Last sync: <span class='sync-sent-status'></span>
-        "
-        $("nav.coconut-navigation").html(
-          _([
-            "##{Coconut.databaseName}/sync,sync,Sync data"
-            "##{Coconut.databaseName}/logout,person,Logout"
-            "##{Coconut.databaseName}/reset/database,warning,Reset database"
-          ]).map (linkData) ->
-            [url,icon,linktext] = linkData.split(",")
-            "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text--accent material-icons'>#{icon}</i>#{linktext}</a><br/>"
-          .join("")
-
-          $("nav.coconut-navigation").on "click",".mdl-navigation__link", ->
-            $(".mdl-layout__drawer").removeClass("is-visible")
-
-        )
 
         # This makes sure all views are created and loads any classes that are necessary
         classesToLoad = [UserCollection, ResultCollection]
@@ -298,8 +280,9 @@ class Router extends Backbone.Router
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
           Coconut.syncView = new SyncView()
+          # TODO background sync turned off
           # After 5 minutes, start the backgroundSync process
-          _.delay Coconut.syncView.sync.backgroundSync, 5*60*1000
+          #_.delay Coconut.syncView.sync.backgroundSync, 5*60*1000
           Coconut.syncView.update()
           options.success()
 

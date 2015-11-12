@@ -17,14 +17,17 @@ global.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || nu
 # # # #
 _ = require 'underscore'
 global._ = _
+s = require 'underscore.string'
 $ = require 'jquery'
+global.$ = $ # required for validations that use jquery
 jQuery = require 'jquery'
 Cookie = require 'js-cookie'
 Awesomplete = require 'awesomplete'
 
 Backbone = require 'backbone'
 Backbone.$  = $
-CoffeeScript = require 'coffee-script'
+#CoffeeScript = require 'coffee-script' - this is loaded in index.html
+Module = require 'module'
 
 Form2js = require 'form2js'
 moment = require 'moment'
@@ -32,6 +35,53 @@ moment = require 'moment'
 #typeahead = require 'typeahead.js'
 
 ResultCollection = require '../models/ResultCollection'
+
+#
+# This improves accuracy of GPS recording, see https://github.com/gwilson/getAccurateCurrentPosition
+#
+navigator.geolocation.getAccurateCurrentPosition = (geolocationSuccess, geolocationError, geoprogress, options) ->
+  locationEventCount = 0
+  lastCheckedPosition = null
+  if navigator.geolocation.watchID != null
+    navigator.geolocation.clearWatch navigator.geolocation.watchID
+  options = options or {}
+
+  checkLocation = (position) ->
+    lastCheckedPosition = position
+    locationEventCount = locationEventCount + 1
+    if position.coords.accuracy <= options.desiredAccuracy and locationEventCount > 1
+      clearTimeout timerID
+      navigator.geolocation.clearWatch navigator.geolocation.watchID
+      foundPosition position
+    else
+      geoprogress position
+    return
+
+  stopTrying = ->
+    navigator.geolocation.clearWatch navigator.geolocation.watchID
+    foundPosition lastCheckedPosition
+    return
+
+  onError = (error) ->
+    clearTimeout timerID
+    navigator.geolocation.clearWatch navigator.geolocation.watchID
+    geolocationError error
+    return
+
+  foundPosition = (position) ->
+    geolocationSuccess position
+    return
+
+  if !options.maxWait
+    options.maxWait = 10000  # Default 10 seconds
+  if !options.desiredAccuracy
+    options.desiredAccuracy = 20  # Default 20 meters
+  if !options.timeout
+    options.timeout = options.maxWait  # Default to maxWait
+  options.maximumAge = 0  # Force current locations only
+  options.enableHighAccuracy = true  # Force high accuracy (otherwise, why are you using this function?)
+  navigator.geolocation.watchID = navigator.geolocation.watchPosition(checkLocation, onError, options)
+  timerID = setTimeout(stopTrying, options.maxWait)  # Set a timeout that will abandon the location loop
 
 class QuestionView extends Backbone.View
 
@@ -233,9 +283,33 @@ earchCompleteStop()
         font-size:20px;
       }
 
+      .awesomplete ul{
+        background-color:white;
+        position:absolute;
+        z-index:10;
+        width: 100%;
+        list-style:none;
+        margin-top: 0px;
+        border-left: 2px inset;
+        border-bottom: 2px outset;
+        border-right: 1px outset;
+        border-top: 0px;
+      }
+
+      .awesomplete li{
+        padding: 10px;
+        font-size: 200%;
+      }
+
+      .awesomplete mark{
+        background-color:white;
+        color: gray;
+      }
+
       #{
         @model.get("styles") or ""
       }
+
 
     </style>
 
@@ -290,36 +364,31 @@ earchCompleteStop()
 
     autocompleteElements = []
     _.each $("input[type='autocomplete from list']"), (element) ->
-      element = $(element)
-      element.typeahead
-        hint: true
-        highlight: true
-        minLength: 1
-      ,
-        source: new Bloodhound
-          datumTokenizer: Bloodhound.tokenizers.whitespace
-          queryTokenizer: Bloodhound.tokenizers.whitespace
-          local: element.attr("data-autocomplete-options").replace(/\n|\t/,"").split(/, */)
+      new Awesomplete element,
+        list: $(element).attr("data-autocomplete-options").replace(/\n|\t/,"").split(/, */)
+        minChars: 1
+        filter: Awesomplete.FILTER_STARTSWITH
 
       autocompleteElements.push element
 
     _.each $("input[type='autocomplete from code']"), (element) ->
-      ###
-      element = $(element)
-      element.typeahead
-        local: eval(element.attr("data-autocomplete-options"))
-      autocompleteElements.push element
-      ###
-
       new Awesomplete element,
-        #local: eval(element.attr("data-autocomplete-options"))
-        list: ["a","bb","ccccc","ca","ceee"]
+        list: eval($(element).attr("data-autocomplete-options"))
+        minChars: 1
+        filter: Awesomplete.FILTER_STARTSWITH
 
-    _.each $("input[type='autocomplete from previous entries']"), (element) ->
-      element = $(element)
-      element.typeahead
-        prefetch: document.location.pathname.substring(0,document.location.pathname.indexOf("index.html")) + "_list/values/byValue?key=\"#{element.attr("name")}\""
-      autocompleteElements.push element
+    _.each $("input[type='autocomplete from previous entries']"), (element) =>
+      Coconut.database.query "resultsByQuestionAndField",
+        key: [@model.get("id"),$(element).attr("name")]
+      .catch (error) ->
+        console.log "Error while doing autcomplete from previous entries for"
+        console.log element
+        console.log error
+      .then (result) ->
+        new Awesomplete element,
+          list: _(result.rows).pluck "value"
+          minChars: 1
+          filter: Awesomplete.FILTER_STARTSWITH
 
     _.each autocompleteElements, (autocompeteElement) =>
       autocompeteElement.blur =>
@@ -334,7 +403,8 @@ earchCompleteStop()
     "change #question-view select"   : "onChange"
     "change #question-view textarea" : "onChange"
     "click #question-view button:contains(+)" : "repeat"
-    "click #question-view a:contains(Get current location)" : "getLocation"
+    #"click #question-view a:contains(Get current location)" : "getLocation"
+    "click .location button" : "getLocation"
     "click .next_error"   : "runValidate"
     "click .validate_one" : "onValidateOne"
 
@@ -511,7 +581,7 @@ earchCompleteStop()
         result.push validationFunctionResult if validationFunctionResult?
       catch error
         return '' if error == 'invisible reference'
-        alert "Validation error for #{question_id} with value #{value}: #{error}"
+        alert "Validation error for #{question_id} with value #{value}: #{error}. Validation logic is: #{validation}"
 
     if result.length isnt 0
       return result.join("<br>") + "<br>"
@@ -632,7 +702,7 @@ earchCompleteStop()
       @result.save currentData,
         success: (model) =>
           $("#messageText").slideDown().fadeOut()
-          Coconut.router.navigate("edit/result/#{model.id}",false)
+          Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
 
           # Update the menu
           Coconut.menuView.update()
@@ -751,12 +821,6 @@ earchCompleteStop()
                   <input autocomplete='off' name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}' data-autocomplete-options='#{question.get("autocomplete-options")}'></input>
                   <ul id='#{question_id}-suggestions' data-role='listview' data-inset='true'/>
                 "
-#              when "autocomplete from previous entries" or ""
-#                "
-#                  <!-- autocomplete='off' disables browser completion -->
-#                  <input autocomplete='off' name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}'></input>
-#                  <ul id='#{question_id}-suggestions' data-role='listview' data-inset='true'/>
-#                "
               when "location"
                 # If the page has a location, then immediately start trying to get the current location to give the device extra time to get a more accurate position
                 @watchID = navigator.geolocation.getAccurateCurrentPosition(
@@ -766,13 +830,22 @@ earchCompleteStop()
                   {desiredAccuracy:50,maxWait:60*5*1000}
                 )
 
-                "
-                  <a data-question-id='#{question_id}'>Get current location</a>
-                  <label for='#{question_id}-description'>Location Description</label>
-                  <input type='text' name='#{name}-description' id='#{question_id}-description'></input>
+                " 
+                  <div>
+                    <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent'>
+                      Get current location
+                    </button>
+                  </div>
+                  <label for='#{question_id}-description'>Description</label>
+                  <input type='text' name='#{name}-description' id='#{question_id}-description'></input><br/>
                   #{
                     _.map(["latitude", "longitude","accuracy"], (field) ->
-                      "<label for='#{question_id}-#{field}'>#{field}</label><input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>"
+                      "
+                      <div>
+                      <label for='#{question_id}-#{field}'>#{s.capitalize(field)}</label>
+                      <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
+                      </div>
+                      "
                     ).join("")
                   }
                   #{
@@ -866,8 +939,10 @@ earchCompleteStop()
     $("##{question_id}-description").val "Retrieving position, please wait."
 
     updateFormWithCoordinates = (geoposition) ->
-      _.each geoposition.coords, (value,key) ->
-        $("##{question_id}-#{key}").val(value)
+      _.each ["longitude","latitude","accuracy"], (measurementName) ->
+        $("##{question_id}-#{measurementName}").val(geoposition.coords[measurementName])
+
+
       $("##{question_id}-timestamp").val(moment(geoposition.timestamp).format(Coconut.config.get "datetime_format"))
       $.getJSON "http://api.geonames.org/findNearbyPlaceNameJSON?lat=#{geoposition.coords.latitude}&lng=#{geoposition.coords.longitude}&username=mikeymckay&callback=?", null, (result) =>
         $("##{question_id}-description").val parseFloat(result.geonames[0].distance).toFixed(1) + " km from center of " + result.geonames[0].name
@@ -881,9 +956,8 @@ earchCompleteStop()
       $("##{question_id}-description").val "Error: #{JSON.stringify error}"
     onProgress = (geoposition) =>
       updateFormWithCoordinates(geoposition)
-      $("label[type=location]").html "Household Location<div style='background-color:yellow'>Current accuracy is #{geoposition.coords.accuracy} meters - must be less than #{requiredAccuracy} meters. Make sure there are no trees or buildings blocking view to the sky.</div>"
+      $("label[type=location]").html "Household Location<div style='background-color:yellow'>Current accuracy is #{geoposition.coords.accuracy} meters - must be less than #{requiredAccuracy} meters. Make sure there are no trees or buildings blocking view to the sky.</div>" if geoposition.coords.accuracy > requiredAccuracy
 
-    # https://github.com/gwilson/getAccurateCurrentPosition
     navigator.geolocation.clearWatch(@watchID)
     navigator.geolocation.getAccurateCurrentPosition(onSuccess,onError,onProgress,
         desiredAccuracy: requiredAccuracy

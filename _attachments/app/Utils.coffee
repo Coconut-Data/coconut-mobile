@@ -1,5 +1,5 @@
 _ = require 'underscore'
-CoffeeScript = require 'coffee-script'
+#CoffeeScript = require 'coffee-script' - this is loaded in index.html
 
 Utils = {}
 Utils.addOrUpdateDesignDoc = (designDoc,options) ->

@@ -11,6 +11,7 @@ require 'crypto-pouch'
 Backbone = require 'backbone'
 Backbone.$  = $
 BackbonePouch = require 'backbone-pouch'
+BlobUtil = require 'blob-util'
 
 class Coconut
   debug: (string) ->
@@ -35,12 +36,12 @@ class Coconut
   ###
 
   createDatabases: (options) =>
-    databaseName = options["Application Name"]
+    @databaseName = options["Application Name"]
 
-    $("#status").html "Checking to see if #{databaseName} already exists"
+    $("#status").html "Checking to see if #{@databaseName} already exists"
 
     PouchDB.allDbs().then (dbs) =>
-      if _(dbs).includes "coconut-#{databaseName}"
+      if _(dbs).includes "coconut-#{@databaseName}"
         options.actionIfDatabaseExists()
       else
         try
@@ -50,7 +51,7 @@ class Coconut
               options.error(error)
             success:  =>
               console.log "DDOO"
-              $("#status").html "Creating #{databaseName} database"
+              $("#status").html "Creating #{@databaseName} database"
               new PouchDB("coconut-#{options["Application Name"]}")
               @database = new PouchDB("coconut-#{options["Application Name"]}")
               @database.crypto(@encryptionKey).then =>
@@ -70,19 +71,64 @@ class Coconut
                           console.error "Updating application docs failed: #{JSON.stringify error}"
                           options.error "Updating the application failed: #{JSON.stringify error}"
                         success: =>
-                          @config.save
-                          options.success()
+                          @syncPlugins
+                            success: =>
+                              options.success()
+                            error: =>
         catch error
           console.error error
-          console.error "Removing #{databaseName} due to incomplete setup"
+          console.error "Removing #{@databaseName} due to incomplete setup"
           @destroyApplicationDatabases
-            applicationName: databaseName
+            applicationName: @databaseName
 
   setupBackbonePouch: ->
     Backbone.sync = BackbonePouch.sync
       db: @database
       fetch: 'query'
     Backbone.Model.prototype.idAttribute = '_id'
+
+  syncPlugins: (options) =>
+    $("#status").html "Checking for available plugins"
+
+    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB.allDocs
+      include_docs:false
+      startkey: "_design/plugin-#{@databaseName}"
+      endkey: "_design/plugin-#{@databaseName}\ufff0" #https://wiki.apache.org/couchdb/View_collation
+    .catch (error) ->
+      console.error "Error while downloading list of plugin ids:"
+      console.error error
+    .then (result) =>
+      pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins")
+      pluginIds = _(result.rows).pluck "id"
+      $("#status").html "Loading #{@databaseName} plugins: #{pluginIds}"
+      @cloudDB.replicate.to pluginDatabase,
+        doc_ids: pluginIds
+      .on 'error', (error) ->
+        console.error "Error while replicating plugins:"
+        console.error error
+      .on 'change', (result) =>
+        $("#status").append "*"
+      .on 'complete', (result) =>
+        console.log result
+        options?.success?()
+
+  startPlugins: (options) =>
+    pluginDatabase = new PouchDB "coconut-#{@databaseName}-plugins"
+    pluginDatabase.allDocs()
+    .catch (error) -> console.error error
+    .then (result) ->
+
+      finished = _.after result.rows.length,  ->
+        options?.success?()
+
+      _(result.rows).chain().pluck("id").each (plugin) ->
+        console.log "Starting plugin: #{plugin}"
+        pluginDatabase.getAttachment plugin, "plugin-bundle.js"
+        .then (blob) ->
+          BlobUtil.blobToBinaryString(blob).then (script) ->
+            window.eval script
+            finished()
 
   openDatabase: (options) =>
     userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
@@ -110,14 +156,17 @@ class Coconut
               .then (result) =>
                 if result["is the value of this clear text"] is "yes it is"
                   @setupBackbonePouch()
-                  @router.startApp
-                    success: ->
-                      User.login
-                        username: options.username
-                        error: ->
-                          options.error()
+                  @startPlugins
+                    error: (error) -> console.error error
+                    success: =>
+                      @router.startApp
                         success: ->
-                          options.success()
+                          User.login
+                            username: options.username
+                            error: ->
+                              options.error()
+                            success: ->
+                              options.success()
 
                 else
                   console.log "Succesfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
@@ -134,7 +183,10 @@ class Coconut
 
       _(dbsToDestroy).each (db) ->
         console.log "Deleting #{db}"
-        (new PouchDB(db)).destroy().then -> finished()
+        (new PouchDB(db)).destroy().then (response) ->
+          console.log "#{db} Destroyed"
+          console.log response
+          finished()
 
   createDatabaseForEachUser: (options) =>
     @cloudDB.allDocs
@@ -151,6 +203,7 @@ class Coconut
       $("#status").html "Setting up #{result.rows.length} users. "
 
       _(result.rows).each (user) =>
+        console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user.id}"
         userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
         userDatabase.crypto(user.doc.password or "").then =>
           userDatabase.put

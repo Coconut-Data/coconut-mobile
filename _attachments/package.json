@@ -14,6 +14,7 @@
     "awesomplete": "^1.0.0",
     "backbone": "^1.2.1",
     "backbone-pouch": "^1.4.0",
+    "blob-util": "^1.1.2",
     "chokidar": "^1.2.0",
     "chokidar-cli": "^1.1.0",
     "coffee-script": "^1.9.3",
