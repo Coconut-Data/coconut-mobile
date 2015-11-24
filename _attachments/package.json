@@ -6,7 +6,7 @@
     "watch": "watchify  -t coffeeify --debug --extension='.coffee' app/start.coffee -o bundle.js",
     "livereload": "livereloadify ./",
     "watchAndTest": "./node_modules/chokidar-cli/index.js bundle.js -c mocha --compilers mocha --compilers coffee:coffee-script/register test/*.coffee",
-    "static": "static ./"
+    "static": "static --port 8081 ./"
   },
   "dependencies": {
     "Base64": "^0.3.0",
@@ -35,6 +35,7 @@
     "pouchdb-all-dbs": "^1.0.1",
     "sha1": "^1.1.1",
     "underscore": "^1.8.3",
-    "underscore.string": "^3.2.2"
+    "underscore.string": "^3.2.2",
+    "watchify": "^3.6.1"
   }
 }

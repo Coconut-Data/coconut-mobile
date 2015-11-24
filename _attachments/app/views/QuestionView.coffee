@@ -166,6 +166,10 @@ class QuestionView extends Backbone.View
        color:#{@primary1};
       }
 
+      #question-view .mdl-textfield__label{
+        position: inherit;
+      }
+
       .coconut-radio{
         margin: 10px;
       }
@@ -304,6 +308,11 @@ earchCompleteStop()
       .awesomplete mark{
         background-color:white;
         color: gray;
+      }
+
+      .location .mdl-button{
+        position:relative;
+        margin-bottom: 10px;
       }
 
       #{
@@ -763,7 +772,7 @@ earchCompleteStop()
           <div class='message'></div>
           #{
 
-          "<label class='#{question.type()} #{if question.type().match(/text|number/) then "mdl-textfield__label" else "mdl-nontextfield__label" }' type='#{question.type()}' for='#{question_id}'>#{question.label()} <span></span></label>" unless ~question.type().indexOf('hidden')
+          "<label class='#{question.type()} #{if question.type().match(/text|number/) then "mdl-textfield__label" else "mdl-nontextfield__label" }' type='#{question.type()}' for='#{question_id}'>#{question.label()}</label>" unless ~question.type().indexOf('hidden')
           }
           #{
             switch question.type()
@@ -836,23 +845,25 @@ earchCompleteStop()
                       Get current location
                     </button>
                   </div>
-                  <label for='#{question_id}-description'>Description</label>
-                  <input type='text' name='#{name}-description' id='#{question_id}-description'></input><br/>
-                  #{
-                    _.map(["latitude", "longitude","accuracy"], (field) ->
-                      "
-                      <div>
-                      <label for='#{question_id}-#{field}'>#{s.capitalize(field)}</label>
-                      <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
-                      </div>
-                      "
-                    ).join("")
-                  }
-                  #{
-                    _.map(["altitude", "altitudeAccuracy", "heading", "timestamp"], (field) ->
-                      "<input type='hidden' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>"
-                    ).join("")
-                  }
+                  <div>
+                    <label for='#{question_id}-description'>Description</label>
+                    <input type='text' name='#{name}-description' id='#{question_id}-description'></input><br/>
+                    #{
+                      _.map(["latitude", "longitude","accuracy"], (field) ->
+                        "
+                        <div>
+                        <label for='#{question_id}-#{field}'>#{s.capitalize(field)}</label>
+                        <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
+                        </div>
+                        "
+                      ).join("")
+                    }
+                    #{
+                      _.map(["altitude", "altitudeAccuracy", "heading", "timestamp"], (field) ->
+                        "<input type='hidden' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>"
+                      ).join("")
+                    }
+                  </div>
                 "
 
               when "image"
