@@ -119,6 +119,9 @@ class Coconut
     .catch (error) -> console.error error
     .then (result) ->
 
+      # If the database is empty just call success
+      options?.success?() if result.rows.length is 0
+
       finished = _.after result.rows.length,  ->
         options?.success?()
 
@@ -155,6 +158,7 @@ class Coconut
               .catch (error) -> console.error error
               .then (result) =>
                 if result["is the value of this clear text"] is "yes it is"
+                  console.log "Project database opened and decrypted"
                   @setupBackbonePouch()
                   @startPlugins
                     error: (error) -> console.error error
