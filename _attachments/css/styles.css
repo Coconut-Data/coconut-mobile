@@ -241,3 +241,8 @@ _:-ms-input-placeholder, :root .coconut-graph {
       -ms-flex-align: center;
           align-items: center;
 }
+
+/* hide the line underneath text input boxes */
+.awesomplete ul {
+	display: none;
+}
