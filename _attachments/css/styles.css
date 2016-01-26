@@ -254,4 +254,7 @@ _:-ms-input-placeholder, :root .coconut-graph {
   color: rgba(255, 255, 255, 0.56);
   font-weight: 500;
 
+/* hide the line underneath text input boxes */
+.awesomplete ul {
+	display: none;
 }
