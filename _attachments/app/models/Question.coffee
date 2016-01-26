@@ -50,6 +50,7 @@ class Question extends Backbone.Model
     if resultSummaryFields
       return resultSummaryFields
     else
+      console.log @
       # If this hasn't been defined, default to first 3 fields if it has that many
       numberOfFields = Math.min(2,@questions().length-1)
       returnValue = {}

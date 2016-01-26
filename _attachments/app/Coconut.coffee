@@ -130,7 +130,16 @@ class Coconut
         pluginDatabase.getAttachment plugin, "plugin-bundle.js"
         .then (blob) ->
           BlobUtil.blobToBinaryString(blob).then (script) ->
-            window.eval script
+
+            #window.eval script
+            #finished()
+            #return
+
+            try
+              window.eval script
+            catch error
+              console.error "Error loading #{plugin}"
+              console.error error
             finished()
 
   openDatabase: (options) =>

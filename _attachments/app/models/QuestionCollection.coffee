@@ -4,7 +4,7 @@ Backbone = require 'backbone'
 Backbone.$  = $
 
 Question = require './Question'
-Utils = require '../Utils'
+global.Utils = require '../Utils'
 
 class QuestionCollection extends Backbone.Collection
   model: Question

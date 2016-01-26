@@ -1,4 +1,5 @@
 _ = require 'underscore'
+
 $ = require 'jquery'
 Cookie = require 'js-cookie'
 

@@ -119,8 +119,8 @@ header .mdl-layout-title{
 }
 
 .coconut-navigation .mdl-navigation__link {
-  font-size: 36px;
-  line-height:36px;
+  font-size: 24px;
+  line-height:24px;
 }
 
 .coconut-content {
@@ -240,4 +240,18 @@ _:-ms-input-placeholder, :root .coconut-graph {
   -webkit-align-items: center;
       -ms-flex-align: center;
           align-items: center;
+}
+
+.drawer_question_set_link i{
+  font-size: 60px;
+}
+
+.drawer_question_set_name{
+  position: relative;
+  bottom: 24px;
+  left: 24px;
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.56);
+  font-weight: 500;
+
 }

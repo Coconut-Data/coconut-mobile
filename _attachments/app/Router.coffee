@@ -58,6 +58,7 @@ class Router extends Backbone.Router
     ":database/help": "help"
     ":database/help/:helpDocument": "help"
     "setup": "setup"
+# TODO handle cloudUrl with http:// in it
     "setup/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
     ":database": "default"
     "": "default"

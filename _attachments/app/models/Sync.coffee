@@ -168,7 +168,10 @@ class Sync extends Backbone.Model
               console.log info
             .on 'complete', (info) =>
               console.log "COMPLETE"
-              options.success?()
+              console.log info
+              Coconut.syncPlugins
+                success: -> options?.success?()
+                error: -> options?.error?()
             .on 'error', (error) =>
               @log "Error while updating application documents: #{JSON.stringify error}"
               options.error?(error)

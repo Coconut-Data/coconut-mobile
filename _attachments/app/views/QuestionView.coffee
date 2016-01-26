@@ -14,7 +14,11 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
       question.removeClass disabledClass
 
 global.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || null
+
 # # # #
+
+
+
 _ = require 'underscore'
 global._ = _
 s = require 'underscore.string'
@@ -319,6 +323,10 @@ earchCompleteStop()
         @model.get("styles") or ""
       }
 
+      span.visually-hidden{
+        display:none;
+      }
+
 
     </style>
 
@@ -366,6 +374,7 @@ earchCompleteStop()
       skipperList.push(question.safeLabel()) if question.actionOnChange().match(/skip/i)
       
       if question.get("action_on_questions_loaded")? and question.get("action_on_questions_loaded") isnt ""
+        console.log 'FPPP'
         CoffeeScript.eval question.get "action_on_questions_loaded"
 
     # Trigger a change event for each of the questions that contain skip logic in their actionOnChange code
@@ -395,7 +404,7 @@ earchCompleteStop()
         console.log error
       .then (result) ->
         new Awesomplete element,
-          list: _(result.rows).pluck "value"
+          list: _(result.rows).chain().pluck("value").unique().value()
           minChars: 1
           filter: Awesomplete.FILTER_STARTSWITH
 
@@ -443,9 +452,9 @@ earchCompleteStop()
 
       # Update the menu
       Coconut.menuView.update()
+      @actionOnChange(event)
       @save()
       @updateSkipLogic()
-      @actionOnChange(event)
 
       if allQuestionsPassValidation
         onValidatedComplete = @model.get("onValidatedComplete")
@@ -459,15 +468,16 @@ earchCompleteStop()
     else
       messageVisible = window.questionCache[targetName].find(".message").is(":visible")
 # Hack by Mike to solve problem with autocomplete fields being validated before
+      @actionOnChange(event)
       _.delay =>
         unless messageVisible
           wasValid = @validateOne
             key: targetName
             autoscroll: false
             button: "<button type='button' data-name='#{targetName}' class='validate_one'>Validate</button>"
+          console.log "Saving"
           @save()
           @updateSkipLogic()
-          @actionOnChange(event)
           @autoscroll(event) if wasValid
       , 500
 
@@ -690,31 +700,34 @@ earchCompleteStop()
       else
         $question[0].style.display = ""
 
+  currentData: ->
+    currentData = Form2js.form2js('questions', ".", false)
+
+    # HACK Form2js doesn't work for checkboxes with multiple values
+    # Check if any values are checkboxes, then overwrite with correct value
+    _(currentData).each (value,key) ->
+      if $(".checkbox[name=#{key}]").length > 0
+        currentData[key] = _($(".checkbox[name=#{key}]:checked")).map (element) ->
+          $(element).val()
+
+    return currentData
+
   # We throttle to limit how fast save can be repeatedly called
   save: _.throttle( ->
-
-      currentData = Form2js.form2js('questions', ".", false)
-
-      # HACK Form2js doesn't work for checkboxes with multiple values
-      # Check if any values are checkboxes, then overwrite with correct value
-      _(currentData).each (value,key) ->
-        if $(".checkbox[name=#{key}]").length > 0
-          currentData[key] = _($(".checkbox[name=#{key}]:checked")).map (element) ->
-            $(element).val()
-
-
-      #currentData = $('form').toObject(skipEmpty: false)
+      currentData = @currentData()
 
       # Make sure lastModifiedAt is always updated on save
       currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "date_format")
       currentData.savedBy = Cookie('current_user')
       @result.save currentData,
         success: (model) =>
+          console.log "ZZZ"
           $("#messageText").slideDown().fadeOut()
           Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
 
           # Update the menu
           Coconut.menuView.update()
+        error: (error) -> console.error error
 
     , 1000)
 
