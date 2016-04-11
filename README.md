@@ -5,7 +5,7 @@ A Question Set is a list of questions. Each question set can be rendered and the
 
   * required
   * validation
-  * action_on_questions_loaded
+  * action_on_questions_loaded - can be attached to a single question or to the question set itself.
   * action_on_change
   * skip_logic
 
