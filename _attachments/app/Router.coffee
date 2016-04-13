@@ -18,6 +18,7 @@ global.Result = require './models/Result'
 ResultsView = require './views/ResultsView'
 ResultCollection = require './models/ResultCollection'
 SelectApplicationView = require './views/SelectApplicationView'
+SettingsView = require './views/SettingsView'
 SetupView = require './views/SetupView'
 SyncView = require './views/SyncView'
 User = require './models/User'
@@ -55,7 +56,7 @@ class Router extends Backbone.Router
     ":database/sync": "sendAndGet"
 #    "sync/send": "syncSend"
 #    "sync/get": "syncGet"
-    ":database/configure": "configure"
+    ":database/settings": "settings"
     ":database/help": "help"
     ":database/help/:helpDocument": "help"
     "setup": "setup"
@@ -276,6 +277,10 @@ class Router extends Backbone.Router
           applicationName = Coconut.config.get("cloud_database_name")
           [username,password] = Coconut.config.get("cloud_credentials").split(":")
           Coconut.router.navigate("setup/#{cloudUrl}/#{applicationName}/#{username}/#{password}",true)
+
+  settings: ->
+    Coconut.settingsView ?= new SettingsView()
+    Coconut.settingsView.render()
 
   startApp: (options) ->
 
