@@ -368,13 +368,16 @@ earchCompleteStop()
     # skipperList is a list of questions that use skip logic in their action on change events
     skipperList = []
 
+    if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
+      CoffeeScript.eval @model.get "action_on_questions_loaded"
+
     $(@model.get("questions")).each (index, question) =>
 
       # remember which questions have skip logic in their actionOnChange code 
       skipperList.push(question.safeLabel()) if question.actionOnChange().match(/skip/i)
       
       if question.get("action_on_questions_loaded")? and question.get("action_on_questions_loaded") isnt ""
-        console.log 'FPPP'
+        console.debug question.get "action_on_questions_loaded"
         CoffeeScript.eval question.get "action_on_questions_loaded"
 
     # Trigger a change event for each of the questions that contain skip logic in their actionOnChange code
@@ -397,7 +400,8 @@ earchCompleteStop()
 
     _.each $("input[type='autocomplete from previous entries']"), (element) =>
       Coconut.database.query "resultsByQuestionAndField",
-        key: [@model.get("id"),$(element).attr("name")]
+        startkey: [@model.get("id"),$(element).attr("name")]
+        endkey: [@model.get("id"),$(element).attr("name"), {}]
       .catch (error) ->
         console.log "Error while doing autcomplete from previous entries for"
         console.log element
@@ -522,6 +526,7 @@ earchCompleteStop()
     $question = window.questionCache[key]
     $message  = $question.find(".message")
 
+    message = @isValid(key)
     try
       message = @isValid(key)
     catch e
@@ -571,8 +576,10 @@ earchCompleteStop()
     type            = $(questionWrapper.find("input").get(0)).attr("type")
     labelText       =
       if type is "radio" or "checkbox"
+        # No idea what's going on here
         #$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).text() || ""
-        $("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0].nodeValue or ""
+        if question.attr("id")
+          $("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0].nodeValue or ""
       else
         $("label[for=#{question.attr("id")}]", questionWrapper)?.text()
     required        = questionWrapper.attr("data-required") is "true"
@@ -721,13 +728,14 @@ earchCompleteStop()
       currentData.savedBy = Cookie('current_user')
       @result.save currentData,
         success: (model) =>
-          console.log "ZZZ"
           $("#messageText").slideDown().fadeOut()
           Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
 
           # Update the menu
           Coconut.menuView.update()
-        error: (error) -> console.error error
+        error: (error) ->
+          console.debug error
+          console.error error
 
     , 1000)
 

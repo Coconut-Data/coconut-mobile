@@ -34,8 +34,13 @@ class ResultsView extends Backbone.View
         }
       </style>
 
-      <h3>#{@question.id}</h3>
-      <h4>Summary statistics</h4>
+      <h3>
+        #{@question.id}
+      </h3>
+      <button class='mdl-button mdl-js-button mdl-button--raised mdl-button--colored'>
+      <a style='color:white; text-decoration:none' href='##{Coconut.databaseName}/new/result/#{@question.id}'><i style='position:relative; bottom:2px;' class='mdl-color-text--accent material-icons'>add</i>Add new #{@question.id}</a>
+      </button>
+      <h4>Summary statistics for '#{@question.id}'</h4>
 
       <table id='results_metrics'>
       </table>
@@ -56,7 +61,6 @@ class ResultsView extends Backbone.View
           },
           (error,result) =>
             _(result.rows).each (row) ->
-              console.log row
               if row.key[1] is false
                 metrics["Total not completed"] += 1
               else
@@ -79,7 +83,7 @@ class ResultsView extends Backbone.View
             $("#total-not-completed").html metrics["Total not completed"]
         ""
       }
-      <h4>Detailed results</h4>
+      <h4>Detailed '#{@question.id}' results</h4>
 
       <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 

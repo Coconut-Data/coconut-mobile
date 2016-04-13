@@ -71,7 +71,7 @@ class ResultCollection
           resultsByQuestionAndField: (document) ->
             if document.collection is "result" and document.question
               _(document).chain().keys().each (field) ->
-                return if field.substring(0,1) is "_"
+                return if field.substring(0,1) is "_" unless field is "_id"
                 return if _([
                   "createdAt"
                   "lastModifiedAt"
@@ -81,7 +81,7 @@ class ResultCollection
                   "savedBy"
                   "complete"
                 ]).contains field
-                emit [document.question,field], document[field]
+                emit [document.question,field,document[field]], document[field]
         }
 
         finished = _.after _(designDocs).size(), ->

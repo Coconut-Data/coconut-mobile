@@ -95,9 +95,6 @@ class Coconut
       include_docs:false
       startkey: "_design/plugin-#{@databaseName}"
       endkey: "_design/plugin-#{@databaseName}\ufff0" #https://wiki.apache.org/couchdb/View_collation
-    .catch (error) ->
-      console.error "Error while downloading list of plugin ids:"
-      console.error error
     .then (result) =>
       pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins")
       pluginIds = _(result.rows).pluck "id"
@@ -112,6 +109,9 @@ class Coconut
       .on 'complete', (result) =>
         console.log result
         options?.success?()
+    .catch (error) ->
+      console.error "Error while downloading list of plugin ids:"
+      console.error error
 
   startPlugins: (options) =>
     pluginDatabase = new PouchDB "coconut-#{@databaseName}-plugins"

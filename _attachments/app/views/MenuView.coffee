@@ -38,9 +38,8 @@ class MenuView extends Backbone.View
       </div>
     "
 
-    $(".mdl-layout__header-row").html "
-      <a style='position:absolute; top:0px; right:0px;' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent material-icons'>sync</i>Sync</a>
-    "
+    @renderHeader()
+
 
     Coconut.questions.fetch
       success: =>
@@ -60,6 +59,11 @@ class MenuView extends Backbone.View
         componentHandler.upgradeDom()
 
         @update()
+
+  renderHeader: ->
+    $(".mdl-layout__header-row").html "
+      <a style='position:absolute; top:0px; right:0px;' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent material-icons'>sync</i>Sync</a>
+    "
 
   update: ->
     User.isAuthenticated

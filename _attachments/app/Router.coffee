@@ -13,7 +13,8 @@ MenuView = require './views/MenuView'
 Question = require './models/Question'
 QuestionCollection = require './models/QuestionCollection'
 QuestionView = require './views/QuestionView'
-Result = require './models/Result'
+# Make this global so that plugins can create new results
+global.Result = require './models/Result'
 ResultsView = require './views/ResultsView'
 ResultCollection = require './models/ResultCollection'
 SelectApplicationView = require './views/SelectApplicationView'
@@ -62,11 +63,20 @@ class Router extends Backbone.Router
     "setup/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
     ":database": "default"
     "": "default"
+    ":database/*noMatch": "noMatch"
     "*noMatch": "noMatch"
 
-  noMatch: ->
-    console.error "Invalid URL, no matching route"
-    $("#content").html "Page not found."
+  noMatch: =>
+    if @routeFails
+      console.error "Invalid URL, no matching route"
+      $("#content").html "Page not found."
+    else
+      @routeFails = true
+      # Delay needed in case routes are added by plugins
+      console.debug "Trying route again in 1 second"
+      _.delay =>
+        @.navigate Backbone.history.getFragment(), {trigger: true}
+      ,1000
 
   default: ->
     defaultQuestion = Coconut.questions.filter (question) ->
@@ -76,6 +86,7 @@ class Router extends Backbone.Router
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: (cloudUrl,applicationName,cloudUsername,cloudPassword) ->
+    cloudUrl = cloudUrl or document.location.origin
     setupView = new SetupView()
     setupView.render()
     setupView.prefill
@@ -130,7 +141,7 @@ class Router extends Backbone.Router
     Coconut.syncView.sync.getFromCloud()
 
   sendAndGet: (action) ->
-    Coconut.router.navigate("",false)
+    Coconut.router.navigate("##{Coconut.databaseName}",false)
     Coconut.syncView.render()
     $("#status").html "Sending data..."
     Coconut.syncView.sync.sendToCloud
