@@ -130,11 +130,6 @@ class Coconut
         pluginDatabase.getAttachment plugin, "plugin-bundle.js"
         .then (blob) ->
           BlobUtil.blobToBinaryString(blob).then (script) ->
-
-            #window.eval script
-            #finished()
-            #return
-
             try
               window.eval script
             catch error
@@ -174,6 +169,9 @@ class Coconut
                     success: =>
                       @router.startApp
                         success: ->
+                          # Look for a global StartPlugins array and then run all of the functions in it
+                          if StartPlugins
+                            _(StartPlugins).each (startPlugin) -> startPlugin()
                           User.login
                             username: options.username
                             error: ->
