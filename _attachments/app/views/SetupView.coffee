@@ -18,17 +18,31 @@ class SetupView extends Backbone.View
   render: =>
     @$el.html "
       <h1>Install Coconut Project</h1>
+      Coconut is an offline HTML5 application. This means that it works even when you are offline. But first, you need to set it up by pointing it at an existing cloud based Coconut server with a specific Coconut application to use. Once you've done that all of the resources required to use the app will be saved on your device. The only time you need to be online is when you sync.   
+      <br/>
+      <br/>
+      <br/>
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
+        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:50%; margin: 0px auto; padding:10px'>
+        #{
+          _(@fields).map (field) =>
+            "
+              <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+                <input class='mdl-textfield__input' id='#{s.underscored(field)}'/>
+                <label class='mdl-textfield__label' for='#{s.underscored field}'>#{field}</label>
+              </div>
+            "
+          .join ""
+        }
+          <div class='mdl-card__actions'>
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='install' type='button'>Install</button>
+          </div>
+        </div>
       </div>
     "
-    _(@fields).map (field) =>
-      @$el.find("#form").append "#{field}<input style='display:block' id='#{s.dasherize(field)}'/>"
-
-    @$el.find("#form").append "
-      <button id='install' type='button'>Install</button>
-    "
+    componentHandler.upgradeDom()
     
   events:
     "click #install": "install"
@@ -36,10 +50,11 @@ class SetupView extends Backbone.View
 
   prefill: (options) ->
     _(options).each (value , key) ->
-      $("##{s.dasherize(key)}").val(value)
+      $("##{s.underscored(key)}").val(value)
+      $("##{s.underscored(key)}").parent().addClass "is-dirty" if value and value isnt ""
 
   destroy: =>
-    applicationName = $("#"+s.dasherize("Application Name")).val()
+    applicationName = $("#"+s.underscored("Application Name")).val()
     @$el.append "
       <div id='spinner'>
         <center>
@@ -61,7 +76,7 @@ class SetupView extends Backbone.View
         , 1000
   
   install: ->
-    applicationName = $("#"+s.dasherize("Application Name")).val()
+    applicationName = $("#"+s.underscored("Application Name")).val()
 
     options =
       error: (error) ->
@@ -88,9 +103,9 @@ class SetupView extends Backbone.View
         "
         
     _(@fields).each (field) ->
-      options[field] = $("##{s.dasherize(field)}").val()
+      options[field] = $("##{s.underscored(field)}").val()
 
-    @$el.find("#form").hide()
+    @$el.find("div.mdl-card").hide()
     @$el.append "
       <div id='spinner'>
         <center>

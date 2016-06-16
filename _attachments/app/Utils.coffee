@@ -1,20 +1,20 @@
 _ = require 'underscore'
 #CoffeeScript = require 'coffee-script' - this is loaded in index.html
 
-Utils = {}
+global.Utils = {}
 Utils.addOrUpdateDesignDoc = (designDoc,options) ->
   name = designDoc._id.replace(/^_design\//,"")
 
   Coconut.database.get "_design/#{name}", (error,result) ->
     # Check if it already exists and is the same
     if result?.views?[name]?.map is designDoc.views[name].map
-      options.success()
+      options?.success?()
     else
       console.log "Updating design doc for #{name}"
       if result? and result._rev
         designDoc._rev = result._rev
       Coconut.database.put(designDoc).then ->
-        options.success()
+        options?.success?()
       .catch (error) ->
         console.log "Error. Current Result:"
         console.log result

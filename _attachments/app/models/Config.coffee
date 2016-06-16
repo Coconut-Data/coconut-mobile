@@ -20,7 +20,7 @@ class Config extends Backbone.Model
   title: -> @get("title") || "Coconut"
 
   # See app/config.js
-  database_name: -> Coconut.database._db_name
+  database_name: -> Coconut.databaseName
   cloud_database_name: => @get("cloud_database_name") || @database_name()
 
   cloud_url: ->

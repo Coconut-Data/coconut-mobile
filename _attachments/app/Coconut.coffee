@@ -2,7 +2,7 @@ $ = require 'jquery'
 
 Config = require './models/Config'
 Router = require './Router'
-Sync = require './models/Sync'
+global.Sync = require './models/Sync'
 User = require './models/User'
 
 window.PouchDB = require 'pouchdb'
@@ -107,7 +107,7 @@ class Coconut
       .on 'change', (result) =>
         $("#status").append "*"
       .on 'complete', (result) =>
-        console.log result
+        console.log "Completed replicating plugins: #{pluginIds.join(',')}"
         options?.success?()
     .catch (error) ->
       console.error "Error while downloading list of plugin ids:"

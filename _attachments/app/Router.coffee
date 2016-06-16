@@ -15,7 +15,7 @@ QuestionCollection = require './models/QuestionCollection'
 QuestionView = require './views/QuestionView'
 # Make this global so that plugins can create new results
 global.Result = require './models/Result'
-ResultsView = require './views/ResultsView'
+global.ResultsView = require './views/ResultsView'
 ResultCollection = require './models/ResultCollection'
 SelectApplicationView = require './views/SelectApplicationView'
 SettingsView = require './views/SettingsView'
@@ -156,12 +156,15 @@ class Router extends Backbone.Router
           error: ->
             $("#log").show()
             Coconut.debug "Refreshing app in 5 seconds, please wait"
+            $("#status").html "Error occurred, app refreshing in 5 seconds!"
             _.delay ->
               document.location.reload()
             , 5000
       error: (error) ->
         $("#log").show()
         Coconut.debug "Error sending data to cloud, proceeding to get updates from cloud."
+        console.error error
+        return
         Coconut.syncView.sync.getFromCloud()
 
 
