@@ -22,6 +22,7 @@ class MenuView extends Backbone.View
           "##{Coconut.databaseName}/sync,sync,Sync data"
           "##{Coconut.databaseName}/logout,person,Logout"
           "##{Coconut.databaseName}/reset/database,warning,Reset database"
+          "##{Coconut.databaseName}/manage,build,Manage"
         ]).map (linkData) ->
           [url,icon,linktext] = linkData.split(",")
           "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text material-icons'>#{icon}</i>#{linktext}</a>"

@@ -6,9 +6,14 @@ Backbone.$  = $
 window.PouchDB = require 'pouchdb'
 require('pouchdb-all-dbs')(window.PouchDB)
 
+replicationStream = require('pouchdb-replication-stream')
+PouchDB.plugin(replicationStream.plugin)
+PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
+
 Config = require './models/Config'
 HelpView = require './views/HelpView'
 LoginView = require './views/LoginView'
+ManageView = require './views/ManageView'
 MenuView = require './views/MenuView'
 Question = require './models/Question'
 QuestionCollection = require './models/QuestionCollection'
@@ -25,6 +30,9 @@ User = require './models/User'
 UserCollection = require './models/UserCollection'
 
 Cookie = require 'js-cookie'
+JSZip = require 'jszip'
+MemoryStream = require 'memorystream'
+global.FileSaver = require 'file-saver'
 
 class Router extends Backbone.Router
   # This gets called before a route is applied
@@ -59,6 +67,11 @@ class Router extends Backbone.Router
     ":database/settings": "settings"
     ":database/help": "help"
     ":database/help/:helpDocument": "help"
+    ":database/manage": "manage"
+    ":database/send/backup": "sendBackup"
+    ":database/save/backup": "saveBackup"
+    ":database/get/cloud/results": "getCloudResults"
+
     "setup": "setup"
 # TODO handle cloudUrl with http:// in it
     "setup/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
@@ -280,6 +293,85 @@ class Router extends Backbone.Router
           applicationName = Coconut.config.get("cloud_database_name")
           [username,password] = Coconut.config.get("cloud_credentials").split(":")
           Coconut.router.navigate("setup/#{cloudUrl}/#{applicationName}/#{username}/#{password}",true)
+
+  manage: ->
+    Coconut.manageView ?= new ManageView( el: $("#content") )
+    Coconut.manageView.render()
+
+  dumpDatabase: (options) =>
+    dumpedString = ''
+    stream = new MemoryStream()
+    stream.on 'data', (chunk) ->
+      dumpedString += chunk.toString()
+
+    Coconut.database.dump stream,
+      filter: (doc) -> doc.collection is "result"
+    .then ->
+      console.log dumpedString
+      options.success(dumpedString)
+
+  sendBackup: =>
+    # TODO figure out how to make the destination server use https
+    destination = "#{Coconut.config.cloud_url_hostname()}:3000/backup"
+    @dumpDatabase
+      error: (error) -> console.error error
+      success: (dumpedString) ->
+        $.ajax
+          url: destination
+          type: 'post'
+          data:
+            destination: Coconut.config.cloud_url_with_credentials()
+            value: dumpedString
+          success: (result) ->
+            $("#content").html "Database backup sent to: #{destination} where it was loaded into #{Coconut.config.cloud_url()}<br/>Result from server: #{result}"
+          error: (error) ->
+            console.error error
+            $("#content").html "Error backing up database: #{JSON.stringify error}"
+
+  saveBackup: =>
+    @dumpDatabase
+      error: (error) -> console.error error
+      success: (dumpedString) ->
+        $("#content").html "Database backup created, beginning download. File will be available in Downloads folder on tablet."
+        zip = new JSZip()
+        zip.file "backup.pouchdb", dumpedString
+        zip.generateAsync
+          type:"blob"
+          compression:"DEFLATE"
+        .then (content) ->
+          FileSaver.saveAs(content, "coconut.pouchdb.zip")
+
+  getCloudResults: =>
+    Coconut.cloudDatabase.query "resultsByUserAndDate",
+      startkey: [Coconut.currentUser.username(), moment().subtract(1,"month").format(Coconut.config.get "date_format")]
+      endkey: [Coconut.currentUser.username(), moment().endOf("day").format(Coconut.config.get "date_format")]
+    .catch (error) => console.error "ERROR, could not download list of results for user: #{Coconut.currentUser.username()}: #{JSON.stringify error}"
+    .then (result) =>
+      lastMonthIds = _.pluck result.rows, "id"
+
+      downloadResults = (docIds) ->
+        Coconut.debug "Downloading #{docIds.length} results"
+        Coconut.database.replicate.from Coconut.cloudDatabase,
+          doc_ids: docIds
+        .on 'complete', (info) =>
+          $("#log").html ""
+          $("#content").html "
+            <h2>
+              Complete.
+            </h2>
+            It may take a few minutes before all results are shown, but you can capture new data while these results are loading.<br/>
+          "
+        .on 'error', (error) =>
+          console.log JSON.stringify error
+        .on 'change', (info) =>
+          $("#content").html "
+            <h2>
+              #{info.docs_written} written out of #{docIds.length} (#{parseInt(100*(info.docs_written/docIds.length))}%)
+            </h2>
+          "
+
+      if confirm "Do you want to get #{lastMonthIds.length} results from last month saved by #{Coconut.currentUser.username()}"
+        downloadResults(lastMonthIds)
 
   settings: ->
     Coconut.settingsView ?= new SettingsView()

@@ -40,4 +40,6 @@ class Config extends Backbone.Model
     else
       "http"
 
+  cloud_url_hostname: => "#{@httpOrHttps()}://#{@cloud_url_no_http()}"
+
 module.exports =  Config
