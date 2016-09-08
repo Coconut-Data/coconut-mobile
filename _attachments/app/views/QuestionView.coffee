@@ -724,7 +724,7 @@ earchCompleteStop()
       currentData = @currentData()
 
       # Make sure lastModifiedAt is always updated on save
-      currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "date_format")
+      currentData.lastModifiedAt = moment(new Date()).format("YYYY-MM-DD")
       currentData.savedBy = Cookie('current_user')
       @result.save currentData,
         success: (model) =>
@@ -975,7 +975,7 @@ earchCompleteStop()
         $("##{question_id}-#{measurementName}").val(geoposition.coords[measurementName])
 
 
-      $("##{question_id}-timestamp").val(moment(geoposition.timestamp).format(Coconut.config.get "datetime_format"))
+      $("##{question_id}-timestamp").val(moment(geoposition.timestamp).format("YYYY-MM-DD HH:mm:ss"))
       $.getJSON "http://api.geonames.org/findNearbyPlaceNameJSON?lat=#{geoposition.coords.latitude}&lng=#{geoposition.coords.longitude}&username=mikeymckay&callback=?", null, (result) =>
         $("##{question_id}-description").val parseFloat(result.geonames[0].distance).toFixed(1) + " km from center of " + result.geonames[0].name
 

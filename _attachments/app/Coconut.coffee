@@ -170,7 +170,7 @@ class Coconut
                       @router.startApp
                         success: ->
                           # Look for a global StartPlugins array and then run all of the functions in it
-                          if StartPlugins
+                          if StartPlugins?
                             _(StartPlugins).each (startPlugin) -> startPlugin()
                           User.login
                             username: options.username
@@ -231,9 +231,10 @@ class Coconut
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
     @cloudDB.get "client encryption key"
-    .catch (error) ->
+    .catch (error) =>
+      console.error "Failed to get client encryption key from #{cloudDB}"
       console.error error
-      options.error "Couldn't connect to #{@config.cloud_url_with_credentials()} - is there a working internet connection?"
+      options.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
     .then (result) =>
       @encryptionKey = result.key
       options.success()
