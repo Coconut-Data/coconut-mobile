@@ -42,7 +42,7 @@ class Coconut
 
     PouchDB.allDbs().then (dbs) =>
       if _(dbs).includes "coconut-#{@databaseName}"
-        options.actionIfDatabaseExists()
+        options.actionIfDatabaseExists(options)
       else
         try
           @setConfig(options)
@@ -50,7 +50,6 @@ class Coconut
             error: (error) ->
               options.error(error)
             success:  =>
-              console.log "DDOO"
               $("#status").html "Creating #{@databaseName} database"
               new PouchDB("coconut-#{options["Application Name"]}")
               @database = new PouchDB("coconut-#{options["Application Name"]}")
@@ -232,7 +231,7 @@ class Coconut
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
     @cloudDB.get "client encryption key"
     .catch (error) =>
-      console.error "Failed to get client encryption key from #{cloudDB}"
+      console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
       console.error error
       options.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
     .then (result) =>

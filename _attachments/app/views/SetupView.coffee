@@ -48,10 +48,12 @@ class SetupView extends Backbone.View
     "click #install": "install"
     "click #destroy": "destroy"
 
-  prefill: (options) ->
+  prefill: (httpType, options) ->
     _(options).each (value , key) ->
       $("##{s.underscored(key)}").val(value)
       $("##{s.underscored(key)}").parent().addClass "is-dirty" if value and value isnt ""
+    $("#cloud_url").val $("#cloud_url").val().replace(/^(http:\/\/)*/, httpType + "://")
+
 
   destroy: =>
     applicationName = $("#"+s.underscored("Application Name")).val()
@@ -74,8 +76,26 @@ class SetupView extends Backbone.View
         _.delay ->
           document.location.reload()
         , 1000
+
+  getOptions: ->
+    options = {}
+    _(@fields).each (field) ->
+      options[field] = $("##{s.underscored(field)}").val()
+    return options
+
+  installUrl: ->
+    options = @getOptions()
+    httpType = if options["Cloud URL"].match(/https:\/\//)
+      "https"
+    else
+      "http"
+
+    options["Cloud URL"] = options["Cloud URL"].replace(/http(s)*:\/\//, "")
+    Coconut.router.navigate "#setup/#{httpType}/#{options["Cloud URL"]}/#{options["Application Name"]}/#{options["Cloud Username"]}/#{options["Cloud Password"]}"
+    
   
   install: ->
+    @installUrl()
     applicationName = $("#"+s.underscored("Application Name")).val()
 
     options =
@@ -92,7 +112,8 @@ class SetupView extends Backbone.View
           Coconut.router.navigate applicationName, trigger: true
         , 1000
 
-      actionIfDatabaseExists: =>
+      actionIfDatabaseExists: (options) =>
+        console.log options
         @$el.find("#form").show()
         @$el.find("#spinner").remove()
         $("#message").html "
@@ -102,8 +123,7 @@ class SetupView extends Backbone.View
           <br/><br/>
         "
         
-    _(@fields).each (field) ->
-      options[field] = $("##{s.underscored(field)}").val()
+    _(options).extend @getOptions()
 
     @$el.find("div.mdl-card").hide()
     @$el.append "

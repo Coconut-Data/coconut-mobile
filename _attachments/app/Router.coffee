@@ -74,7 +74,7 @@ class Router extends Backbone.Router
 
     "setup": "setup"
 # TODO handle cloudUrl with http:// in it
-    "setup/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
+    "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
     ":database": "default"
     "": "default"
     ":database/*noMatch": "noMatch"
@@ -99,11 +99,10 @@ class Router extends Backbone.Router
       defaultQuestion = Coconut.questions.first()
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
-  setup: (cloudUrl,applicationName,cloudUsername,cloudPassword) ->
-    cloudUrl = cloudUrl or document.location.origin
+  setup: (httpType = 'http://', cloudUrl = document.location.origin ,applicationName,cloudUsername,cloudPassword) ->
     setupView = new SetupView()
     setupView.render()
-    setupView.prefill
+    setupView.prefill httpType,
       "Cloud URL": cloudUrl
       "Application Name": applicationName
       "Cloud Username": cloudUsername
