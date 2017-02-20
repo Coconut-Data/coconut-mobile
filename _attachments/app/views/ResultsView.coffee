@@ -20,9 +20,12 @@ class ResultsView extends Backbone.View
     @$el.html "
       <style>
         h3{ 
-          margin-top:0px;
-          float:right;
-          color: #{Coconut.colors.accent1};
+          margin-top:15px;
+          margin-right: 10px;
+          padding-top: 5px;
+          float:left;
+          color: rgb(63, 81, 181);
+          line-height: 15px;
         }
 
         h4{ 
@@ -37,10 +40,9 @@ class ResultsView extends Backbone.View
       <h3>
         #{@question.id}
       </h3>
-      <button class='mdl-button mdl-js-button mdl-button--raised mdl-button--colored'>
-      <a style='color:white; text-decoration:none' href='##{Coconut.databaseName}/new/result/#{@question.id}'><i style='position:relative; bottom:2px;' class='mdl-color-text--accent material-icons'>add</i>Add new #{@question.id}</a>
-      </button>
-      <h4>Summary statistics for '#{@question.id}'</h4>
+      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='material-icons'>add</i></a>
+      <div class='clearfix'></div>
+      <h4>Summary statistics</h4>
 
       <table id='results_metrics'>
       </table>
@@ -83,7 +85,7 @@ class ResultsView extends Backbone.View
             $("#total-not-completed").html metrics["Total not completed"]
         ""
       }
-      <h4>Detailed '#{@question.id}' results</h4>
+      <h4>Detailed results</h4>
 
       <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
