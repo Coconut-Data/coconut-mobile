@@ -10,7 +10,7 @@
 
   <head>
   	<title>Coconut</title>
-    <link rel="icon" sizes="57x57" href="images/icon.png"> 
+    <link rel="icon" sizes="57x57" href="images/favicon.ico"> 
     <!--
     <link rel="stylesheet" type="text/css" href="css/style.min.css" />
     -->
@@ -29,8 +29,7 @@
 
   <div class="coconut-layout mdl-layout mdl-js-layout mdl-layout--fixed-header coconut-layer">
     <header class="coconut-header mdl-layout__header mdl-color--white mdl-color--grey-100 mdl-color-text--grey-600">
-      <div class="mdl-layout__header-row">
-      </div>
+      <div class="mdl-layout__header-row"><span id='app_title'>Coconut Mobile</span></div>
     </header>
     <div class="coconut-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
       <header class="coconut-drawer-header"></header>
@@ -38,16 +37,31 @@
     </div>
 
     <main class="mdl-layout__content mdl-color--grey-100">
-        <div style='padding:15px;' data-role='content' id="content">
-        </div>
+        <div data-role='content' id="content"> </div>
         <div id='log'></div>
-      </div>
     </main>
+    <script type='text/template' id='dialog_template'>
+      <div class="dialog-container">
+        <div class="dialog" id='dialog'>
+          <span class="dialog-title" id='dialogTitle'><%= title %></span>
+          <% if (showClose) { %>
+            <span id='dialogClose'><a href="#" class="close" aria-label="close"><img src="images/close.png"></a></span>
+          <% } %>    
+          <div class="dialog-body">
+            <div><%= body %></div>
+            <div>
+              <button id="loginSubmit" class="btn btn-success" type="submit">
+                <span class="glyphicon glyphicon-off"></span> Submit
+              </button>'
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
 
   </div>
 
-
-    <script src="./js-libraries/material.min.js"></script>
+  <script src="./js-libraries/material.min.js"></script>
   </body>
   <script type="text/javascript" src="js-libraries/coffee-script.js"></script>
   <script type="text/javascript" src="./bundle.js"></script>

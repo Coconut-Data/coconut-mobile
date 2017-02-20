@@ -19,7 +19,7 @@ html, body {
 }
 
 header .material-icons{
-  font-size: 48px;
+  font-size: 34px;
   margin-left: -10px;
 }
 
@@ -113,13 +113,13 @@ header .mdl-layout-title{
   font-weight: 500;
 }
 .coconut-navigation .mdl-navigation__link .material-icons {
-  font-size: 60px;
+  font-size: 50px;
   color: rgba(255, 255, 255, 0.56);
   margin-right: 32px;
 }
 
 .coconut-navigation .mdl-navigation__link {
-  font-size: 24px;
+  font-size: 20px;
   line-height:24px;
 }
 
@@ -243,18 +243,157 @@ _:-ms-input-placeholder, :root .coconut-graph {
 }
 
 .drawer_question_set_link i{
-  font-size: 60px;
+  font-size: 45px;
 }
 
 .drawer_question_set_name{
   position: relative;
   bottom: 24px;
   left: 24px;
-  font-size: 24px;
+  font-size: 20px;
   color: rgba(255, 255, 255, 0.56);
   font-weight: 500;
+}
 
 /* hide the line underneath text input boxes */
 .awesomplete ul {
 	display: none;
+}
+
+h3.select_app {
+  color: rgb(63,81,181);
+  margin-top: 15px;
+}
+
+span.region {
+  color: #ff4081;
+  font-size: 18px;
+  letter-spacing: .05em;
+  font-weight: 700;
+  min-width: 125px;
+}
+
+span.region a{
+  text-decoration: none;
+}
+
+p#select_buttons {
+  margin-bottom: 50px;
+}
+
+p.text {
+font-size: 16px;
+}
+
+#content {
+  padding: 15px;
+  font-size: 1.3em;
+}
+
+#app_title {
+  color: #ffffff;
+  font-size: 34px;
+}
+
+.mdl-layout__header-row {
+  background-color: rgb(33,150,243);
+}
+
+.mdl-layout__header-row  a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.coconut-layout .mdl-layout__header .mdl-layout__drawer-button {
+  background: rgb(33,150,243);
+  padding-top: 5px;
+}
+
+.mdl-chip {
+  border-radius: 8px;
+  margin-right: 10px;
+  border: 1px solid rgb(158,158,158);
+}
+
+button.mdl-chip__action {
+  color: rgb(33,150,243);
+}
+
+.errMsg {
+  color: red;
+}
+
+.clearfix {
+  line-height: 10px;
+}
+
+/* Dialog modal */
+.dialog-container, .help-container {
+  background: rgba(0, 0, 0, 0.57);
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+  -webkit-transition: opacity 0.333s cubic-bezier(0, 0, 0.21, 1);
+  transition: opacity 0.333s cubic-bezier(0, 0, 0.21, 1); 
+}
+
+.dialog-container--visible {
+  opacity: 1;
+  pointer-events: auto; }
+
+.dialog {
+  background: #EEE;
+  border-radius: 2px;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.24), 0 14px 28px rgba(0, 0, 0, 0.48);
+  min-width: 280px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 20px;
+  -webkit-transform: translate(-50%, -50%) translateY(30px);
+          transform: translate(-50%, -50%) translateY(30px);
+  -webkit-transition: -webkit-transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s;
+  transition: -webkit-transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s;
+  transition: transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s;
+  transition: transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s, -webkit-transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s; }
+
+.dialog > div {
+  padding-left: 34px;
+  padding-right: 24px; }
+
+.dialog-title {
+  padding-top: 20px;
+  font-size: 1.25em;
+  font-weight: 600; 
+  letter-spacing: 2px;
+  color: red;
+}
+
+.dialog-body {
+  padding: 20px 10px 24px 10px;
+  background: #fff;
+  border: solid 1px #999999;
+  border-radius: 5px;
+}
+
+.dialog-body select {
+  width: 100%;
+  font-size: 2em; 
+}
+
+.dialog-buttons {
+  padding: 8px !important;
+  float: right; 
+}
+
+#dialogClose {
+  float: right;
+  margin-top: -15px;
+  margin-right: -15px;
 }
