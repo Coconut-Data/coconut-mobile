@@ -17,21 +17,22 @@ class LoginView extends Backbone.View
         #login_wrapper{
           font-size: 200%;
           width:50%;
-          margin: 0px auto;
+          margin: 20px auto;
+          padding: 25px;
         }
         #login_message{
           margin-top: 20px;
           margin-bottom: 20px;
         }
         #login_form input{
-          font-size: 200%;
+          font-size: 120%;
           display: block;
         }
         .coconut-mdl-card{
           padding:10px;
         }
-        #login_button{
-          font-size:200%
+        #login_button, #cancel_button{
+          font-size:120%
 
         }
       </style>
@@ -50,7 +51,8 @@ class LoginView extends Backbone.View
           </div>
 
           <div class='mdl-card__actions'>
-            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Login</button>
+            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Login</button> &nbsp;
+            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_button'>Cancel</button>
           </div>
         </form>
       </div>
@@ -60,6 +62,7 @@ class LoginView extends Backbone.View
 
   events:
     "click #login_button": "login"
+    "click #cancel_button": "cancel"
     "keypress #password": "submitIfEnter"
 
   submitIfEnter: (event) ->
@@ -67,6 +70,11 @@ class LoginView extends Backbone.View
 
   updateNavBar: ->
 
+
+  cancel: ->
+    Coconut.router.navigate("", true)
+    return document.location.reload()
+    
   # Note this needs hashing and salt for real security
   login: =>
     # Useful for reusing the login screen - like for database encryption

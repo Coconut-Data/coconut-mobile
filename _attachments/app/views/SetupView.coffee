@@ -17,7 +17,7 @@ class SetupView extends Backbone.View
 
   render: =>
     @$el.html "
-      <h1>Install Coconut Project</h1>
+      <h3>Install Coconut Project</h3>
       Coconut is an offline HTML5 application. This means that it works even when you are offline. But first, you need to set it up by pointing it at an existing cloud based Coconut server with a specific Coconut application to use. Once you've done that all of the resources required to use the app will be saved on your device. The only time you need to be online is when you sync.   
       <br/>
       <br/>
@@ -25,7 +25,7 @@ class SetupView extends Backbone.View
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
-        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:50%; margin: 0px auto; padding:10px'>
+        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:50%; margin: 0px auto; padding:25px'>
         #{
           _(@fields).map (field) =>
             "
@@ -37,7 +37,8 @@ class SetupView extends Backbone.View
           .join ""
         }
           <div class='mdl-card__actions'>
-            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='install' type='button'>Install</button>
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='install' type='button'>Install</button> &nbsp;
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='cancel_button' type='button'>Cancel</button>
           </div>
         </div>
       </div>
@@ -46,7 +47,11 @@ class SetupView extends Backbone.View
     
   events:
     "click #install": "install"
+    "click .cancel_button": "cancel"
     "click #destroy": "destroy"
+
+  cancel: ->
+    Coconut.router.navigate("", true)
 
   prefill: (httpType, options) ->
     _(options).each (value , key) ->
@@ -60,7 +65,7 @@ class SetupView extends Backbone.View
     @$el.append "
       <div id='spinner'>
         <center>
-          <h2>Removing  #{applicationName}</h2>
+          <h3>Removing  #{applicationName}</h3>
           <h3 id='status'></h3>
           <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
         </center>
@@ -71,8 +76,8 @@ class SetupView extends Backbone.View
       applicationName: applicationName
       success: =>
         # TODO make a fading out message
-        $("#content").html "<h1>#{applicationName} Removed</h1>"
-        $("#content h1").fadeOut 1000
+        $("#content").html "<h3>#{applicationName} Removed</h3>"
+        $("#content h3").fadeOut 1000
         _.delay ->
           document.location.reload()
         , 1000
@@ -101,13 +106,15 @@ class SetupView extends Backbone.View
     options =
       error: (error) ->
         $("#message").html "
-        Error installing #{applicationName}:<br/> #{error}
-          <br/><br/>
+        <div class='errMsg'>
+          Error installing #{applicationName}:<br/> #{error}
+        </div>
+        <br/><br/>
         "
 
       success: =>
-        @$el.html "<h1>#{applicationName} Installed</h1>"
-        @$el.find("h1").fadeOut 1000
+        @$el.html "<h3>#{applicationName} Installed</h3>"
+        @$el.find("h3").fadeOut 1000
         _.delay ->
           Coconut.router.navigate applicationName, trigger: true
         , 1000
@@ -117,9 +124,10 @@ class SetupView extends Backbone.View
         @$el.find("#form").show()
         @$el.find("#spinner").remove()
         $("#message").html "
-          Application #{applicationName} has already been installed.<br/>
-          You can update the fields below or delete all data for #{applicationName}.<br/>
-          <button id='destroy'>Delete #{applicationName} </button>
+          <p style = 'font-size: 18px'>Application #{applicationName} has already been installed.<br/>
+          You can update the fields below or delete all data for #{applicationName}.</p>
+          <button class='mdl-button mdl-js-button mdl-button--raised mdl-button--colored' id='destroy'>Delete #{applicationName} </button> &nbsp;
+          <button class='mdl-button mdl-js-button mdl-button--raised cancel_button'>Cancel </button>
           <br/><br/>
         "
         
@@ -129,8 +137,8 @@ class SetupView extends Backbone.View
     @$el.append "
       <div id='spinner'>
         <center>
-          <h2>Installing #{applicationName}</h2>
-          <h3 id='status'></h3>
+          <h3>Installing #{applicationName}</h3>
+          <h4 id='status'></h4>
           <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
         </center>
       </div>
