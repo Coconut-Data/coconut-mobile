@@ -4,7 +4,7 @@ Backbone = require 'backbone'
 Backbone.$  = $
 moment = require 'moment'
 
-$.DataTable = require('datatables')
+$.DataTable = require('datatables')()
 
 Question = require '../models/Question'
 ResultCollection = require '../models/ResultCollection'

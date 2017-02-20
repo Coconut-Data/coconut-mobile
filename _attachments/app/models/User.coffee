@@ -28,8 +28,8 @@ class User extends Backbone.Model
     Cookie('current_password', @get "password")
     $("span#user").html @username()
     $('#district').html @get "district"
-    $("a[href=#logout]").show()
-    $("a[href=#login]").hide()
+    $("a[href='#logout]'").show()
+    $("a[href='#login]'").hide()
     if @isAdmin() then $("#manage-button").show() else $("#manage-button").hide()
     if @hasRole "reports"
       $("#top-menu").hide()
@@ -67,8 +67,8 @@ User.login = (options) ->
       Cookie('current_user', user.username())
       Cookie('current_password',user.get "password")
       $("span#user").html user.username()
-      $("a[href=#logout]").show()
-      $("a[href=#login]").hide()
+      $("a[href='#logout]'").show()
+      $("a[href='#login]'").hide()
       if user.isAdmin() then $("#manage-button").show() else $("#manage-button").hide()
       if user.hasRole "reports"
         $("#top-menu").hide()
@@ -84,8 +84,8 @@ User.logout = ->
   Cookie('current_password',"")
   $("span#user").html ""
   $('#district').html ""
-  $("a[href=#logout]").hide()
-  $("a[href=#login]").show()
+  $("a[href='#logout]'").hide()
+  $("a[href='#login']").show()
   Coconut.currentUser = null
 
 module.exports = User
