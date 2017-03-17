@@ -18,14 +18,14 @@ class SetupView extends Backbone.View
   render: =>
     @$el.html "
       <h3>Install Coconut Project</h3>
-      Coconut is an offline HTML5 application. This means that it works even when you are offline. But first, you need to set it up by pointing it at an existing cloud based Coconut server with a specific Coconut application to use. Once you've done that all of the resources required to use the app will be saved on your device. The only time you need to be online is when you sync.   
+      Coconut is an offline HTML5 application. This means that it works even when you are offline. But first, you need to set it up by pointing it at an existing cloud based Coconut server with a specific Coconut application to use. Once you've done that all of the resources required to use the app will be saved on your device. The only time you need to be online is when you sync.
       <br/>
       <br/>
       <br/>
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
-        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:50%; margin: 0px auto; padding:25px'>
+        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:400px; margin: 0px auto; padding:25px'>
         #{
           _(@fields).map (field) =>
             "
@@ -44,7 +44,7 @@ class SetupView extends Backbone.View
       </div>
     "
     componentHandler.upgradeDom()
-    
+
   events:
     "click #install": "install"
     "click .cancel_button": "cancel"
@@ -97,8 +97,8 @@ class SetupView extends Backbone.View
 
     options["Cloud URL"] = options["Cloud URL"].replace(/http(s)*:\/\//, "")
     Coconut.router.navigate "#setup/#{httpType}/#{options["Cloud URL"]}/#{options["Application Name"]}/#{options["Cloud Username"]}/#{options["Cloud Password"]}"
-    
-  
+
+
   install: ->
     @installUrl()
     applicationName = $("#"+s.underscored("Application Name")).val()
@@ -130,7 +130,7 @@ class SetupView extends Backbone.View
           <button class='mdl-button mdl-js-button mdl-button--raised cancel_button'>Cancel </button>
           <br/><br/>
         "
-        
+
     _(options).extend @getOptions()
 
     @$el.find("div.mdl-card").hide()
