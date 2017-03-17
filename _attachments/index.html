@@ -10,7 +10,7 @@
 
   <head>
   	<title>Coconut</title>
-    <link rel="icon" sizes="57x57" href="images/favicon.ico"> 
+    <link rel="icon" sizes="57x57" href="images/favicon.ico">
     <!--
     <link rel="stylesheet" type="text/css" href="css/style.min.css" />
     -->
@@ -29,7 +29,17 @@
 
   <div class="coconut-layout mdl-layout mdl-js-layout mdl-layout--fixed-header coconut-layer">
     <header class="coconut-header mdl-layout__header mdl-color--white mdl-color--grey-100 mdl-color-text--grey-600">
-      <div class="mdl-layout__header-row"><span id='app_title'>Coconut Mobile</span></div>
+      <div class="mdl-layout__header-row">
+        <span id='app_title'>Coconut Mobile</span>
+        <button id='top-menu-lower-right' class='mdl-button mdl-js-button mdl-button--icon'>
+            <i class='material-icons'>more_vert</i>
+        </button>
+        <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
+          <li class='mdl-menu__item'>About</li>
+          <li class='mdl-menu__item'>Support</li>
+          <li  disabled class='mdl-menu__item'>Login</li>
+        </ul>
+      </div>
     </header>
     <div class="coconut-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
       <header class="coconut-drawer-header"></header>
@@ -40,15 +50,15 @@
         <div data-role='content' id="content"> </div>
         <div id='log'></div>
     </main>
+    <div class="dialog-container">Test</div>
     <script type='text/template' id='dialog_template'>
-      <div class="dialog-container">
         <div class="dialog" id='dialog'>
-          <span class="dialog-title" id='dialogTitle'><%= title %></span>
-          <% if (showClose) { %>
+          <span class="dialog-title" id='dialogTitle'><%= dialog.title %></span>
+          <% if (dialog.showCloseBtn) { %>
             <span id='dialogClose'><a href="#" class="close" aria-label="close"><img src="images/close.png"></a></span>
-          <% } %>    
+          <% } %>
           <div class="dialog-body">
-            <div><%= body %></div>
+            <div><%= dialog.body %></div>
             <div>
               <button id="loginSubmit" class="btn btn-success" type="submit">
                 <span class="glyphicon glyphicon-off"></span> Submit
@@ -56,9 +66,7 @@
             </div>
           </div>
         </div>
-      </div>
     </script>
-
   </div>
 
   <script src="./js-libraries/material.min.js"></script>
@@ -66,4 +74,3 @@
   <script type="text/javascript" src="js-libraries/coffee-script.js"></script>
   <script type="text/javascript" src="./bundle.js"></script>
 </html>
-
