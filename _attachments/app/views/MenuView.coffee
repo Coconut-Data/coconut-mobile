@@ -9,7 +9,7 @@ class MenuView extends Backbone.View
 
   render: =>
     $("header.coconut-drawer-header").html "
-      <h3 id='test'>Coconut Outbreak</h3>
+      <h3>Coconut Mobile</h3>
       Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
       Last sync: <span class='sync-sent-status'></span>
     "
@@ -31,10 +31,8 @@ class MenuView extends Backbone.View
     "
 
     $("nav.coconut-navigation").on "click",".mdl-navigation__link", ->
-      Coconut.menuView.hideDrawer()
-
-    $("nav.coconut-navigation").on "click",".drawer_question_set_link", ->
-      Coconut.menuView.hideDrawer()
+      $(".mdl-layout__drawer").removeClass("is-visible")
+      $(".mdl-layout__obfuscator").removeClass("is-visible")
 
     @$el.html "
       <div id='navbar' data-role='navbar'>
@@ -52,10 +50,10 @@ class MenuView extends Backbone.View
           new_url = "##{Coconut.databaseName}/new/result/#{escape(question.id)}"
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           "
-            <div style='margin-left: 15px'>
+            <div>
 <!--          <a class='drawer_question_set_link' href='#{new_url}'><i class='material-icons'>add</i></a> -->
-              <a class='drawer_question_set_link' href='#{results_url}'><i class='mdl-color-text--accent material-icons'>#{icons[question.id]}</i></a>
-              <span class='drawer_question_set_name'>#{question.id}</span>
+              <a class='mdl-navigation__link' href='#{results_url}'><i class='mdl-color-text--accent material-icons'>#{icons[question.id]}</i>#{question.id}</a>
+<!--              <span class='drawer_question_set_name'>#{question.id}</span> -->
             </div>
           "
         .join(" "))
@@ -63,10 +61,6 @@ class MenuView extends Backbone.View
         componentHandler.upgradeDom()
 
         @update()
-
-  hideDrawer: ->
-    $(".mdl-layout__drawer").removeClass("is-visible")
-    $(".mdl-layout__obfuscator").removeClass("is-visible")
 
   renderHeader: ->
     $(".mdl-layout__header-row").html "
@@ -78,7 +72,6 @@ class MenuView extends Backbone.View
       <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
         <li class='mdl-menu__item'>About</li>
         <li class='mdl-menu__item'>Support</li>
-        <li disabled class='mdl-menu__item'>Disabled Action</li>
         <li class='mdl-menu__item'>
           <a class='mdl-menu__item' id='logout' href='##{Coconut.databaseName}/logout'>Logout</a>
         </li>
