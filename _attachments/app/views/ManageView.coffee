@@ -4,7 +4,7 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 
 class ManageView extends Backbone.View
-  
+
   render: ->
 
     links = [
@@ -12,7 +12,7 @@ class ManageView extends Backbone.View
       "Send Backup, backup, send/backup"
       "Save Backup, get_app, save/backup"
     ]
-    
+
     @$el.html "
       <style>
         .manageLink{
@@ -20,7 +20,7 @@ class ManageView extends Backbone.View
           margin: 10px;
         }
       </style>
-      <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:50%; margin: 0px auto; padding:10px'>
+      <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:400px; margin: 0px auto; margin-top: 50px; padding:10px'>
       </div>
     "
 
@@ -38,5 +38,5 @@ class ManageView extends Backbone.View
         </button>
       "
     .join(""))
-    
+
 module.exports = ManageView
