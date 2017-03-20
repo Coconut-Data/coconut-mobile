@@ -3,9 +3,7 @@ s = require 'underscore.string'
 
 Backbone = require 'backbone'
 Backbone.$  = $
-
 SetupView = require './SetupView'
-Dialog = require './DialogView'
 
 class SelectApplicationView extends Backbone.View
 
@@ -31,6 +29,7 @@ class SelectApplicationView extends Backbone.View
           setupView = new SetupView()
           setupView.render()
         else
+          $('.mdl-layout__drawer-button').addClass('hide')
           @$el.html "
             <h3 class='select_app'>Select a coconut application</h3>
             <p id='select_buttons'>
