@@ -35,8 +35,8 @@ class Config extends Backbone.Model
   cloud_url_no_http: => @get("cloud").replace(/^https{0,1}:\/\//,"")
 
   httpOrHttps: =>
-    if @get("cloud").match(/^https/)
-      "https"
+    if @get("cloud").match(/localhost/)
+      "http"
     else
       # forcing this to https otherwise when getting encryption key, it will use http instead of https during a https connection
       # TODO - can be refactored to avoid using http

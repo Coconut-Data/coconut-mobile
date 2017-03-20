@@ -48,7 +48,7 @@ class Router extends Backbone.Router
       else
         selectDatabaseView = new SelectApplicationView()
         selectDatabaseView.render()
-  
+
 
   routes:
     # Note that the database param gets removed from the args pased to the route handler in the execute function
@@ -99,7 +99,7 @@ class Router extends Backbone.Router
       defaultQuestion = Coconut.questions.first()
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
-  setup: (httpType = 'http://', cloudUrl = document.location.origin ,applicationName,cloudUsername,cloudPassword) ->
+  setup: (httpType = 'http', cloudUrl = document.location.origin ,applicationName,cloudUsername,cloudPassword) ->
     setupView = new SetupView()
     setupView.render()
     setupView.prefill httpType,
