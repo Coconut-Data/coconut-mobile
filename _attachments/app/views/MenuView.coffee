@@ -9,7 +9,7 @@ class MenuView extends Backbone.View
 
   render: =>
     $("header.coconut-drawer-header").html "
-      <h2>Coconut Outbreak</h2>
+      <h3 id='test'>Coconut Outbreak</h3>
       Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
       Last sync: <span class='sync-sent-status'></span>
     "
@@ -20,9 +20,9 @@ class MenuView extends Backbone.View
       #{
         _([
           "##{Coconut.databaseName}/sync,sync,Sync data"
-          "##{Coconut.databaseName}/logout,person,Logout"
           "##{Coconut.databaseName}/reset/database,warning,Reset database"
           "##{Coconut.databaseName}/manage,build,Manage"
+          "##{Coconut.databaseName}/logout,exit_to_app,Logout"
         ]).map (linkData) ->
           [url,icon,linktext] = linkData.split(",")
           "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text material-icons'>#{icon}</i>#{linktext}</a>"
@@ -31,7 +31,10 @@ class MenuView extends Backbone.View
     "
 
     $("nav.coconut-navigation").on "click",".mdl-navigation__link", ->
-      $(".mdl-layout__drawer").removeClass("is-visible")
+      Coconut.menuView.hideDrawer()
+
+    $("nav.coconut-navigation").on "click",".drawer_question_set_link", ->
+      Coconut.menuView.hideDrawer()
 
     @$el.html "
       <div id='navbar' data-role='navbar'>
@@ -44,14 +47,14 @@ class MenuView extends Backbone.View
 
     Coconut.questions.fetch
       success: =>
-
+        icons = { 'Case Notification':'wifi', 'Facility':'local_hospital', 'Household':'home', 'Household Members':'person'}
         $("#drawer_question_sets").html (Coconut.questions.map (question,index) ->
           new_url = "##{Coconut.databaseName}/new/result/#{escape(question.id)}"
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           "
-            <div>
-              <a class='drawer_question_set_link' href='#{new_url}'><i class='mdl-color-text--accent material-icons'>add</i></a>
-              <a class='drawer_question_set_link' href='#{results_url}'><i class='mdl-color-text--accent material-icons'>insert_chart</i></a>
+            <div style='margin-left: 15px'>
+<!--          <a class='drawer_question_set_link' href='#{new_url}'><i class='material-icons'>add</i></a> -->
+              <a class='drawer_question_set_link' href='#{results_url}'><i class='mdl-color-text--accent material-icons'>#{icons[question.id]}</i></a>
               <span class='drawer_question_set_name'>#{question.id}</span>
             </div>
           "
@@ -60,6 +63,10 @@ class MenuView extends Backbone.View
         componentHandler.upgradeDom()
 
         @update()
+
+  hideDrawer: ->
+    $(".mdl-layout__drawer").removeClass("is-visible")
+    $(".mdl-layout__obfuscator").removeClass("is-visible")
 
   renderHeader: ->
     $(".mdl-layout__header-row").html "

@@ -71,6 +71,10 @@ header .mdl-layout-title{
   padding: 16px;
   height: 151px;
 }
+.coconut-drawer-header h3 {
+  color: #fff;
+}
+
 .coconut-avatar-dropdown {
   display: -webkit-box;
   display: -webkit-flex;
@@ -121,6 +125,11 @@ header .mdl-layout-title{
 .coconut-navigation .mdl-navigation__link {
   font-size: 20px;
   line-height:24px;
+}
+
+.coconut-navigation .mdl-navigation__link:hover {
+  background-color: rgb(224,224,224);
+  color: rgb(33,150,243);
 }
 
 .coconut-content {
@@ -248,9 +257,9 @@ _:-ms-input-placeholder, :root .coconut-graph {
 
 .drawer_question_set_name{
   position: relative;
-  bottom: 24px;
+  bottom: 15px;
   left: 24px;
-  font-size: 20px;
+  font-size: 24px;
   color: rgba(255, 255, 255, 0.56);
   font-weight: 500;
 }
