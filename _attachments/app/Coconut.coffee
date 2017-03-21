@@ -32,7 +32,7 @@ class Coconut
   Create encrypted pouchdb coconut-ProjectName-username with passwords as key
   Add one document holding shared encryption key
   Add document with something clear text to be used to validate that the database was successfully decrypted
-  Create coconut-ProjectName encrypted with encryption key 
+  Create coconut-ProjectName encrypted with encryption key
   ###
 
   createDatabases: (options) =>
@@ -117,7 +117,6 @@ class Coconut
     pluginDatabase.allDocs()
     .catch (error) -> console.error error
     .then (result) ->
-
       # If the database is empty just call success
       options?.success?() if result.rows.length is 0
 
@@ -187,7 +186,7 @@ class Coconut
     PouchDB.allDbs().then (dbs) =>
       dbsToDestroy = _(dbs).filter (dbName) ->
         dbName.match "^coconut-"+options.applicationName
-      
+
       finished = _.after dbsToDestroy.length, ->
         options.success?()
 
@@ -195,7 +194,6 @@ class Coconut
         console.log "Deleting #{db}"
         (new PouchDB(db)).destroy().then (response) ->
           console.log "#{db} Destroyed"
-          console.log response
           finished()
 
   createDatabaseForEachUser: (options) =>
@@ -206,7 +204,7 @@ class Coconut
     .catch (error) ->
       console.error "Error while downloading user information: #{JSON.stringify error}"
     .then (result) =>
-      
+
       callSuccessWhenFinished = _.after result.rows.length, ->
         options.success()
 
@@ -245,7 +243,7 @@ class Coconut
       cloud_credentials: "#{options["Cloud Username"]}:#{options["Cloud Password"]}"
 
   isValidDatabase: (options) =>
-    
+
     if @database
       @database.get "decryption check"
       .catch (error) ->

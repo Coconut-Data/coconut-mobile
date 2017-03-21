@@ -18,10 +18,9 @@ class SetupView extends Backbone.View
   render: =>
     @$el.html "
       <h3>Install Coconut Project</h3>
+      <div style='padding-bottom: 50px'>
       Coconut is an offline HTML5 application. This means that it works even when you are offline. But first, you need to set it up by pointing it at an existing cloud based Coconut server with a specific Coconut application to use. Once you've done that all of the resources required to use the app will be saved on your device. The only time you need to be online is when you sync.
-      <br/>
-      <br/>
-      <br/>
+      </div>
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
@@ -120,7 +119,6 @@ class SetupView extends Backbone.View
         , 1000
 
       actionIfDatabaseExists: (options) =>
-        console.log options
         @$el.find("#form").show()
         @$el.find("#spinner").remove()
         $("#message").html "

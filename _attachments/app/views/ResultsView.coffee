@@ -19,7 +19,7 @@ class ResultsView extends Backbone.View
 
     @$el.html "
       <style>
-        h3{ 
+        h3{
           margin-top:15px;
           margin-right: 10px;
           padding-top: 5px;
@@ -28,7 +28,7 @@ class ResultsView extends Backbone.View
           line-height: 15px;
         }
 
-        h4{ 
+        h4{
           color: #{Coconut.colors.primary1};
         }
         /* Fixes problem with android's refresh on swipe 'feature' */
@@ -76,7 +76,7 @@ class ResultsView extends Backbone.View
             $("#results_metrics").html _(metrics).map( (value, metric) ->
               "
                 <tr>
-                  <td>#{metric}</td>
+                  <td style='width: 280px'>#{metric}</td>
                   <td style='color:#{Coconut.colors.accent1}'>#{value}</td>
                 </tr>
               "
@@ -128,7 +128,7 @@ class ResultsView extends Backbone.View
 
     @loadResults(false)
     @loadResults(true)
-  
+
   loadResults: (complete) ->
     results = new ResultCollection()
     results.fetch
