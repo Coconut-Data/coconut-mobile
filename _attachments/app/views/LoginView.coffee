@@ -15,7 +15,7 @@ class LoginView extends Backbone.View
     @$el.html "
       <style>
         #login_wrapper{
-          font-size: 200%;
+          font-size: 102%;
           width:350px;
           margin: 70px auto;
           padding: 25px;
@@ -40,7 +40,7 @@ class LoginView extends Backbone.View
         }
       </style>
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
-        <div class='mdl-card__title coconut-mdl-card__title'></div>
+        <div class='mdl-card__title coconut-mdl-card__title errMsg'></div>
         <form id='login_form'>
 
           <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
@@ -95,5 +95,5 @@ class LoginView extends Backbone.View
         $('.mdl-layout__drawer-button').addClass('show')
         @callback()
       error: =>
-        $('.coconut-mdl-card__title').html "Invalid username/password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
+        $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='material-icons'>error_outline</i> Invalid username/password"
   module.exports = LoginView
