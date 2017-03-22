@@ -13,9 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@-ms-viewport {
+  width: device-width;
+}
 
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
+}
+
+.container {
+  width: device-width;
+  max-width: 99%;
+  margin: auto;
+}
+
+.question_container {
+  width: 768px;
+  max-width: 99%;
+  margin: 10px;
 }
 
 header .material-icons{
@@ -40,8 +55,10 @@ header .mdl-layout-title{
 }
 
 .coconut-layout .mdl-layout__header .mdl-layout__drawer-button {
-  /* color: rgba(0, 0, 0, 0.54); */
+  background: #4285f4;
+  padding-top: 5px;
 }
+
 .mdl-layout__drawer .avatar {
   margin-bottom: 16px;
 }
@@ -271,8 +288,8 @@ _:-ms-input-placeholder, :root .coconut-graph {
 	display: none;
 }
 
-h3.select_app {
-  color: rgb(63,81,181);
+h3.select_app, h3.content_title {
+  color: #2196F3;
   margin-top: 15px;
 }
 
@@ -303,7 +320,7 @@ font-size: 16px;
 
 #app_title {
   color: #ffffff;
-  font-size: 30px;
+  font-size: 25px;
 }
 
 .mdl-layout__header-row {
@@ -314,11 +331,6 @@ font-size: 16px;
   color: #ffffff;
   text-decoration: none;
   font-size: 18px;
-}
-
-.coconut-layout .mdl-layout__header .mdl-layout__drawer-button {
-  background: #4285f4;
-  padding-top: 5px;
 }
 
 .mdl-chip {

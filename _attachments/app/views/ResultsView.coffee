@@ -37,7 +37,7 @@ class ResultsView extends Backbone.View
         }
       </style>
 
-      <h3>
+      <h3 class='content_title'>
         #{@question.id}
       </h3>
       <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='material-icons'>add</i></a>

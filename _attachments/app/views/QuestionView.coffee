@@ -106,7 +106,7 @@ class QuestionView extends Backbone.View
 
   render: =>
 
-    
+
 
     @primary1 = "rgb(63,81,181)"
     @primary2 = "rgb(48,63,159)"
@@ -116,9 +116,12 @@ class QuestionView extends Backbone.View
 
     @$el.html "
     <style>
-
       div.question .mdl-textfield{
         width: inherit;
+        display: block;
+      }
+      .mdl-textfield__input{
+        width: 100%;
       }
 
       label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
@@ -143,8 +146,8 @@ class QuestionView extends Backbone.View
       label.mdl-nontextfield__label{
         display:block;
         color: #{@accent1};
-        padding-bottom:20px;
-        font-size:150%;
+        padding:20px 0px 20px;
+        font-size: 1.3em;
       }
 
       label.mdl-nontextfield__label.has-value{
@@ -183,11 +186,12 @@ class QuestionView extends Backbone.View
       }
 
       input{
-        font-size: 2em;
+        font-size: 1.5em;
+        width: 100%;
       }
 
       label.radio-option,label.checkbox-option {
-        border-radius:20px;   
+        border-radius:20px;
         display:inline-block;
         padding:4px 11px;
         border: 1px solid black;
@@ -246,6 +250,7 @@ earchCompleteStop()
 
       .question-set-complete-label{
         color: #{@accent2};
+        font-size: 1.5em;
       }
       #question-set-complete{
         /* Triple-sized Checkboxes */
@@ -253,7 +258,6 @@ earchCompleteStop()
         -moz-transform: scale(3); /* FF */
         -webkit-transform: scale(3); /* Safari and Chrome */
         -o-transform: scale(3); /* Opera */
-        padding: 10px;
         height:20px;
         width: 15px;
         margin: 10px;
@@ -272,7 +276,7 @@ earchCompleteStop()
       }
       .tt-suggestion{
         background-color: white;
-        border-radius:20px;   
+        border-radius:20px;
         display:block;
         padding:4px 11px;
         border: 1px solid black;
@@ -329,24 +333,23 @@ earchCompleteStop()
 
 
     </style>
-
+    <div class='question_container'>
       <div style='position:fixed; right:5px; color:white; padding:20px; z-index:5' id='messageText'>
       </div>
 
       <div style='position:fixed; right:5px; color:white; background-color: #333; padding:20px; display:none; z-index:10' id='messageText'>
         Saving...
       </div>
-      <!--
-      <div style='background-color: #{@primary2}'>
-      <h2 style='font-weight:100; color: #{@accent1}' >#{@model.id}</h2>
-      </div>
-      -->
-      <hr/>
+
+
+      <h3 class='content_title'>#{@model.id}</h3>
+
       <div id='question-view'>
         <form id='questions'>
           #{@toHTMLForm(@model)}
         </form>
       </div>
+    </div>
     "
 
     componentHandler.upgradeDom()
@@ -364,7 +367,7 @@ earchCompleteStop()
 
     # for first run
     @updateSkipLogic()
-    
+
     # skipperList is a list of questions that use skip logic in their action on change events
     skipperList = []
 
@@ -373,9 +376,9 @@ earchCompleteStop()
 
     $(@model.get("questions")).each (index, question) =>
 
-      # remember which questions have skip logic in their actionOnChange code 
+      # remember which questions have skip logic in their actionOnChange code
       skipperList.push(question.safeLabel()) if question.actionOnChange().match(/skip/i)
-      
+
       if question.get("action_on_questions_loaded")? and question.get("action_on_questions_loaded") isnt ""
         console.debug question.get "action_on_questions_loaded"
         CoffeeScript.eval question.get "action_on_questions_loaded"
@@ -567,7 +570,7 @@ earchCompleteStop()
     result = []
 
     questionWrapper = window.questionCache[question_id]
-    
+
     # early exit, don't validate labels
     return "" if questionWrapper.hasClass("label")
 
@@ -748,7 +751,6 @@ earchCompleteStop()
     # Need this because we have recursion later
     questions = [questions] unless questions.length?
     _.map(questions, (question) =>
-
       repeatable = if question.repeatable() == "true" then "<button>+</button>" else ""
 
       unless question.type()? and question.label()? and question.label() != ""
@@ -776,13 +778,13 @@ earchCompleteStop()
         if groupId?
           name = "group.#{groupId}.#{name}"
         return "
-          <div 
+          <div
             #{
             if question.validation()
               "data-validation = '#{escape(question.validation())}'" if question.validation()
             else
               ""
-            } 
+            }
             data-required='#{question.required()}'
             class='question #{question.type?() or ''} question-#{question_id} mdl-textfield mdl-js-textfield mdl-textfield--floating-label'
             data-question-name='#{name}'
@@ -820,15 +822,16 @@ earchCompleteStop()
                   html += "</select>"
               when "radio"
                 if @readonly
-                  "<input class='radioradio' name='#{name}' type='text' id='#{question_id}' value='#{question.value()}'></input>"
+                  "<input class='mdl-radio__button' name='#{name}' type='text' id='#{question_id}' value='#{question.value()}'></input>"
                 else
                   options = question.get("radio-options")
                   _.map(options.split(/, */), (option,index) ->
                     "
-                      <input class='radio' type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
-                      <label class='radio radio-option' for='#{question_id}-#{index}'>#{option}</label>
+                      <label class='mdl-radio mdl-js-radio mdl-js-ripple-effect' for='#{question_id}-#{index}'>
+                      <input class='mdl-radio__button' type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
+                      <span class='mdl-radio__label' style='padding-right: 10px'>#{option} </span>
+                      </label>
                     "
-
                   ).join("")
 
 
@@ -860,7 +863,7 @@ earchCompleteStop()
                   {desiredAccuracy:50,maxWait:60*5*1000}
                 )
 
-                " 
+                "
                   <div>
                     <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent'>
                       Get current location
@@ -921,7 +924,7 @@ earchCompleteStop()
       if name? and name isnt ""
         accessorFunction = {}
         window.questionCache[name] = $(question)
-        
+
 
         # cache accessor function
         $qC = window.questionCache[name] # questionContext
