@@ -92,7 +92,8 @@ class LoginView extends Backbone.View
       password: loginData.password
       success: =>
         Coconut.menuView.render()
-        $('.mdl-layout__drawer-button').addClass('show')
+        $('.mdl-layout__drawer-button').show()
+        $('.mdl-layout__header-row').css('padding-left', '80px')
         @callback()
       error: =>
         $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='material-icons'>error_outline</i> Invalid username/password"
