@@ -35,8 +35,8 @@ class LoginView extends Backbone.View
           padding-top: 30px;
         }
         #login_button, #cancel_button{
-          font-size:100%
-
+          font-size:100%;
+          width: 100%;
         }
       </style>
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
@@ -60,8 +60,9 @@ class LoginView extends Backbone.View
         </form>
       </div>
     "
-
     componentHandler.upgradeDom()
+    $('.mdl-layout__drawer-button').hide()
+    $('.mdl-layout__header-row').css('padding-left', '24px')
 
   events:
     "click #login_button": "login"
@@ -82,7 +83,7 @@ class LoginView extends Backbone.View
   login: =>
     # Useful for reusing the login screen - like for database encryption
     if $("#username").val() is "" or $("#password").val() is ""
-      return $('.coconut-mdl-card__title').html "Please enter a username and password <i style='padding-left:10px' class='material-icons'>mood_bad</i>"
+      return @displayErr("Please enter a username and a password")
 
     loginData = Form2js.form2js('login_form')
     loginData.username = loginData.username.toLowerCase()
@@ -96,5 +97,9 @@ class LoginView extends Backbone.View
         $('.mdl-layout__header-row').css('padding-left', '80px')
         @callback()
       error: =>
-        $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='material-icons'>error_outline</i> Invalid username/password"
+        @displayErr("Invalid username/password")
+
+  displayErr: (msg) =>
+    $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='material-icons'>error_outline</i> #{msg}"
+
   module.exports = LoginView
