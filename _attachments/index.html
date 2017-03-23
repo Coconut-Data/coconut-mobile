@@ -22,6 +22,7 @@
 
     <link rel="stylesheet" href="css/material.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/modal-dialog.css">
     <link rel="stylesheet" href="css/jquery.dataTables.min.css">
   </head>
 
@@ -46,33 +47,16 @@
       <nav class="coconut-navigation mdl-navigation"></nav>
     </div>
 
-    <main class="mdl-layout__content mdl-color--grey-100">
+    <main class="mdl-layout__content">
       <div class='container'>
         <div data-role='content' id="content"> </div>
         <div id='log'></div>
       </div>
     </main>
-    <div class="dialog-container">Test</div>
-    <script type='text/template' id='dialog_template'>
-        <div class="dialog" id='dialog'>
-          <span class="dialog-title" id='dialogTitle'><%= dialog.title %></span>
-          <% if (dialog.showCloseBtn) { %>
-            <span id='dialogClose'><a href="#" class="close" aria-label="close"><img src="images/close.png"></a></span>
-          <% } %>
-          <div class="dialog-body">
-            <div><%= dialog.body %></div>
-            <div>
-              <button id="loginSubmit" class="btn btn-success" type="submit">
-                <span class="glyphicon glyphicon-off"></span> Submit
-              </button>'
-            </div>
-          </div>
-        </div>
-    </script>
   </div>
 
   <script src="./js-libraries/material.min.js"></script>
-  </body>
   <script type="text/javascript" src="js-libraries/coffee-script.js"></script>
   <script type="text/javascript" src="./bundle.js"></script>
+  </body>
 </html>

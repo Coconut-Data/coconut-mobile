@@ -1,14 +1,16 @@
 CACHE MANIFEST
-# VERSION 0.8.77
+# VERSION 0.8.83
 
 /
 /bundle.js
 /js-libraries/material.min.js
+/js-libraries/modal-dialog.js
 /js-libraries/coffee-script.js
 /css/style.min.css
 /css/fonts/fonts.css
 /css/material.css
 /css/styles.css
+/css/modal-dialog.css
 /css/jquery.dataTables.min.css
 /css/fonts/Roboto-Thin.ttf
 /css/fonts/Roboto-Light.ttf

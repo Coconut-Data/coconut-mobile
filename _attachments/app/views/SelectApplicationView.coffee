@@ -1,6 +1,6 @@
 $ = require 'jquery'
 s = require 'underscore.string'
-
+Dialog = require '../../js-libraries/modal-dialog'
 Backbone = require 'backbone'
 Backbone.$  = $
 SetupView = require './SetupView'
@@ -9,12 +9,36 @@ class SelectApplicationView extends Backbone.View
 
   el: '#content'
 
+  initialize: ->
+   view = this
+
   events:
     "click button.mdl-chip__action": "deleteApplication"
+    "destroy": "destroy"
 
   deleteApplication: (e) ->
     app_name = e.target.id.slice(4)
-    alert("You selected to delete "+ app_name)
+    Dialog.showDialog
+      title: 'Delete Application'
+      text: "You selected to delete <b>"+app_name+"</b>.<br />Are you sure?"
+      negative:
+        title: 'No'
+      positive:
+          title: 'Yes',
+          onClick: (e) ->
+            Dialog.showDialog
+              title: "Removing #{app_name}",
+              text: "Please wait..."
+            Coconut.destroyApplicationDatabases
+               applicationName: app_name
+               success: =>
+                 Dialog.showDialog
+                   title: "#{app_name} Removed",
+                   text: "click CLOSE to continue"
+                   neutral:
+                     title: "Close",
+                     onClick: (e) ->
+                       document.location.reload()
 
   render: =>
     PouchDB.allDbs()

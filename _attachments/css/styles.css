@@ -340,7 +340,7 @@ font-size: 16px;
 }
 
 button.mdl-chip__action {
-  color: rgb(33,150,243);
+  color: rgba(0,0,0, 0.87);
 }
 
 .errMsg {
@@ -349,76 +349,6 @@ button.mdl-chip__action {
 
 .clearfix {
   line-height: 10px;
-}
-
-/* Dialog modal */
-.dialog-container, .help-container {
-  background: rgba(0, 0, 0, 0.57);
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  pointer-events: none;
-  will-change: opacity;
-  -webkit-transition: opacity 0.333s cubic-bezier(0, 0, 0.21, 1);
-  transition: opacity 0.333s cubic-bezier(0, 0, 0.21, 1);
-}
-
-.dialog-container--visible {
-  opacity: 1;
-  pointer-events: auto; }
-
-.dialog {
-  background: #EEE;
-  border-radius: 2px;
-  box-shadow: 0 0 14px rgba(0, 0, 0, 0.24), 0 14px 28px rgba(0, 0, 0, 0.48);
-  min-width: 280px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  padding: 20px;
-  -webkit-transform: translate(-50%, -50%) translateY(30px);
-          transform: translate(-50%, -50%) translateY(30px);
-  -webkit-transition: -webkit-transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s;
-  transition: -webkit-transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s;
-  transition: transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s;
-  transition: transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s, -webkit-transform 0.333s cubic-bezier(0, 0, 0.21, 1) 0.05s; }
-
-.dialog > div {
-  padding-left: 34px;
-  padding-right: 24px; }
-
-.dialog-title {
-  padding-top: 20px;
-  font-size: 1.25em;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: red;
-}
-
-.dialog-body {
-  padding: 20px 10px 24px 10px;
-  background: #fff;
-  border: solid 1px #999999;
-  border-radius: 5px;
-}
-
-.dialog-body select {
-  width: 100%;
-  font-size: 2em;
-}
-
-.dialog-buttons {
-  padding: 8px !important;
-  float: right;
-}
-
-#dialogClose {
-  float: right;
-  margin-top: -15px;
-  margin-right: -15px;
 }
 
 button#top-menu-lower-right {

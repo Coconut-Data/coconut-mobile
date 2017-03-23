@@ -185,7 +185,7 @@ class Coconut
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs().then (dbs) =>
       dbsToDestroy = _(dbs).filter (dbName) ->
-        dbName.match "^coconut-"+options.applicationName
+        dbName.match "^coconut-"+options.applicationName+"$"
 
       finished = _.after dbsToDestroy.length, ->
         options.success?()
