@@ -9,9 +9,14 @@ class MenuView extends Backbone.View
 
   render: =>
     $("header.coconut-drawer-header").html "
-      <h3>Coconut Mobile</h3>
-      Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
-      Last sync: <span class='sync-sent-status'></span>
+    <div class='clear'>
+      <div class='f-left m-l-10'><img src='/images/cocoLogo.png' id='cslogo_sm'></div>
+      <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
+    </div>
+    <div style='margin: 5px 0 0 25px'>
+    Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
+    Last sync: <span class='sync-sent-status'></span>
+    </div>
     "
     $("nav.coconut-navigation").html "
 

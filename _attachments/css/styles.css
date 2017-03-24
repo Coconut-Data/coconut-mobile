@@ -64,7 +64,7 @@ header .mdl-layout-title{
 }
 
 .coconut-layout .coconut-drawer.is-visible {
-  width: 400px;
+  width: 380px;
 }
 
 .coconut-drawer {
@@ -86,7 +86,7 @@ header .mdl-layout-title{
       -ms-flex-pack: end;
           justify-content: flex-end;
   padding: 16px;
-  height: 151px;
+/*  height: 151px; */
   background-color: #3367d6;
   color: rgba(255,255,255,.7)
 }
@@ -378,3 +378,16 @@ button#top-menu-lower-right i.material-icons {
 .show {
   display: block;
 }
+
+#cslogo_sm {
+  width: 70px;
+  height: 56px;
+  margin-right: 10px;
+}
+
+#drawer-title {
+	font-size: 30px;
+  margin-top: 15px;
+}
+.f-left {float: left;}
+.m-l-10 { margin-left: 10px;}
