@@ -19,17 +19,19 @@ class SetupView extends Backbone.View
     @$el.html "
       <h3>Install Coconut Project</h3>
       <div style='padding-bottom: 50px'>
-      Coconut is an offline HTML5 application. This means that it works even when you are offline. But first, you need to set it up by pointing it at an existing cloud based Coconut server with a specific Coconut application to use. Once you've done that all of the resources required to use the app will be saved on your device. The only time you need to be online is when you sync.
+      Coconut works offline, but first, you need to connect it to a Coconut server. Then Coconut will download everything that it needs to run on your device. After this, you only need a connection when you sync your data.
+      <br />Please contact your system administrator if you do not know these connection settings.
       </div>
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
         <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:400px; margin: 0px auto; padding:25px'>
         #{
+          passwordType = "type='password'"
           _(@fields).map (field) =>
             "
               <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
-                <input class='mdl-textfield__input' id='#{s.underscored(field)}'/>
+                <input class='mdl-textfield__input' id='#{s.underscored(field)}' type='#{"password" if field.includes("Password")}'/>
                 <label class='mdl-textfield__label' for='#{s.underscored field}'>#{field}</label>
               </div>
             "
