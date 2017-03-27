@@ -391,3 +391,7 @@ button#top-menu-lower-right i.material-icons {
 }
 .f-left {float: left;}
 .m-l-10 { margin-left: 10px;}
+
+#results-tabs {
+  margin-bottom: 20px;
+}

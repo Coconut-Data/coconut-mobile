@@ -89,7 +89,7 @@ class ResultsView extends Backbone.View
 
       <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
-        <div class='mdl-tabs__tab-bar'>
+        <div class='mdl-tabs__tab-bar' id='results-tabs'>
           <a href='#complete-panel' class='mdl-tabs__tab is-active'>Complete (<span id='total-completed''></span>)</a>
           <a href='#not-complete-panel' class='mdl-tabs__tab'>Not Complete (<span id='total-not-completed'></span>)</a>
         </div>
