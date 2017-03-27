@@ -14,8 +14,8 @@ class SyncView extends Backbone.View
   render: =>
     @$el.html "
       <center>
-      <h2>Syncing</h2>
-      <h3 id='status'></h3>
+      <h3>Syncing</h3>
+      <h4 id='status'></h4>
       <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
       </center>
     "
