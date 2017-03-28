@@ -40,6 +40,7 @@ class LoginView extends Backbone.View
         }
       </style>
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
+        <div id='logo-title'><img src='images/cocoLogo.png' id='cslogo_sm'> Coconut</div>
         <div class='mdl-card__title coconut-mdl-card__title errMsg'></div>
         <form id='login_form'>
 
@@ -54,15 +55,14 @@ class LoginView extends Backbone.View
           </div>
 
           <div class='mdl-card__actions' id='login_actions'>
-            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Login</button> &nbsp;
+            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Log in</button> &nbsp;
             <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_button'>Cancel</button>
           </div>
         </form>
       </div>
     "
     componentHandler.upgradeDom()
-    $('.mdl-layout__drawer-button').hide()
-    $('.mdl-layout__header-row').css('padding-left', '24px')
+    Coconut.router.toggleDrawerButton(false)
 
   events:
     "click #login_button": "login"
@@ -92,8 +92,6 @@ class LoginView extends Backbone.View
       password: loginData.password
       success: =>
         Coconut.menuView.render()
-        $('.mdl-layout__drawer-button').show()
-        $('.mdl-layout__header-row').css('padding-left', '80px')
         @callback()
       error: =>
         @displayErr("Invalid username/password")

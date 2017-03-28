@@ -383,6 +383,10 @@ button#top-menu-lower-right i.material-icons {
   margin-right: 10px;
 }
 
+#logo-title {
+  font-size: 30px;  
+}
+
 #drawer-title {
 	font-size: 30px;
   margin-top: 15px;

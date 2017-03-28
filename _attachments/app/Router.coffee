@@ -111,12 +111,22 @@ class Router extends Backbone.Router
   userLoggedIn: (options) ->
     User.isAuthenticated
       success: (user) ->
+        Coconut.router.toggleDrawerButton(true)
         Coconut.menuView.render()
         options.success(user)
       error: ->
+        Coconut.router.toggleDrawerButton(false)
         Coconut.loginView = new LoginView()
         Coconut.loginView.callback = options.success
         Coconut.loginView.render()
+
+  toggleDrawerButton: (logged_in) ->
+    if (logged_in)
+      $('.mdl-layout__drawer-button').show()
+      $('.mdl-layout__header-row').css('padding-left', '80px')
+    else
+      $('.mdl-layout__drawer-button').hide()
+      $('.mdl-layout__header-row').css('padding-left', '24px')
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()
@@ -253,14 +263,13 @@ class Router extends Backbone.Router
             Coconut.questionView.model.fetch
               success: ->
                 Coconut.questionView.render()
-                $("#content").prepend "
-                  <h2>Are you sure you want to delete this result?</h2>
+                $('#askConfirm').html "
+                  <h4>Are you sure you want to delete this result?</h4>
                   <div id='confirm'>
-                    <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'>Yes</a>
-                    <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}'>Cancel</a>
+                    <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'><button class='mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect'>Yes</button></a>
+                    <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}'><button class='mdl-button mdl-js-button mdl-js-ripple-effect'>Cancel</button></a>
                   </div>
                 "
-                $("#confirm a").button()
                 $("#content form").css
                   "background-color": "#333"
                   "margin":"50px"
@@ -276,6 +285,7 @@ class Router extends Backbone.Router
       id: unescape(question_id)
     Coconut.resultsView.question.fetch
       success: ->
+        console.log(Coconut.resultsView.question)
         Coconut.resultsView.render()
 
   resetDatabase: () ->
