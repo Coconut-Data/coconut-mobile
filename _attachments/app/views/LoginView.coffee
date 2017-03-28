@@ -84,7 +84,6 @@ class LoginView extends Backbone.View
     # Useful for reusing the login screen - like for database encryption
     if $("#username").val() is "" or $("#password").val() is ""
       return @displayErr("Please enter a username and a password")
-
     loginData = Form2js.form2js('login_form')
     loginData.username = loginData.username.toLowerCase()
 
