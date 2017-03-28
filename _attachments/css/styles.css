@@ -375,9 +375,7 @@ button#top-menu-lower-right i.material-icons {
   display: none;
 }
 
-.show {
-  display: block;
-}
+.show { display: block; }
 
 #cslogo_sm {
   width: 70px;

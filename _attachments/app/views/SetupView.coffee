@@ -3,6 +3,7 @@ s = require 'underscore.string'
 
 Backbone = require 'backbone'
 Backbone.$  = $
+Dialog = require '../../js-libraries/modal-dialog'
 
 class SetupView extends Backbone.View
 
@@ -17,17 +18,12 @@ class SetupView extends Backbone.View
 
   render: =>
     @$el.html "
-      <h3>Install Coconut Project</h3>
-      <div style='padding-bottom: 50px'>
-      Coconut works offline, but first, you need to connect it to a Coconut server. Then Coconut will download everything that it needs to run on your device. After this, you only need a connection when you sync your data.
-      <br />Please contact your system administrator if you do not know these connection settings.
-      </div>
+      <h3 style='text-align: center'>Install Coconut Project</h3>
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
         <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:400px; margin: 0px auto; padding:25px'>
         #{
-          passwordType = "type='password'"
           _(@fields).map (field) =>
             "
               <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
@@ -39,7 +35,8 @@ class SetupView extends Backbone.View
         }
           <div class='mdl-card__actions'>
             <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='install' type='button'>Install</button> &nbsp;
-            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='cancel_button' type='button'>Cancel</button>
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='cancel_button' type='button'>Cancel</button> &nbsp;
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='help_button' type='button'><i class='material-icons'>help</i> Help</button>
           </div>
         </div>
       </div>
@@ -50,6 +47,7 @@ class SetupView extends Backbone.View
     "click #install": "install"
     "click .cancel_button": "cancel"
     "click #destroy": "destroy"
+    "click #help_button": "showHelp"
 
   cancel: ->
     Coconut.router.navigate("", true)
@@ -149,4 +147,12 @@ class SetupView extends Backbone.View
 
     Coconut.createDatabases options
 
+  showHelp: (e) ->
+    Dialog.showDialog
+      title: "About Install Coconut Project",
+      text: "Coconut works offline, but first, you need to connect it to a Coconut server. Then Coconut will download everything that it needs to run on your device. After this, you only need a connection when you sync your data.
+      <br /><br />Please contact your system administrator if you do not know these connection settings."
+      neutral:
+        title: "Close"
+        
 module.exports = SetupView
