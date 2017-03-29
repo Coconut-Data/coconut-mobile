@@ -53,7 +53,6 @@ class SelectApplicationView extends Backbone.View
           setupView = new SetupView()
           setupView.render()
         else
-          Coconut.router.toggleDrawerButton(false)
           @$el.html "
             <h3 class='select_app'>Select a coconut application</h3>
             <p id='select_buttons'>

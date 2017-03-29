@@ -46,6 +46,8 @@ class Router extends Backbone.Router
           success: ->
             callback.apply(this, args) if callback
       else
+        User.logout()
+        Coconut.router.toggleDrawerButton()
         selectDatabaseView = new SelectApplicationView()
         selectDatabaseView.render()
 
@@ -100,6 +102,7 @@ class Router extends Backbone.Router
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: (httpType = 'http', cloudUrl = document.location.origin ,applicationName,cloudUsername,cloudPassword) ->
+    Coconut.router.toggleDrawerButton()
     setupView = new SetupView()
     setupView.render()
     setupView.prefill httpType,
@@ -109,24 +112,24 @@ class Router extends Backbone.Router
       "Cloud Password": cloudPassword
 
   userLoggedIn: (options) ->
+    Coconut.router.toggleDrawerButton()
     User.isAuthenticated
       success: (user) ->
-        Coconut.router.toggleDrawerButton(true)
         Coconut.menuView.render()
         options.success(user)
       error: ->
-        Coconut.router.toggleDrawerButton(false)
         Coconut.loginView = new LoginView()
         Coconut.loginView.callback = options.success
         Coconut.loginView.render()
 
-  toggleDrawerButton: (logged_in) ->
-    if (logged_in)
-      $('.mdl-layout__drawer-button').show()
-      $('.mdl-layout__header-row').css('padding-left', '80px')
-    else
-      $('.mdl-layout__drawer-button').hide()
-      $('.mdl-layout__header-row').css('padding-left', '24px')
+  toggleDrawerButton: () ->
+    User.isAuthenticated
+      success: ->
+        $('div.coconut-layout').removeClass('mdl-layout--no-drawer-button')
+        $('nav.mdl-navigation').show()
+      error: ->
+        $('div.coconut-layout').addClass('mdl-layout--no-drawer-button')
+        $('nav.mdl-navigation').hide()
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()
@@ -285,7 +288,6 @@ class Router extends Backbone.Router
       id: unescape(question_id)
     Coconut.resultsView.question.fetch
       success: ->
-        console.log(Coconut.resultsView.question)
         Coconut.resultsView.render()
 
   resetDatabase: () ->

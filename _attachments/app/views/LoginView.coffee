@@ -62,7 +62,6 @@ class LoginView extends Backbone.View
       </div>
     "
     componentHandler.upgradeDom()
-    Coconut.router.toggleDrawerButton(false)
 
   events:
     "click #login_button": "login"
