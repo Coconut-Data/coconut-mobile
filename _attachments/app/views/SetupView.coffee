@@ -137,6 +137,7 @@ class SetupView extends Backbone.View
         <center>
           <h3>Installing #{applicationName}</h3>
           <h4 id='status'></h4>
+          <div id='percent' style='margin-bottom: 30px'>( 0 of 0 )</div>
           <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
         </center>
       </div>
@@ -154,5 +155,5 @@ class SetupView extends Backbone.View
       <br /><br />Please contact your system administrator if you do not know these connection settings."
       neutral:
         title: "Close"
-        
+
 module.exports = SetupView

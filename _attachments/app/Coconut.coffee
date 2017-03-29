@@ -90,6 +90,7 @@ class Coconut
     $("#status").html "Checking for available plugins"
 
     @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+    console.log(@cloudDB)
     @cloudDB.allDocs
       include_docs:false
       startkey: "_design/plugin-#{@databaseName}"
@@ -208,8 +209,9 @@ class Coconut
       callSuccessWhenFinished = _.after result.rows.length, ->
         options.success()
 
-      $("#status").html "Setting up #{result.rows.length} users. "
-
+      totalUsers = result.rows.length
+      $("#status").html "Setting up #{totalUsers} users. "
+      indx = 0
       _(result.rows).each (user) =>
         console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user.id}"
         userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
@@ -222,7 +224,7 @@ class Coconut
               "_id": "decryption check"
               "is the value of this clear text": "yes it is"
             .then ->
-              $("#status").append "*"
+              $("div#percent").html "( #{++indx} of #{totalUsers} )"
               callSuccessWhenFinished()
 
   downloadEncryptionKey: (options) =>
