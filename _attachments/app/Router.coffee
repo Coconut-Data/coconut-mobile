@@ -47,7 +47,7 @@ class Router extends Backbone.Router
             callback.apply(this, args) if callback
       else
         User.logout()
-        Coconut.router.toggleDrawerButton()
+        Coconut.router.hideDrawerButton()
         selectDatabaseView = new SelectApplicationView()
         selectDatabaseView.render()
 
@@ -125,11 +125,21 @@ class Router extends Backbone.Router
   toggleDrawerButton: () ->
     User.isAuthenticated
       success: ->
-        $('div.coconut-layout').removeClass('mdl-layout--no-drawer-button')
-        $('nav.mdl-navigation').show()
+        Coconut.router.showDrawerButton()
       error: ->
-        $('div.coconut-layout').addClass('mdl-layout--no-drawer-button')
-        $('nav.mdl-navigation').hide()
+        Coconut.router.hideDrawerButton()
+
+  showDrawerButton: ->
+    $('div.coconut-layout').removeClass('mdl-layout--no-drawer-button')
+    $('nav.mdl-navigation').show()
+    $('a#logout').show()
+    $('a#sync_icon').show()
+
+  hideDrawerButton: ->
+    $('div.coconut-layout').addClass('mdl-layout--no-drawer-button')
+    $('nav.mdl-navigation').hide()
+    $('a#logout').hide()
+    $('a#sync_icon').hide()
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()

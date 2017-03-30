@@ -44,8 +44,9 @@ header .mdl-button--icon {
 }
 
 header .mdl-layout-title{
-  padding-left:50px;
-  font-size: 40px;
+  color: #ffffff;
+  font-size: 25px;
+  padding-right: 30px;
 }
 
 .coconut-avatar {
@@ -318,11 +319,6 @@ font-size: 16px;
   font-size: 1.3em;
 }
 
-#app_title {
-  color: #ffffff;
-  font-size: 25px;
-}
-
 .mdl-layout__header-row {
   background-color: #4285f4;
 }
@@ -353,7 +349,7 @@ button.mdl-chip__action {
 
 button#top-menu-lower-right {
   position:absolute;
-  top:0px;
+  top: 0px;
   right:0px;
   padding-left: 15px;
   color: #fff;
@@ -384,7 +380,7 @@ button#top-menu-lower-right i.material-icons {
 }
 
 #logo-title {
-  font-size: 30px;  
+  font-size: 30px;
 }
 
 #drawer-title {
@@ -396,4 +392,24 @@ button#top-menu-lower-right i.material-icons {
 
 #results-tabs {
   margin-bottom: 20px;
+}
+
+div#right_top_menu {
+  position:absolute;
+  top:0px;
+  right:5px;
+}
+
+#sync_icon {
+  margin-right:25px;
+}
+
+a#sync_icon i {
+  font-size: 35px;
+  font-weight: 900;
+  margin-right: 10px;
+}
+
+a.mdl-navigation__link.top_links {
+  padding: 5px 15px 0px;
 }
