@@ -46,6 +46,7 @@ class Router extends Backbone.Router
           success: ->
             callback.apply(this, args) if callback
       else
+        # forced user logout. User should not be logged in at this point.
         User.logout()
         Coconut.router.hideDrawerButton()
         selectDatabaseView = new SelectApplicationView()
