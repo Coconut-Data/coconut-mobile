@@ -1,10 +1,9 @@
 CACHE MANIFEST
-# VERSION 0.8.83
+# VERSION 0.8.99
 
 /
 /bundle.js
 /js-libraries/material.min.js
-/js-libraries/modal-dialog.js
 /js-libraries/coffee-script.js
 /css/style.min.css
 /css/fonts/fonts.css

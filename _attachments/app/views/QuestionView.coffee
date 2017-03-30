@@ -343,7 +343,7 @@ earchCompleteStop()
 
 
       <h3 class='content_title'>#{@model.id}</h3>
-
+      <div id='askConfirm'></div>
       <div id='question-view'>
         <form id='questions'>
           #{@toHTMLForm(@model)}
