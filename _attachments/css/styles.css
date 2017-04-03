@@ -17,6 +17,10 @@
   width: device-width;
 }
 
+@media (max-width: 800px) {
+  nav.mdl-navigation { display: none; }  /* hide it on small screens */
+}
+
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
 }
@@ -412,4 +416,8 @@ a#sync_icon i {
 
 a.mdl-navigation__link.top_links {
   padding: 5px 15px 0px;
+}
+
+.mdl-badge[data-badge]:after {
+  width: 26px;
 }

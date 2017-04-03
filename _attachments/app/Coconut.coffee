@@ -88,9 +88,7 @@ class Coconut
 
   syncPlugins: (options) =>
     $("#status").html "Checking for available plugins"
-
     @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
-    console.log(@cloudDB)
     @cloudDB.allDocs
       include_docs:false
       startkey: "_design/plugin-#{@databaseName}"
@@ -154,7 +152,6 @@ class Coconut
           .catch (error) -> console.error error
           .then (result) =>
             @encryptionKey = result["key"]
-
             @database = new PouchDB("coconut-#{@databaseName}")
             @database.crypto(@encryptionKey).then =>
               @database.get "decryption check"

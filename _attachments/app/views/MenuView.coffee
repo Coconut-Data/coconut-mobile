@@ -69,13 +69,16 @@ class MenuView extends Backbone.View
 
   renderHeader: ->
     # This section is only a demo and will be eventuallly dynamically generated in the plugin
+    navlinks = (Coconut.questions.map (question,index) ->
+      results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
+      spanID = question.id.replace(/ /g,"_")
+      "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge='0'><i class='mdl-layout--small-screen-only material-icons'>#{menuIcons[question.id]}</i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
+    .join(" "))
+
     $(".mdl-layout__header-row").html "
       <span class='mdl-layout-title'>Coconut Mobile</span>
-      <nav class='mdl-navigation mdl-layout--large-screen-only'>
-        <a class='mdl-navigation__link top_links' href='##{Coconut.databaseName}/show/results/Case Notification'><span class='mdl-badge' data-badge='0'>Case Notification</span></a>
-        <a class='mdl-navigation__link top_links' href='##{Coconut.databaseName}/show/results/Facility'><span class='mdl-badge' data-badge='1'>Facility</span></a>
-        <a class='mdl-navigation__link top_links' href='##{Coconut.databaseName}/show/results/Household'><span class='mdl-badge' data-badge='10'>Household</span></a>
-        <a class='mdl-navigation__link top_links' href='##{Coconut.databaseName}/show/results/Household%20Members'><span class='mdl-badge' data-badge='100'>Household Members</span></a>
+      <nav class='mdl-navigation'>
+         #{navlinks}
       </nav>
       <div class='mdl-layout-spacer'></div>
       <div id='right_top_menu'>
