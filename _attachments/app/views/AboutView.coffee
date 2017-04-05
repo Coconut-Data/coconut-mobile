@@ -12,6 +12,5 @@ class AboutView extends Backbone.View
         text: "Description of Coconut here..."
         neutral:
           title: "Close"
-      $("#orrsDiag_content").css('top', '0%')
 
 module.exports = AboutView
