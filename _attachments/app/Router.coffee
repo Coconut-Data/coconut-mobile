@@ -12,9 +12,11 @@ PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
 
 Config = require './models/Config'
 HelpView = require './views/HelpView'
+AboutView = require './views/AboutView'
 LoginView = require './views/LoginView'
 ManageView = require './views/ManageView'
 MenuView = require './views/MenuView'
+HeaderView = require './views/HeaderView'
 Question = require './models/Question'
 QuestionCollection = require './models/QuestionCollection'
 QuestionView = require './views/QuestionView'
@@ -44,11 +46,13 @@ class Router extends Backbone.Router
       if Coconut.databaseName
         @userLoggedIn
           success: ->
+            Coconut.headerView.render()
+            Coconut.menuView.render()
             callback.apply(this, args) if callback
       else
         # forced user logout. User should not be logged in at this point.
         User.logout()
-        Coconut.router.hideDrawerButton()
+        Coconut.headerView = (new HeaderView()).render()
         selectDatabaseView = new SelectApplicationView()
         selectDatabaseView.render()
 
@@ -74,7 +78,6 @@ class Router extends Backbone.Router
     ":database/send/backup": "sendBackup"
     ":database/save/backup": "saveBackup"
     ":database/get/cloud/results": "getCloudResults"
-
     "setup": "setup"
 # TODO handle cloudUrl with http:// in it
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
@@ -103,7 +106,6 @@ class Router extends Backbone.Router
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: (httpType = 'http', cloudUrl = document.location.origin ,applicationName,cloudUsername,cloudPassword) ->
-    Coconut.router.toggleDrawerButton()
     setupView = new SetupView()
     setupView.render()
     setupView.prefill httpType,
@@ -113,7 +115,6 @@ class Router extends Backbone.Router
       "Cloud Password": cloudPassword
 
   userLoggedIn: (options) ->
-    Coconut.router.toggleDrawerButton()
     User.isAuthenticated
       success: (user) ->
         Coconut.menuView.render()
@@ -122,25 +123,6 @@ class Router extends Backbone.Router
         Coconut.loginView = new LoginView()
         Coconut.loginView.callback = options.success
         Coconut.loginView.render()
-
-  toggleDrawerButton: () ->
-    User.isAuthenticated
-      success: ->
-        Coconut.router.showDrawerButton()
-      error: ->
-        Coconut.router.hideDrawerButton()
-
-  showDrawerButton: ->
-    $('div.coconut-layout').removeClass('mdl-layout--no-drawer-button')
-    $('nav.mdl-navigation').show()
-    $('a#logout').show()
-    $('a#sync_icon').show()
-
-  hideDrawerButton: ->
-    $('div.coconut-layout').addClass('mdl-layout--no-drawer-button')
-    $('nav.mdl-navigation').hide()
-    $('a#logout').hide()
-    $('a#sync_icon').hide()
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()
@@ -155,7 +137,7 @@ class Router extends Backbone.Router
     Coconut.loginView.callback =
       success: ->
         Coconut.router.navigate("",true)
-    Coconut.loginView.render()
+#    Coconut.loginView.render()
 
   logout: ->
     User.logout()
@@ -400,7 +382,6 @@ class Router extends Backbone.Router
     Coconut.settingsView.render()
 
   startApp: (options) ->
-
     Coconut.config = new Config()
     Coconut.config.fetch
       error: ->
@@ -413,6 +394,8 @@ class Router extends Backbone.Router
         startApplication = _.after classesToLoad.length, ->
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
+          Coconut.headerView = new HeaderView() if !Coconut.headerView
+#          Coconut.headerView.render()
           Coconut.syncView = new SyncView()
           # TODO background sync turned off
           # After 5 minutes, start the backgroundSync process

@@ -2,51 +2,51 @@ _ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
+Dialog = require '../../js-libraries/modal-dialog'
 
 User = require '../models/User'
 
+menuIcons = { 'Case Notification':'wifi', 'Facility':'local_hospital', 'Household':'home', 'Household Members':'person'}
 class MenuView extends Backbone.View
-  menuIcons = { 'Case Notification':'wifi', 'Facility':'local_hospital', 'Household':'home', 'Household Members':'person'}
+  el: ".coconut-drawer"
+
+  events:
+    "click .mdl-navigation__link": "hideShowDrawer"
+
+  hideShowDrawer: ->
+    $(".mdl-layout__drawer").removeClass("is-visible")
+    $(".mdl-layout__obfuscator").removeClass("is-visible")
 
   render: =>
-    $("header.coconut-drawer-header").html "
-    <div class='clear'>
-      <div class='f-left m-l-10'><img src='images/cocoLogo.png' id='cslogo_sm'></div>
-      <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
-    </div>
-    <div style='margin: 5px 0 0 25px'>
-    Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
-    Last sync: <span class='sync-sent-status'></span>
-    </div>
-    "
-    $("nav.coconut-navigation").html "
-
-      <div id='drawer_question_sets'></div>
-      <hr/>
-      #{
-        _([
-          "##{Coconut.databaseName}/sync,sync,Sync data"
-          "##{Coconut.databaseName}/reset/database,warning,Reset database"
-          "##{Coconut.databaseName}/manage,build,Manage"
-          "##{Coconut.databaseName}/logout,exit_to_app,Logout"
-        ]).map (linkData) ->
-          [url,icon,linktext] = linkData.split(",")
-          "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text material-icons'>#{icon}</i>#{linktext}</a>"
-        .join("")
-      }
-    "
-
-    $("nav.coconut-navigation").on "click",".mdl-navigation__link", ->
-      $(".mdl-layout__drawer").removeClass("is-visible")
-      $(".mdl-layout__obfuscator").removeClass("is-visible")
-
     @$el.html "
-      <div id='navbar' data-role='navbar'>
-        <ul></ul>
-      </div>
-    "
+      <header class='coconut-drawer-header'>
+        <div class='clear'>
+          <div class='f-left m-l-10'><img src='images/cocoLogo.png' id='cslogo_sm'></div>
+          <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
+        </div>
+        <div style='margin: 5px 0 0 25px'>
+        Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
+        Last sync: <span class='sync-sent-status'></span>
+        </div>
+      </header>
+      <nav class='coconut-navigation'>
+          <div id='drawer_question_sets'></div>
+          <hr/>
+          #{
+            _([
+              "##{Coconut.databaseName}/sync,sync,Sync data"
+              "##{Coconut.databaseName}/reset/database,warning,Reset database"
+              "##{Coconut.databaseName}/manage,build,Manage"
+              "##{Coconut.databaseName}/logout,exit_to_app,Logout"
+            ]).map (linkData) ->
+              [url,icon,linktext] = linkData.split(",")
+              "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text material-icons'>#{icon}</i>#{linktext}</a>"
+            .join("")
+          }
+      </nav>
+      "
 
-    @renderHeader()
+#    @renderHeader()
 
     Coconut.questions.fetch
       success: =>
@@ -65,36 +65,7 @@ class MenuView extends Backbone.View
 
         componentHandler.upgradeDom()
 
-        @update()
-
-  renderHeader: ->
-    # This section is only a demo and will be eventuallly dynamically generated in the plugin
-    navlinks = (Coconut.questions.map (question,index) ->
-      results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
-      spanID = question.id.replace(/ /g,"_")
-      "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge='0'><i class='mdl-layout--small-screen-only material-icons'>#{menuIcons[question.id]}</i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
-    .join(" "))
-
-    $(".mdl-layout__header-row").html "
-      <span class='mdl-layout-title'>Coconut Mobile</span>
-      <nav class='mdl-navigation'>
-         #{navlinks}
-      </nav>
-      <div class='mdl-layout-spacer'></div>
-      <div id='right_top_menu'>
-        <a id='sync_icon' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent material-icons'>sync</i></a>
-        <button id='top-menu-lower-right' class='mdl-button mdl-js-button mdl-button--icon'>
-          <i class='material-icons'>more_vert</i>
-        </button>
-        <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
-          <li class='mdl-menu__item'>About</li>
-          <li class='mdl-menu__item'>Support</li>
-          <li class='mdl-menu__item'>
-            <a class='mdl-menu__item' id='logout' href='##{Coconut.databaseName}/logout'>Logout</a>
-          </li>
-        </ul>
-      <div>
-    "
+#        @update()
 
   update: ->
     User.isAuthenticated

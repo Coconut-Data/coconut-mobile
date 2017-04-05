@@ -71,12 +71,9 @@ class LoginView extends Backbone.View
   submitIfEnter: (event) ->
     @login() if event.which == 10 or event.which == 13
 
-  updateNavBar: ->
-
-
   cancel: ->
     Coconut.router.navigate("", true)
-    return document.location.reload()
+#    return document.location.reload()
 
   # Note this needs hashing and salt for real security
   login: =>
@@ -91,6 +88,7 @@ class LoginView extends Backbone.View
       password: loginData.password
       success: =>
         Coconut.menuView.render()
+        Coconut.headerView.render()
         @callback()
       error: =>
         @displayErr("Invalid username/password")

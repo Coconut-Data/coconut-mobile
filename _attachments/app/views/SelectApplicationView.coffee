@@ -9,9 +9,6 @@ class SelectApplicationView extends Backbone.View
 
   el: '#content'
 
-  initialize: ->
-   view = this
-
   events:
     "click button.mdl-chip__action": "deleteApplication"
     "destroy": "destroy"

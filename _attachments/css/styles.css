@@ -19,6 +19,7 @@
 
 @media (max-width: 800px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
+  a#sync_icon i {margin-right: 10px; }
 }
 
 html, body {
@@ -39,7 +40,7 @@ html, body {
 
 header .material-icons{
   font-size: 34px;
-  margin-left: 20px;
+  vertical-align: middle;
 }
 
 header .mdl-button--icon {
@@ -61,7 +62,11 @@ header .mdl-layout-title{
 
 .coconut-layout .mdl-layout__header .mdl-layout__drawer-button {
   background: #4285f4;
-  padding-top: 5px;
+}
+
+div.mdl-layout__drawer-button i.material-icons {
+  font-size: 35px;
+  margin-top: -15px;
 }
 
 .mdl-layout__drawer .avatar {
@@ -75,6 +80,7 @@ header .mdl-layout-title{
 .coconut-drawer {
   border: none;
 }
+
 .coconut-drawer-header {
   box-sizing: border-box;
   display: -webkit-box;
@@ -149,6 +155,13 @@ header .mdl-layout-title{
 .coconut-navigation .mdl-navigation__link {
   font-size: 22px;
   line-height:24px;
+  display: block;
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  padding: 16px 40px;
+  margin: 0;
+  color: #757575;
 }
 
 .coconut-navigation .mdl-navigation__link:hover {
@@ -323,7 +336,7 @@ font-size: 16px;
   font-size: 1.3em;
 }
 
-.mdl-layout__header-row {
+.mdl-layout__header, .mdl-layout__header-row {
   background-color: #4285f4;
 }
 
@@ -403,7 +416,6 @@ div#right_top_menu {
   top:0px;
   right:5px;
 }
-
 #sync_icon {
   margin-right:25px;
 }
@@ -420,4 +432,11 @@ a.mdl-navigation__link.top_links {
 
 .mdl-badge[data-badge]:after {
   width: 26px;
+}
+
+.wrapper {
+  box-sizing: border-box;
+  position: absolute;
+  right: 20px;
+  top: 0px;
 }
