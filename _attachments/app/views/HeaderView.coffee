@@ -44,6 +44,7 @@ class HeaderView extends Backbone.View
         $('li.mdl-menu__item#login_out').hide()
         $('a#sync_icon').hide()
         $('.mdl-layout').addClass('mdl-layout--no-drawer-button')
+        $('.mdl-layout__drawer-button').addClass('hide')
       else
         $('li.mdl-menu__item#login_out').show()
         $('a#sync_icon').show()

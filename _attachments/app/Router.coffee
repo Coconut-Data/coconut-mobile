@@ -123,6 +123,7 @@ class Router extends Backbone.Router
         Coconut.loginView = new LoginView()
         Coconut.loginView.callback = options.success
         Coconut.loginView.render()
+        $('.mdl-layout__drawer-button').hide()
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()

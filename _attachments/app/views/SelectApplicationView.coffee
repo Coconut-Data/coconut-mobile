@@ -38,6 +38,7 @@ class SelectApplicationView extends Backbone.View
                        document.location.reload()
 
   render: =>
+    $('.mdl-layout__drawer-button').hide()
     PouchDB.allDbs()
       .then (dbs) =>
         applicationNames = _(dbs).chain().filter (dbName) ->
