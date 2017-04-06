@@ -395,6 +395,13 @@ button#top-menu-lower-right i.material-icons {
   height: 56px;
   margin-right: 10px;
 }
+ #cslogo_ex-sm {
+   width: 45px;
+   height: 35px;
+   margin-right: 10px;
+   float: left;
+
+ }
 
 #logo-title {
   font-size: 30px;

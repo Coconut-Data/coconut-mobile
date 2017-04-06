@@ -4,7 +4,7 @@ Backbone.$  = $
 Dialog = require '../../js-libraries/modal-dialog'
 AboutView = require './AboutView'
 User = require '../models/User'
-#SupportView = require './SupportView'
+SupportView = require './SupportView'
 
 menuIcons = { 'Case Notification':'wifi', 'Facility':'local_hospital', 'Household':'home', 'Household Members':'person'}
 class HeaderView extends Backbone.View
@@ -21,6 +21,10 @@ class HeaderView extends Backbone.View
     About: ->
       Coconut.aboutView = new AboutView() if !Coconut.aboutView
       Coconut.aboutView.render()
+
+    Support: ->
+      Coconut.supportView = new SupportView() if !Coconut.supportView
+      Coconut.supportView.render()
 
     render: =>
       @$el.html "
