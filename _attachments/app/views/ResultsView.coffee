@@ -35,6 +35,17 @@ class ResultsView extends Backbone.View
         body{
           overflow-y: hidden;
         }
+
+        th.header {
+          text-align: left;
+        }
+        td a {
+          text-decoration: none;
+        }
+
+        table.dataTable thead .sorting, table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc_disabled, table.dataTable thead .sorting_desc_disabled {
+          background-position: center left;
+        }
       </style>
 
       <h3 class='content_title'>
@@ -96,13 +107,12 @@ class ResultsView extends Backbone.View
 
         <div class='mdl-tabs__panel is-active complete' id='complete-panel'>
           <br/>
-          <table class='results complete-true tablesorter'>
+          <table class='results complete-true tablesorter hover'>
             <thead><tr>
               " + _.map(@question.summaryFieldNames(), (summaryField) ->
                 "<th class='header'>#{summaryField}</th>"
               ).join("") + "
               <th></th>
-
             </tr></thead>
             <tbody>
             </tbody>
@@ -111,7 +121,7 @@ class ResultsView extends Backbone.View
 
         <div class='mdl-tabs__panel not-complete' id='not-complete-panel'>
           <br/>
-          <table class='results complete-false tablesorter'>
+          <table class='results complete-false tablesorter hover'>
             <thead><tr>
               " + _.map(@question.summaryFieldNames(), (summaryField) ->
                 "<th class='header'>#{summaryField}</th>"
@@ -146,10 +156,14 @@ class ResultsView extends Backbone.View
                   "<td><a href='##{Coconut.databaseName}/edit/result/#{result.id}'>#{value}</a></td>"
                 ).join("")
               }
-              <td><a href='##{Coconut.databaseName}/delete/result/#{result.id}' data-icon='delete' data-iconpos='notext'>Delete</a></td>
+              <td style='text-align: center'><a href='##{Coconut.databaseName}/delete/result/#{result.id}' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-button--accent'>
+                <i class='material-icons'>delete</i>
+              </a></td>
             </tr>
           "
 
-        $("table.complete-#{complete}").dataTable()
+        $("table.complete-#{complete}").dataTable({
+          "columnDefs": [{"orderable": false, "targets": 2}]
+        })
 
 module.exports = ResultsView
