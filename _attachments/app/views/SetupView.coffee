@@ -22,7 +22,7 @@ class SetupView extends Backbone.View
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
-        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:400px; margin: 0px auto; padding:25px'>
+        <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:330px; margin: 0px auto; padding:15px'>
         #{
           _(@fields).map (field) =>
             "
@@ -36,7 +36,7 @@ class SetupView extends Backbone.View
           <div class='mdl-card__actions'>
             <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='install' type='button'>Install</button> &nbsp;
             <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='cancel_button' type='button'>Cancel</button> &nbsp;
-            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='help_button' type='button'><i class='material-icons'>help</i> Help</button>
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='help_button'><i class='material-icons'>help</i></button>
           </div>
         </div>
       </div>
@@ -156,4 +156,5 @@ class SetupView extends Backbone.View
       neutral:
         title: "Close"
 
+    $("#orrsDiag_content").css("top",'20%')
 module.exports = SetupView
