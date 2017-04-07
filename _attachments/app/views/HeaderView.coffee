@@ -44,16 +44,16 @@ class HeaderView extends Backbone.View
         </div>
       "
 
-      if Coconut.currentUser is null or Coconut.currentUser is undefined
-        $('li.mdl-menu__item#login_out').hide()
-        $('a#sync_icon').hide()
-        $('.mdl-layout').addClass('mdl-layout--no-drawer-button')
-        $('.mdl-layout__drawer-button').addClass('hide')
-      else
+      if Coconut.currentUser?
         $('li.mdl-menu__item#login_out').show()
         $('a#sync_icon').show()
         $('.mdl-layout').removeClass('mdl-layout--no-drawer-button')
         $('.mdl-layout__drawer-button').show()
+      else
+        $('li.mdl-menu__item#login_out').hide()
+        $('a#sync_icon').hide()
+        $('.mdl-layout').addClass('mdl-layout--no-drawer-button')
+        $('.mdl-layout__drawer-button').addClass('hide')
 
       if Coconut.questions
         navlinks = (Coconut.questions.map (question,index) ->
@@ -78,4 +78,5 @@ class HeaderView extends Backbone.View
                 console.log error if error
 
                 $("#complete_results").html result.rows.length
+
 module.exports = HeaderView

@@ -25,8 +25,9 @@ class MenuView extends Backbone.View
           <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
         </div>
         <div style='margin: 5px 0 0 25px'>
-        Logged in as: #{Coconut.currentUser.nameOrUsername()}<br/>
-        Last sync: <span class='sync-sent-status'></span>
+        Logged in as: #{Coconut.currentUser?.nameOrUsername()}<br/>
+        <div>Last sync: <span id='sync_sent_status'>#{Coconut.sync_status}</span></div>
+        <div>Last get: <span id='sync_get_status'>#{Coconut.sync_get_status}</span></div>
         </div>
       </header>
       <nav class='coconut-navigation'>

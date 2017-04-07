@@ -48,6 +48,7 @@ class Router extends Backbone.Router
           success: ->
             Coconut.headerView.render()
             Coconut.menuView.render()
+            Coconut.syncView.update()
             callback.apply(this, args) if callback
       else
         # forced user logout. User should not be logged in at this point.
