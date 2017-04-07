@@ -20,7 +20,7 @@ class ManageView extends Backbone.View
           margin: 10px;
         }
       </style>
-      <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:400px; margin: 0px auto; margin-top: 50px; padding:10px'>
+      <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:330px; margin: 0px auto; margin-top: 50px; padding:10px'>
       </div>
     "
 
