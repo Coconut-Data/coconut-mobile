@@ -262,18 +262,18 @@ class Router extends Backbone.Router
               success: ->
                 Coconut.questionView.render()
                 $('#askConfirm').html "
-                  <h4>Are you sure you want to delete this result?</h4>
+                  <h4>Are you sure you want to delete this record?</h4>
                   <div id='confirm'>
                     <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'><button class='mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect'>Yes</button></a>
                     <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}'><button class='mdl-button mdl-js-button mdl-js-ripple-effect'>Cancel</button></a>
                   </div>
                 "
                 $("#content form").css
-                  "background-color": "#333"
-                  "margin":"50px"
-                  "padding":"10px"
+                  "background-color": "#CCC"
+                  "margin":"0px"
+                  "padding":"0px 15px"
                 $("#content form label").css
-                  "color":"white"
+                  "color":"rgb(63,81,181)"
         else
           Coconut.router.navigate("#{Coconut.database}/edit/result/#{result_id}",true)
 

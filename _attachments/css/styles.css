@@ -447,3 +447,7 @@ a.mdl-navigation__link.top_links {
   right: 20px;
   top: 0px;
 }
+
+div#askConfirm {
+  margin-bottom: 30px;
+}
