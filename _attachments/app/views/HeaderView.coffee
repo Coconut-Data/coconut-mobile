@@ -61,24 +61,23 @@ class HeaderView extends Backbone.View
         navlinks = (Coconut.questions.map (question,index) ->
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           spanID = question.id.replace(/\s/g,"_")
-          "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge='0'><i class='mdl-layout--small-screen-only material-icons'>#{menuIcons[question.id]}</i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
+          "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge=''><i class='mdl-layout--small-screen-only material-icons'>#{menuIcons[question.id]}</i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
         .join(" "))
         $('nav.mdl-navigation').html(navlinks)
 
+      @update()
       componentHandler.upgradeDom()
 
     update: ->
-      User.isAuthenticated
-        success: () ->
-          Coconut.questions.each (question,index) =>
-
-            Coconut.database.query "results",
-              startkey: [question.id, true]
-              endkey: [question.id, true, {}]
-              include_docs: false
-              (error,result) =>
-                console.log error if error
-
-                $("#complete_results").html result.rows.length
+      if Coconut.currentUser?
+        Coconut.questions.each (question,index) =>
+          Coconut.database.query "results/results",
+            startkey: [question.id, false]
+            endkey: [question.id, false, {}]
+            include_docs: false
+            (error,result) =>
+              console.log error if error
+              $("span##{question.id.replace(/\s/g,'_')}").attr('data-badge', result.rows.length)
+#               $("#complete_results").html result.rows.length
 
 module.exports = HeaderView

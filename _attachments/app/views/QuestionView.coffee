@@ -458,7 +458,7 @@ earchCompleteStop()
       allQuestionsPassValidation = @validateAll()
 
       # Update the menu
-      Coconut.menuView.update()
+      Coconut.headerView.update()
       @actionOnChange(event)
       @save()
       @updateSkipLogic()
@@ -735,7 +735,7 @@ earchCompleteStop()
           Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
 
           # Update the menu
-          Coconut.menuView.update()
+          Coconut.headerView.update()
         error: (error) ->
           console.debug error
           console.error error
