@@ -16,6 +16,7 @@ class HeaderView extends Backbone.View
       "click a#support": "Support"
 
     Logout: ->
+      $('nav.mdl-navigation').html("")
       Coconut.router.navigate "##{Coconut.databaseName}/logout", {trigger: true}
 
     About: ->
@@ -54,11 +55,12 @@ class HeaderView extends Backbone.View
         $('a#sync_icon').hide()
         $('.mdl-layout').addClass('mdl-layout--no-drawer-button')
         $('.mdl-layout__drawer-button').addClass('hide')
+        $('nav.mdl-navigation').html("")
 
-      if Coconut.questions
+      if Coconut.questions and Coconut.currentUser?
         navlinks = (Coconut.questions.map (question,index) ->
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
-          spanID = question.id.replace(/ /g,"_")
+          spanID = question.id.replace(/\s/g,"_")
           "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge='0'><i class='mdl-layout--small-screen-only material-icons'>#{menuIcons[question.id]}</i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
         .join(" "))
         $('nav.mdl-navigation').html(navlinks)

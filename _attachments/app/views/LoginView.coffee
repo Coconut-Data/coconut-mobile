@@ -87,8 +87,6 @@ class LoginView extends Backbone.View
       username: loginData.username
       password: loginData.password
       success: =>
-        Coconut.menuView.render()
-        Coconut.headerView.render()
         @callback()
       error: =>
         @displayErr("Invalid username/password")

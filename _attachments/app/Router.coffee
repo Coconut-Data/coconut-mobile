@@ -139,7 +139,6 @@ class Router extends Backbone.Router
     Coconut.loginView.callback =
       success: ->
         Coconut.router.navigate("",true)
-#    Coconut.loginView.render()
 
   logout: ->
     User.logout()

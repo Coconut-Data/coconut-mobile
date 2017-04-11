@@ -47,8 +47,6 @@ class MenuView extends Backbone.View
       </nav>
       "
 
-#    @renderHeader()
-
     Coconut.questions.fetch
       success: =>
 
@@ -57,9 +55,7 @@ class MenuView extends Backbone.View
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           "
             <div>
-<!--          <a class='drawer_question_set_link' href='#{new_url}'><i class='material-icons'>add</i></a> -->
               <a class='mdl-navigation__link' href='#{results_url}'><i class='mdl-color-text--accent material-icons'>#{menuIcons[question.id]}</i>#{question.id}</a>
-<!--              <span class='drawer_question_set_name'>#{question.id}</span> -->
             </div>
           "
         .join(" "))
