@@ -337,7 +337,7 @@ class Router extends Backbone.Router
     @dumpDatabase
       error: (error) -> console.error error
       success: (dumpedString) ->
-        $("#content").html "Database backup created, beginning download. File will be available in Downloads folder on tablet."
+        $("#content").html "Database backup created, beginning download. File will be available in Downloads folder on mobile device."
         zip = new JSZip()
         zip.file "backup.pouchdb", dumpedString
         zip.generateAsync

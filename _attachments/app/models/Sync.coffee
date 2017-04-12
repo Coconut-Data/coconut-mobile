@@ -61,7 +61,7 @@ class Sync extends Backbone.Model
               $("div#log").show()
         else
           console.log "No new results for #{question.id} so not syncing"
-  
+
 
     # Check if there are new results
     # Send results if new results and timeout
@@ -87,7 +87,7 @@ class Sync extends Backbone.Model
         @checkForInternet
           error: (error) -> options?.error?(error)
           success: =>
-            @log "Creating list of all results on the tablet. Please wait."
+            @log "Creating list of all results on the mobile device. Please wait."
             Coconut.database.query "results", {},
               (error,result) =>
                 if error
