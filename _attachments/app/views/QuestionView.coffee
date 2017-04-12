@@ -299,13 +299,14 @@ earchCompleteStop()
         background-color:white;
         position:absolute;
         z-index:10;
-        width: 100%;
+        width: 95%;
         list-style:none;
-        margin-top: 0px;
+        margin-top: 3px;
         border-left: 2px inset;
         border-bottom: 2px outset;
         border-right: 1px outset;
         border-top: 0px;
+        font-size: 10px;
       }
 
       .awesomplete li{
