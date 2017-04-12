@@ -16,7 +16,7 @@ class LoginView extends Backbone.View
       <style>
         #login_wrapper{
           font-size: 102%;
-          width:350px;
+          width:320px;
           margin: 70px auto;
           padding: 25px;
         }
