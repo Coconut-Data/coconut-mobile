@@ -268,9 +268,9 @@ class Router extends Backbone.Router
                   </div>
                 "
                 $("#content form").css
-                  "background-color": "#CCC"
+                  "background-color": "rgba(0,0,0,0.1)"
                   "margin":"0px"
-                  "padding":"0px 15px"
+                  "padding":"0px 15px 15px"
                 $("#content form label").css
                   "color":"rgb(63,81,181)"
         else

@@ -101,11 +101,11 @@ class ResultsView extends Backbone.View
       <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
         <div class='mdl-tabs__tab-bar' id='results-tabs'>
-          <a href='#complete-panel' class='mdl-tabs__tab'>Complete (<span id='total-completed''></span>)</a>
+          <a href='#complete-panel' class='mdl-tabs__tab'>Complete (<span id='total-completed'></span>)</a>
           <a href='#not-complete-panel' class='mdl-tabs__tab is-active'>Not Complete (<span id='total-not-completed'></span>)</a>
         </div>
 
-        <div class='mdl-tabs__panel is-active complete' id='complete-panel'>
+        <div class='mdl-tabs__panel complete' id='complete-panel'>
           <br/>
           <table class='results complete-true tablesorter hover'>
             <thead><tr>
@@ -119,7 +119,7 @@ class ResultsView extends Backbone.View
           </table>
         </div>
 
-        <div class='mdl-tabs__panel not-complete' id='not-complete-panel'>
+        <div class='mdl-tabs__panel is-active not-complete' id='not-complete-panel'>
           <br/>
           <table class='results complete-false tablesorter hover'>
             <thead><tr>
