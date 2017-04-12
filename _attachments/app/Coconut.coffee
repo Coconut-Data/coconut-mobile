@@ -183,16 +183,17 @@ class Coconut
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs().then (dbs) =>
       dbsToDestroy = _(dbs).filter (dbName) ->
-        dbName.match "^coconut-"+options.applicationName+"$"
+        dbName.match "^coconut-"+options.applicationName
 
       finished = _.after dbsToDestroy.length, ->
         options.success?()
 
+      console.log(dbsToDestroy.length)
       _(dbsToDestroy).each (db) ->
         console.log "Deleting #{db}"
         (new PouchDB(db)).destroy().then (response) ->
           console.log "#{db} Destroyed"
-          finished()
+        finished()
 
   createDatabaseForEachUser: (options) =>
     @cloudDB.allDocs
