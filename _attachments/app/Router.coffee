@@ -253,7 +253,7 @@ class Router extends Backbone.Router
             Coconut.questionView.result.destroy
               success: ->
                 Coconut.menuView.update()
-                Coconut.router.navigate("#{Coconut.database}/show/results/#{escape(Coconut.questionView.result.question())}",true)
+                Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
           else
             Coconut.questionView.model = new Question
               id: question
@@ -274,7 +274,7 @@ class Router extends Backbone.Router
                 $("#content form label").css
                   "color":"rgb(63,81,181)"
         else
-          Coconut.router.navigate("#{Coconut.database}/edit/result/#{result_id}",true)
+          Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{result_id}",true)
 
   showResults:(question_id) ->
     Coconut.resultsView ?= new ResultsView()

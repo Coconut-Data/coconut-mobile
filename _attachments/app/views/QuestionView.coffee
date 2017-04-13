@@ -471,6 +471,8 @@ earchCompleteStop()
           _.delay ->
             CoffeeScript.eval onValidatedComplete
           ,1000
+        # Return to Summary page after completion
+        Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
       else
         $("#question-set-complete").prop("checked", false)
     else
