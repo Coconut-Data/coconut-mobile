@@ -408,6 +408,7 @@ button#top-menu-lower-right i.material-icons {
 }
 .f-left {float: left;}
 .m-l-10 { margin-left: 10px;}
+.m-b-10 { margin-bottom: 10px;}
 
 #results-tabs {
   margin-bottom: 20px;
@@ -450,4 +451,23 @@ div#askConfirm {
 table.dataTable.results td {
   font-size: 0.9em;
   padding: 2px 10px;
+}
+
+#message {
+  width: 430px;
+  margin: auto;
+}
+
+@media (max-width: 360px) {
+  #message { width: 330px;}
+}
+
+.setup_message {
+  margin: auto;
+  padding: 10px 10px 20px;
+  border: 1px solid;
+}
+
+button#destroy, button#cancel_delete,button#cancel_error  {
+  width: 100%;
 }

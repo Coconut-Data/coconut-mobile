@@ -70,10 +70,10 @@ class Coconut
                           console.error "Updating application docs failed: #{JSON.stringify error}"
                           options.error "Updating the application failed: #{JSON.stringify error}"
                         success: =>
-                          @syncPlugins
-                            success: =>
-                              options.success()
-                            error: =>
+#                          @syncPlugins
+#                            success: =>
+                          options.success()
+#                            error: =>
         catch error
           console.error error
           console.error "Removing #{@databaseName} due to incomplete setup"
@@ -228,13 +228,13 @@ class Coconut
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
     @cloudDB.get "client encryption key"
+    .then (result) =>
+      @encryptionKey = result.key
+      options.success()
     .catch (error) =>
       console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
       console.error error
       options.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
-    .then (result) =>
-      @encryptionKey = result.key
-      options.success()
 
   setConfig: (options) =>
     @config = new Config

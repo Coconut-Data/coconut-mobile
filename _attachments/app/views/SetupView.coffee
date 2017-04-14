@@ -18,7 +18,7 @@ class SetupView extends Backbone.View
 
   render: =>
     @$el.html "
-      <h3 style='text-align: center'>Install Coconut Project</h3>
+      <h3 style='text-align: center; font-size: 1.7em'>Install Coconut Project</h3>
       <div id='message'></div>
       <div id='form'
         Enter the setup details below:<br/>
@@ -40,14 +40,21 @@ class SetupView extends Backbone.View
           </div>
         </div>
       </div>
+      <div id='spinner'></div>
     "
     componentHandler.upgradeDom()
 
   events:
     "click #install": "install"
     "click .cancel_button": "cancel"
+    "click #cancel_delete, #cancel_error": "cancel_deleteDB"
     "click #destroy": "destroy"
     "click #help_button": "showHelp"
+
+  cancel_deleteDB: ->
+    $("#message").hide()
+    @$el.find("div.mdl-card").show()
+    $("#spinner").hide()
 
   cancel: ->
     Coconut.router.navigate("", true)
@@ -61,22 +68,22 @@ class SetupView extends Backbone.View
 
   destroy: =>
     applicationName = $("#"+s.underscored("Application Name")).val()
-    @$el.append "
-      <div id='spinner'>
+    $("#spinner").html "
         <center>
-          <h3>Removing  #{applicationName}</h3>
-          <h3 id='status'></h3>
+          <h4>Removing  #{applicationName}</h4>
+          <h4 id='status'></h4>
           <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
         </center>
-      </div>
     "
+    $("#spinner").show()
+
     componentHandler.upgradeDom()
     Coconut.destroyApplicationDatabases
       applicationName: applicationName
       success: =>
         # TODO make a fading out message
-        $("#content").html "<h3>#{applicationName} Removed</h3>"
-        $("#content h3").fadeOut 1000
+        $("#content").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
+        $("#content h4").fadeOut 1000
         _.delay ->
           document.location.reload()
         , 1000
@@ -101,47 +108,59 @@ class SetupView extends Backbone.View
   install: ->
     @installUrl()
     applicationName = $("#"+s.underscored("Application Name")).val()
-
+    $('#install_status').show()
     options =
       error: (error) ->
         $("#message").html "
-        <div class='errMsg'>
-          Error installing #{applicationName}:<br/> #{error}
+        <div class='setup_message'>
+          <div class='errMsg m-b-10'>Error installing #{applicationName}:</div>
+          <div>#{error}</div>
+          <div style='padding: 10px 0px'>Please check your form inputs.</div>
+          <div class='mdl-card__actions'>
+            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_error'>Back to Form</button>
+          </div>
         </div>
-        <br/><br/>
         "
+        $("#message").show()
+        $('#install_status').hide()
 
       success: =>
-        @$el.html "<h3>#{applicationName} Installed</h3>"
-        @$el.find("h3").fadeOut 1000
+        $('#spinner').hide()
+        $("#message").html "<h4>#{applicationName} Installed</h4>"
+        @$el.find("h4").fadeOut 1000
         _.delay ->
           Coconut.router.navigate applicationName, trigger: true
         , 1000
 
       actionIfDatabaseExists: (options) =>
         @$el.find("#form").show()
-        @$el.find("#spinner").remove()
+        $("#spinner").hide()
         $("#message").html "
-          <p style = 'font-size: 18px'>Application #{applicationName} has already been installed.<br/>
-          You can update the fields below or delete all data for #{applicationName}.</p>
-          <button class='mdl-button mdl-js-button mdl-button--raised mdl-button--colored' id='destroy'>Delete #{applicationName} </button> &nbsp;
-          <button class='mdl-button mdl-js-button mdl-button--raised cancel_button'>Cancel </button>
-          <br/><br/>
+          <div class='setup_message'>
+            <p class='errMsg' style = 'font-size: 18px'>Application #{applicationName} has already been installed.</p>
+            <p>You can delete all data for #{applicationName} to recreate or you can change the Application Name field.</p>
+            <div class='mdl-card__actions'>
+              <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored' id='destroy'>Delete #{applicationName} </button> &nbsp;
+              <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_delete'>Cancel </button>
+            </div>
+          </div>
         "
+        $("#message").show()
 
     _(options).extend @getOptions()
 
     @$el.find("div.mdl-card").hide()
-    @$el.append "
-      <div id='spinner'>
+    $("#spinner").html "
         <center>
-          <h3>Installing #{applicationName}</h3>
-          <h4 id='status'></h4>
-          <div id='percent' style='margin-bottom: 30px'>( 0 of 0 )</div>
-          <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+          <h3 style='font-size: 24px'>Installing #{applicationName}</h3>
+          <div id='install_status'>
+            <h4 id='status'></h4>
+            <div id='percent' style='margin-bottom: 30px'>( 0 of 0 )</div>
+            <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+          </div>
         </center>
-      </div>
     "
+    $("#spinner").show()
     componentHandler.upgradeDom()
     $("#log").html ""
     $("#log").hide()
