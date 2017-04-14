@@ -113,9 +113,9 @@ class SetupView extends Backbone.View
       error: (error) ->
         $("#message").html "
         <div class='setup_message'>
-          <div class='errMsg m-b-10'>Error installing #{applicationName}:</div>
+          <div class='errMsg m-b-10'>Error installing #{applicationName}.</div>
           <div>#{error}</div>
-          <div style='padding: 10px 0px'>Please check your form inputs.</div>
+          <div style='padding: 30px 0px'>Please review your form inputs.</div>
           <div class='mdl-card__actions'>
             <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_error'>Back to Form</button>
           </div>

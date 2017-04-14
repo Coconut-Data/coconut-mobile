@@ -234,7 +234,17 @@ class Coconut
     .catch (error) =>
       console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
       console.error error
-      options.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
+      switch error.error
+        when "not_found"
+          error_msg = "Cannot find database. Make sure your Application Name is correct."
+        when "illegal_database_name"
+          error_msg = error.reason
+        when "unauthorized"
+          error_msg = "Cloud Username or Cloud Password is incorrect."
+        else
+          error_msg = if error.code == "ETIMEDOUT" then "Cannot connect to the Cloud URL. Possibly incorrect URL." else "Unknown error. Possibly incorrect CLoud URL"
+
+      options.error "Failed to get client encryption key. <br /> #{error_msg}"
 
   setConfig: (options) =>
     @config = new Config
