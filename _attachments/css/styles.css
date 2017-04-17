@@ -17,9 +17,13 @@
   width: device-width;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 500px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
   a#sync_icon i {margin-right: 10px; }
+}
+
+@media (max-width: 800px) {
+  span#layout-title { display: none; }
 }
 
 html, body {
