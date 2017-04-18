@@ -41,6 +41,7 @@ class Sync extends Backbone.Model
 
     _.delay @backgroundSync, minimumMinutesBetweenSync*60*1000
 
+    Coconut.headerView.toggleSyncIcon(true)
     Coconut.questions.each (question) =>
       Coconut.database.query "results",
         startkey: [question.id,true,@lastSuccessfulSync.format(Coconut.config.get("date_format"))]
@@ -61,6 +62,7 @@ class Sync extends Backbone.Model
               $("div#log").show()
         else
           console.log "No new results for #{question.id} so not syncing"
+    Coconut.headerView.toggleSyncIcon(false)
 
 
     # Check if there are new results

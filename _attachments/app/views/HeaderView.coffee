@@ -33,6 +33,7 @@ class HeaderView extends Backbone.View
         <nav class='mdl-navigation'></nav>
         <div class='mdl-layout-spacer'></div>
         <div id='right_top_menu'>
+          <span class='mdl-spinner mdl-js-spinner' id='syncing'></span>
           <a id='sync_icon' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent material-icons'>sync</i></a>
           <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='top-menu-lower-right'>
             <i class='material-icons'>more_vert</i>
@@ -79,5 +80,13 @@ class HeaderView extends Backbone.View
               console.log error if error
               $("span##{question.id.replace(/\s/g,'_')}").attr('data-badge', result.rows.length)
 #               $("#complete_results").html result.rows.length
+
+    toggleSyncIcon: (sync_on) ->
+      if sync_on
+        $('#syncing').addClass('is-active')
+        $('#sync_icon').hide()
+      else
+        $('#syncing').removeClass('is-active')
+        $('#sync_icon').show()
 
 module.exports = HeaderView

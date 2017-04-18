@@ -427,6 +427,12 @@ div#right_top_menu {
   margin-right:25px;
 }
 
+#syncing {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+}
+
 a#sync_icon i {
   font-size: 35px;
   font-weight: 900;
