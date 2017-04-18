@@ -729,7 +729,7 @@ earchCompleteStop()
 
       # Make sure lastModifiedAt is always updated on save
       currentData.lastModifiedAt = moment(new Date()).format("YYYY-MM-DD")
-      currentData.savedBy = Cookie('current_user')
+      currentData.savedBy = Cookie('mobile_current_user')
       @result.save currentData,
         success: (model) =>
           $("#messageText").slideDown().fadeOut()

@@ -42,7 +42,7 @@ class Result extends Backbone.Model
     if result.length > 40 then result.substring(0,40) + "..." else result
 
   summaryKeys: (question) ->
-          
+
     relevantKeys = question.summaryFieldKeys()
     if relevantKeys.length is 0
       relevantKeys = _.difference (_.keys result.toJSON()), [
@@ -61,7 +61,7 @@ class Result extends Backbone.Model
       if typeof returnVal is "object"
         returnVal = JSON.stringify(returnVal)
       returnVal
-  
+
   get: (attribute) ->
     return null unless Coconut.currentUser?
     original = super(attribute)
@@ -86,7 +86,7 @@ class Result extends Backbone.Model
 
   save: (key,value,options) ->
     @set
-      user: Cookie('current_user')
+      user: Cookie('mobile_current_user')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
     super(key,value,options)
 

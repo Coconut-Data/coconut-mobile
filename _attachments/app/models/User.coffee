@@ -24,8 +24,8 @@ class User extends Backbone.Model
 
   login: ->
     Coconut.currentUser = @
-    Cookie('current_user', @username())
-    Cookie('current_password', @get "password")
+    Cookie('mobile_current_user', @username())
+    Cookie('mobile_current_password', @get "password")
     $("span#user").html @username()
     $('#district').html @get "district"
     $("a[href='#logout']").show()
@@ -39,8 +39,8 @@ User.isAuthenticated = (options) ->
   Coconut.isValidDatabase
     error:  (error) ->
       # See if we have cookies that can login
-      userCookie = Cookie('current_user')
-      passwordCookie = Cookie('current_password')
+      userCookie = Cookie('mobile_current_user')
+      passwordCookie = Cookie('mobile_current_password')
 
       if userCookie and userCookie isnt "" and passwordCookie and passwordCookie isnt ""
         Coconut.openDatabase
@@ -64,8 +64,8 @@ User.login = (options) ->
   user.fetch
     success: =>
       Coconut.currentUser = user
-      Cookie('current_user', user.username())
-      Cookie('current_password',user.get "password")
+      Cookie('mobile_current_user', user.username())
+      Cookie('mobile_current_password',user.get "password")
       $("span#user").html user.username()
       $("a[href='#logout']").show()
       $("a[href='#login']").hide()
@@ -80,8 +80,8 @@ User.login = (options) ->
       options.error()
 
 User.logout = ->
-  Cookie('current_user',"")
-  Cookie('current_password',"")
+  Cookie('mobile_current_user',"")
+  Cookie('mobile_current_password',"")
   $("span#user").html ""
   $('#district').html ""
   $("a[href='#logout']").hide()
