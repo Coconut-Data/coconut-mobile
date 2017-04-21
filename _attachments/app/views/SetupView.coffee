@@ -48,7 +48,7 @@ class SetupView extends Backbone.View
     "click #install": "install"
     "click .cancel_button": "cancel"
     "click #cancel_delete, #cancel_error": "cancel_deleteDB"
-    "click #destroy": "destroy"
+    "click button#destroy": "destroyApp"
     "click #help_button": "showHelp"
 
   cancel_deleteDB: ->
@@ -66,17 +66,16 @@ class SetupView extends Backbone.View
     $("#cloud_url").val $("#cloud_url").val().replace(/^(http:\/\/)/, httpType + "://")
 
 
-  destroy: =>
+  destroyApp: =>
+    console.log("Destroying within Setup")
     applicationName = $("#"+s.underscored("Application Name")).val()
-    $("#spinner").html "
+    $("#spinner").show().html "
         <center>
           <h4>Removing  #{applicationName}</h4>
           <h4 id='status'></h4>
           <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
         </center>
     "
-    $("#spinner").show()
-
     componentHandler.upgradeDom()
     Coconut.destroyApplicationDatabases
       applicationName: applicationName
@@ -111,7 +110,7 @@ class SetupView extends Backbone.View
     $('#install_status').show()
     options =
       error: (error) ->
-        $("#message").html "
+        $("#message").show().html "
         <div class='setup_message'>
           <div class='errMsg m-b-10'>Error installing #{applicationName}.</div>
           <div>#{error}</div>
@@ -121,7 +120,6 @@ class SetupView extends Backbone.View
           </div>
         </div>
         "
-        $("#message").show()
         $('#install_status').hide()
 
       success: =>
@@ -135,7 +133,7 @@ class SetupView extends Backbone.View
       actionIfDatabaseExists: (options) =>
         @$el.find("#form").show()
         $("#spinner").hide()
-        $("#message").html "
+        $("#message").show().html "
           <div class='setup_message'>
             <p class='errMsg' style = 'font-size: 18px'>Application #{applicationName} has already been installed.</p>
             <p>You can delete all data for #{applicationName} to recreate or you can change the Application Name field.</p>
@@ -145,12 +143,11 @@ class SetupView extends Backbone.View
             </div>
           </div>
         "
-        $("#message").show()
 
     _(options).extend @getOptions()
 
     @$el.find("div.mdl-card").hide()
-    $("#spinner").html "
+    $("#spinner").show().html "
         <center>
           <h3 style='font-size: 24px'>Installing #{applicationName}</h3>
           <div id='install_status'>
@@ -160,7 +157,7 @@ class SetupView extends Backbone.View
           </div>
         </center>
     "
-    $("#spinner").show()
+#    $("#spinner").show()
     componentHandler.upgradeDom()
     $("#log").html ""
     $("#log").hide()
