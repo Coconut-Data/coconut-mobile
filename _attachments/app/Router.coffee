@@ -183,7 +183,6 @@ class Router extends Backbone.Router
         $("#log").show()
         Coconut.debug "Error sending data to cloud, proceeding to get updates from cloud."
         console.error error
-        return
         Coconut.syncView.sync.getFromCloud()
 
 
@@ -398,9 +397,11 @@ class Router extends Backbone.Router
           Coconut.headerView = new HeaderView() if !Coconut.headerView
 #          Coconut.headerView.render()
           Coconut.syncView = new SyncView()
-          # TODO background sync turned off
-          # After 5 minutes, start the backgroundSync process
-          #_.delay Coconut.syncView.sync.backgroundSync, 5*60*1000
+
+          minimumMinutesBetweenSync = Coconut.config.get('mobile_background_sync_freq')
+          if Coconut.config.get('mobile_background_sync')
+            _.delay Coconut.syncView.sync.backgroundSync, minimumMinutesBetweenSync*60*1000
+
           Coconut.syncView.update()
           options.success()
 
