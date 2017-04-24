@@ -67,7 +67,7 @@ class SetupView extends Backbone.View
 
 
   destroyApp: =>
-    console.log("Destroying within Setup")
+    $("#message").hide()
     applicationName = $("#"+s.underscored("Application Name")).val()
     $("#spinner").show().html "
         <center>
@@ -82,10 +82,10 @@ class SetupView extends Backbone.View
       success: =>
         # TODO make a fading out message
         $("#content").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
-        $("#content h4").fadeOut 1000
+        $("#content h4").fadeOut 3000
         _.delay ->
           document.location.reload()
-        , 1000
+        , 2000
 
   getOptions: ->
     options = {}
@@ -124,10 +124,12 @@ class SetupView extends Backbone.View
 
       success: =>
         $('#spinner').hide()
-        $("#message").html "<h4>#{applicationName} Installed</h4>"
-        @$el.find("h4").fadeOut 1000
+        $("#message").show().html "<h4>#{applicationName} Installed</h4>"
+        @$el.find("h4").fadeOut 3000
         _.delay ->
-          Coconut.router.navigate applicationName, trigger: true
+          Coconut.router.navigate "##{applicationName}", trigger: true
+          ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
+          window.location.reload()
         , 1000
 
       actionIfDatabaseExists: (options) =>
