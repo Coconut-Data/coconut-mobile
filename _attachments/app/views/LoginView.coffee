@@ -12,33 +12,8 @@ class LoginView extends Backbone.View
   el: '#content'
 
   render: =>
+    $(".mdl-layout__header-row").html "<div id='appName'>#{Coconut.databaseName}</div>"
     @$el.html "
-      <style>
-        #login_wrapper{
-          font-size: 102%;
-          width:320px;
-          margin: 70px auto;
-          padding: 25px;
-        }
-        #login_message{
-          margin-top: 20px;
-          margin-bottom: 20px;
-        }
-        #login_form input{
-          font-size: 120%;
-          display: block;
-        }
-        .coconut-mdl-card{
-          padding:10px;
-        }
-        #login_actions {
-          padding-top: 30px;
-        }
-        #login_button, #cancel_button{
-          font-size:100%;
-          width: 100%;
-        }
-      </style>
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
         <div id='logo-title'><img src='images/cocoLogo.png' id='cslogo_sm'> Coconut</div>
         <div class='mdl-card__title coconut-mdl-card__title errMsg'></div>
@@ -56,7 +31,7 @@ class LoginView extends Backbone.View
 
           <div class='mdl-card__actions' id='login_actions'>
             <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Log in</button> &nbsp;
-            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_button'>Cancel</button>
+            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='login_cancel_button'>Cancel</button>
           </div>
         </form>
       </div>
@@ -65,7 +40,7 @@ class LoginView extends Backbone.View
 
   events:
     "click #login_button": "login"
-    "click #cancel_button": "cancel"
+    "click #login_cancel_button": "cancel"
     "keypress #password": "submitIfEnter"
 
   submitIfEnter: (event) ->
