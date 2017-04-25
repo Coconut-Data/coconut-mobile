@@ -397,11 +397,7 @@ class Router extends Backbone.Router
           Coconut.headerView = new HeaderView() if !Coconut.headerView
 #          Coconut.headerView.render()
           Coconut.syncView = new SyncView()
-
-          minimumMinutesBetweenSync = Coconut.config.get('mobile_background_sync_freq')
-          if Coconut.config.get('mobile_background_sync')
-            _.delay Coconut.syncView.sync.backgroundSync, minimumMinutesBetweenSync*60*1000
-
+          Coconut.syncView.sync.setMinMinsBetweenSync()
           Coconut.syncView.update()
           options.success()
 

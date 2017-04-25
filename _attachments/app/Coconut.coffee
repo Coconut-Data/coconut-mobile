@@ -243,7 +243,7 @@ class Coconut
         when "unauthorized"
           error_msg = "Cloud Username or Cloud Password is incorrect."
         else
-          error_msg = if error.code == "ETIMEDOUT" then "Cannot connect to the Cloud URL. Possibly incorrect URL." else "Unknown error. Possibly incorrect CLoud URL"
+          error_msg = if error.code == "ETIMEDOUT" then "Cannot connect to the Cloud URL. Possibly incorrect URL." else "Unknown error. Possibly incorrect Cloud URL"
 
       options.error "Failed to get client encryption key. <br /> #{error_msg}"
 
