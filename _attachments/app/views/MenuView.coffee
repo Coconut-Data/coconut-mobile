@@ -23,6 +23,7 @@ class MenuView extends Backbone.View
         <div class='clear'>
           <div class='f-left m-l-10'><img src='images/cocoLogo.png' id='cslogo_sm'></div>
           <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
+          <div id='version'>Version: 1.0.0</div>
         </div>
         <div style='margin: 5px 0 0 25px'>
         Logged in as: #{Coconut.currentUser?.nameOrUsername()}<br/>
