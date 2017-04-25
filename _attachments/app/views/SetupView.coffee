@@ -27,7 +27,7 @@ class SetupView extends Backbone.View
           _(@fields).map (field) =>
             "
               <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
-                <input class='mdl-textfield__input' id='#{s.underscored(field)}' type='#{"password" if field.includes("Password")}'/>
+                <input class='mdl-textfield__input' id='#{s.underscored(field)}' autocapitalize='off' type='#{"password" if field.includes("Password")}'/>
                 <label class='mdl-textfield__label' for='#{s.underscored field}'>#{field}</label>
               </div>
             "
