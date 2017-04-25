@@ -187,6 +187,7 @@ class Router extends Backbone.Router
 
 
   newResult: (question_id) ->
+    Coconut.questionView.readonly = false
     Coconut.questionView.result = new Result
       question: unescape(question_id)
     Coconut.questionView.model = new Question {id: unescape(question_id)}
