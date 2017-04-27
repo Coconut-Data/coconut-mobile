@@ -14,14 +14,15 @@ class SetupView extends Backbone.View
     "Cloud Password"
   ]
 
+  options = {}
+
   el: '#content'
 
   render: =>
     @$el.html "
       <h3 style='text-align: center; font-size: 1.7em'>Install Coconut Project</h3>
       <div id='message'></div>
-      <div id='form'
-        Enter the setup details below:<br/>
+      <div id='form'>
         <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:330px; margin: 0px auto; padding:15px'>
         #{
           _(@fields).map (field) =>
@@ -81,58 +82,35 @@ class SetupView extends Backbone.View
       applicationName: applicationName
       success: =>
         # TODO make a fading out message
-        $("#content").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
-        $("#content h4").fadeOut 3000
-        _.delay ->
-          document.location.reload()
-        , 2000
+        $("#message").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
+        $("#message h4").fadeOut 3000
+        @install()
 
   getOptions: ->
-    options = {}
+    options = @options || {}
     _(@fields).each (field) ->
       options[field] = $("##{s.underscored(field)}").val()
     return options
 
   installUrl: ->
-    options = @getOptions()
-    httpType = if options["Cloud URL"].match(/https:\/\//)
+    @options ||= @getOptions()
+    httpType = if @options["Cloud URL"].match(/https:\/\//)
       "https"
     else
       "http"
 
-    options["Cloud URL"] = options["Cloud URL"].replace(/http(s)*:\/\//, "")
-    Coconut.router.navigate "#setup/#{httpType}/#{options["Cloud URL"]}/#{options["Application Name"]}/#{options["Cloud Username"]}/#{options["Cloud Password"]}"
+    @options["Cloud URL"] = @options["Cloud URL"].replace(/http(s)*:\/\//, "")
 
 
   install: ->
     @installUrl()
     applicationName = $("#"+s.underscored("Application Name")).val()
     $('#install_status').show()
-    options =
-      error: (error) ->
-        $("#message").show().html "
-        <div class='setup_message'>
-          <div class='errMsg m-b-10'>Error installing #{applicationName}.</div>
-          <div>#{error}</div>
-          <div style='padding: 30px 0px'>Please review your form inputs.</div>
-          <div class='mdl-card__actions'>
-            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_error'>Back to Form</button>
-          </div>
-        </div>
-        "
-        $('#install_status').hide()
 
-      success: =>
-        $('#spinner').hide()
-        $("#message").show().html "<h4>#{applicationName} Installed</h4>"
-        @$el.find("h4").fadeOut 3000
-        _.delay ->
-          Coconut.router.navigate "##{applicationName}", trigger: true
-          ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
-          window.location.reload()
-        , 1000
-
-      actionIfDatabaseExists: (options) =>
+    $("#spinner").html "<center>Checking to see if #{applicationName} already exists</center>"
+    PouchDB.allDbs().then (dbs) =>
+      if _(dbs).includes "coconut-#{applicationName}"
+        @$el.find("div.mdl-card").hide()
         @$el.find("#form").show()
         $("#spinner").hide()
         $("#message").show().html "
@@ -145,26 +123,45 @@ class SetupView extends Backbone.View
             </div>
           </div>
         "
+      else
+        @$el.find("div.mdl-card").hide()
+        $("#spinner").show().html "
+            <center>
+              <h3 style='font-size: 24px'>Installing #{applicationName}</h3>
+              <div id='install_status'>
+                <h4 id='status'></h4>
+                <div id='percent' style='margin-bottom: 30px'>( 0 of 0 )</div>
+                <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+              </div>
+            </center>
+        "
+        componentHandler.upgradeDom()
+        $("#log").hide().html ""
 
-    _(options).extend @getOptions()
+        Coconut.createDatabases
+          params: @options
+          error: (error) ->
+            $("#message").show().html "
+                <div class='setup_message'>
+                  <div class='errMsg m-b-10'>Error installing #{applicationName}.</div>
+                  <div>#{error}</div>
+                  <div style='padding: 30px 0px'>Please review your form inputs.</div>
+                  <div class='mdl-card__actions'>
+                    <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='cancel_error'>Back to Form</button>
+                  </div>
+                </div>
+                "
+            $('#install_status').hide()
+          success: =>
+            $('#spinner').hide()
+            $("#message").show().html "<h4>#{applicationName} Installed</h4>"
+            @$el.find("h4").fadeOut 3000
+            _.delay ->
+              Coconut.router.navigate "##{applicationName}", trigger: true
+              ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
+              window.location.reload()
+            , 1000
 
-    @$el.find("div.mdl-card").hide()
-    $("#spinner").show().html "
-        <center>
-          <h3 style='font-size: 24px'>Installing #{applicationName}</h3>
-          <div id='install_status'>
-            <h4 id='status'></h4>
-            <div id='percent' style='margin-bottom: 30px'>( 0 of 0 )</div>
-            <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
-          </div>
-        </center>
-    "
-#    $("#spinner").show()
-    componentHandler.upgradeDom()
-    $("#log").html ""
-    $("#log").hide()
-
-    Coconut.createDatabases options
 
   showHelp: (e) ->
     Dialog.showDialog

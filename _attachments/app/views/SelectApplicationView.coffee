@@ -25,7 +25,7 @@ class SelectApplicationView extends Backbone.View
           onClick: (e) ->
             Dialog.showDialog
               title: "Removing #{app_name}",
-              text: "Please wait..."
+              text: "<div>Please wait...</div><div class='mdl-progress mdl-js-progress mdl-progress__indeterminate'></div><br />"
             Coconut.destroyApplicationDatabases
                applicationName: app_name
                success: =>

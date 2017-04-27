@@ -36,49 +36,39 @@ class Coconut
   ###
 
   createDatabases: (options) =>
-    @databaseName = options["Application Name"]
-
-    $("#status").html "Checking to see if #{@databaseName} already exists"
-
-    PouchDB.allDbs().then (dbs) =>
-      if _(dbs).includes "coconut-#{@databaseName}"
-        options.actionIfDatabaseExists(options)
-      else
-        try
-          @setConfig(options)
-          @downloadEncryptionKey
-            error: (error) ->
-              options.error(error)
-            success:  =>
-              $("#status").html "Creating #{@databaseName} database"
-              new PouchDB("coconut-#{options["Application Name"]}")
-              @database = new PouchDB("coconut-#{options["Application Name"]}")
-              @database.crypto(@encryptionKey).then =>
-                @database.put
-                  "_id": "decryption check"
-                  "is the value of this clear text": "yes it is"
-                .then =>
-                  @createDatabaseForEachUser
+    @databaseName = options.params["Application Name"]
+    try
+      @setConfig(options.params)
+      @downloadEncryptionKey
+        error: (error) ->
+          options.error(error)
+        success:  =>
+          $("#status").html "Creating #{@databaseName} database"
+          new PouchDB("coconut-#{options.params["Application Name"]}")
+          @database = new PouchDB("coconut-#{options.params["Application Name"]}")
+          @database.crypto(@encryptionKey).then =>
+            @database.put
+              "_id": "decryption check"
+              "is the value of this clear text": "yes it is"
+            .then =>
+              @createDatabaseForEachUser
+                error: (error) ->
+                  console.error error
+                  options.error error
+                success: =>
+                  $("#status").html "Downloading forms and other application documents"
+                  sync = new Sync
+                  sync.replicateApplicationDocs
                     error: (error) ->
-                      console.error error
-                      options.error error
+                      console.error "Updating application docs failed: #{JSON.stringify error}"
+                      options.error "Updating the application failed: #{JSON.stringify error}"
                     success: =>
-                      $("#status").html "Downloading forms and other application documents"
-                      sync = new Sync
-                      sync.replicateApplicationDocs
-                        error: (error) ->
-                          console.error "Updating application docs failed: #{JSON.stringify error}"
-                          options.error "Updating the application failed: #{JSON.stringify error}"
-                        success: =>
-#                          @syncPlugins
-#                            success: =>
-                          options.success()
-#                            error: =>
-        catch error
-          console.error error
-          console.error "Removing #{@databaseName} due to incomplete setup"
-          @destroyApplicationDatabases
-            applicationName: @databaseName
+                      options.success()
+    catch error
+      console.error error
+      console.error "Removing #{@databaseName} due to incomplete setup"
+      @destroyApplicationDatabases
+        applicationName: @databaseName
 
   setupBackbonePouch: ->
     Backbone.sync = BackbonePouch.sync
@@ -182,19 +172,20 @@ class Coconut
 
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs().then (dbs) =>
-      dbsToDestroy = _(dbs).filter (dbName) ->
-        dbName.match "^coconut-"+options.applicationName
+      if (dbs.length > 0)
+        dbsToDestroy = _(dbs).filter (dbName) ->
+          dbName.match "^coconut-"+options.applicationName
 
-      promises = []
-      _(dbsToDestroy).each (db) ->
-        console.log "Deleting #{db}"
-        promise = (new PouchDB(db)).destroy().then (response) ->
-           console.log "#{db} Destroyed"
-         .catch (err) ->
-           console.error(err)
-        promises.push(promise)
-      Promise.all(promises).then ->
-        options.success?()
+        promises = []
+        _(dbsToDestroy).each (db) ->
+          console.log "Deleting #{db}"
+          promise = (new PouchDB(db)).destroy().then (response) ->
+             console.log "#{db} Destroyed"
+           .catch (err) ->
+             console.error(err)
+          promises.push(promise)
+        Promise.all(promises).then ->
+          options.success?()
 
   createDatabaseForEachUser: (options) =>
     @cloudDB.allDocs
@@ -229,23 +220,25 @@ class Coconut
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
     @cloudDB.get "client encryption key"
-    .then (result) =>
-      @encryptionKey = result.key
-      options.success()
-    .catch (error) =>
-      console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
-      console.error error
-      switch error.error
-        when "not_found"
-          error_msg = "Cannot find database. Make sure your Application Name is correct."
-        when "illegal_database_name"
-          error_msg = error.reason
-        when "unauthorized"
-          error_msg = "Cloud Username or Cloud Password is incorrect."
-        else
-          error_msg = if error.code == "ETIMEDOUT" then "Cannot connect to the Cloud URL. Possibly incorrect URL." else "Unknown error. Possibly incorrect Cloud URL"
+      .then (result) =>
+        @encryptionKey = result.key
+        options.success()
+      .catch (error) =>
+        console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
+        console.error error
+        switch error.status
+          when 0
+            error_msg = "Cannot connect to the Cloud URL. Please check the URL."
+          when 404
+            error_msg = "Cannot find database. Make sure your Application Name is correct."
+          when 400
+            error_msg = error.reason
+          when 401
+            error_msg = "Cloud Username or Cloud Password is incorrect."
+          else
+            error_msg = error.message
 
-      options.error "Failed to get client encryption key. <br /> #{error_msg}"
+        options.error "Failed to get client encryption key. <br /> #{error_msg}"
 
   setConfig: (options) =>
     @config = new Config
