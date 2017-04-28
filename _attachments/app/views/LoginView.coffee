@@ -48,7 +48,7 @@ class LoginView extends Backbone.View
 
   cancel: ->
     Coconut.router.navigate("", true)
-#    return document.location.reload()
+    return document.location.reload()
 
   # Note this needs hashing and salt for real security
   login: =>
