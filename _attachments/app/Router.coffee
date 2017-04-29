@@ -106,14 +106,9 @@ class Router extends Backbone.Router
       defaultQuestion = Coconut.questions.first()
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
-  setup: (httpType = 'http', cloudUrl = document.location.origin ,applicationName,cloudUsername,cloudPassword) ->
+  setup: ->
     setupView = new SetupView()
     setupView.render()
-    setupView.prefill httpType,
-      "Cloud URL": cloudUrl
-      "Application Name": applicationName
-      "Cloud Username": cloudUsername
-      "Cloud Password": cloudPassword
 
   userLoggedIn: (options) ->
     User.isAuthenticated
