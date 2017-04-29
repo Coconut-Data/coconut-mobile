@@ -16,7 +16,7 @@ class SyncView extends Backbone.View
       <center>
       <h3>Syncing</h3>
       <h4 id='status'></h4>
-      <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+      <div class='spin mdl-spinner mdl-js-spinner is-active'></div>
       </center>
     "
     componentHandler.upgradeDom()

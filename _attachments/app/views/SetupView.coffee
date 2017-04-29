@@ -74,7 +74,7 @@ class SetupView extends Backbone.View
         <center>
           <h4>Removing  #{applicationName}</h4>
           <h4 id='status'></h4>
-          <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+          <div class='spin mdl-spinner mdl-js-spinner is-active'></div>
         </center>
     "
     componentHandler.upgradeDom()
@@ -93,7 +93,7 @@ class SetupView extends Backbone.View
     return options
 
   installUrl: ->
-    @options ||= @getOptions()
+    @options = @getOptions()
     httpType = if @options["Cloud URL"].match(/https:\/\//)
       "https"
     else
@@ -131,7 +131,7 @@ class SetupView extends Backbone.View
               <div id='install_status'>
                 <h4 id='status'></h4>
                 <div id='percent' style='margin-bottom: 30px'>( 0 of 0 )</div>
-                <div style='height:200px;width:200px' class='mdl-spinner mdl-js-spinner is-active'></div>
+                <div class='spin mdl-spinner mdl-js-spinner is-active'></div>
               </div>
             </center>
         "
@@ -161,7 +161,6 @@ class SetupView extends Backbone.View
               ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
               window.location.reload()
             , 1000
-
 
   showHelp: (e) ->
     Dialog.showDialog
