@@ -258,4 +258,10 @@ class Coconut
     else
       options.error()
 
+  toggleSpinner: (status) =>
+    if status
+      $("#pls_wait").show()
+    else
+      $("#pls_wait").hide()
+      
 module.exports = Coconut

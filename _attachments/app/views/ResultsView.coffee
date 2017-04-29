@@ -135,9 +135,10 @@ class ResultsView extends Backbone.View
 
       </div>
     "
-
+    Coconut.toggleSpinner(true)
     @loadResults(false)
     @loadResults(true)
+    Coconut.toggleSpinner(false)
 
   loadResults: (complete) ->
     results = new ResultCollection()
