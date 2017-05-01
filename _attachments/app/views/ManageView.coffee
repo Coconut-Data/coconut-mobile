@@ -110,44 +110,22 @@ class ManageView extends Backbone.View
   render: ->
 
     links = [
-      "Get previously sent results from cloud, archive, get/cloud/results, cloudResults"
-      "Send Backup, backup, send/backup, sendBackup"
-      "Save Backup, get_app, save/backup, saveBackup"
+      "Get previously sent results from cloud, archive, cloudResults"
+      "Send Backup, backup, sendBackup"
+      "Save Backup, get_app, saveBackup"
     ]
 
     @$el.html "
-      <style>
-        .manageLink{
-          display:block;
-          margin: 10px;
-          background: #4285f4;
-          color: #ffffff;
-        }
-        #manageCard{
-          font-size: 200%;
-          width: 330px;
-          padding:10px;
-          margin: 0px auto;
-          margin-top: 50px;
-          margin-bottom: 30px;
-        }
-        .buttonIcon {
-          position:relative;
-          bottom:2px
-        }
-      </style>
       <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card'></div>
       <div id='message'></div>
     "
 
     @$("#manageCard").html( _(links).map (link) ->
-      [text,icon,destination,id] = link.split(/,\s*/)
+      [text,icon,id] = link.split(/,\s*/)
 
       "
         <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect manageLink' id='#{id}' type='button'>
-          <i class='buttonIcon material-icons'>
-            #{icon}
-          </i>
+          <i class='buttonIcon material-icons'>#{icon}</i>
           #{text}
         </button>
       "

@@ -527,4 +527,26 @@ div#appName {
   left: 0;
   right: 0;
   margin: auto;
+  z-index: 100;
+}
+
+/* ManageView */
+
+.manageLink{
+  display:block;
+  margin: 10px;
+  background: #4285f4;
+  color: #ffffff;
+}
+#manageCard{
+  font-size: 200%;
+  width: 330px;
+  padding:10px;
+  margin: 0px auto;
+  margin-top: 50px;
+  margin-bottom: 30px;
+}
+.buttonIcon {
+  position:relative;
+  bottom:2px
 }

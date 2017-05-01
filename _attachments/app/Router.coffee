@@ -32,7 +32,6 @@ User = require './models/User'
 UserCollection = require './models/UserCollection'
 
 Cookie = require 'js-cookie'
-JSZip = require 'jszip'
 global.FileSaver = require 'file-saver'
 
 class Router extends Backbone.Router
@@ -75,9 +74,6 @@ class Router extends Backbone.Router
     ":database/help": "help"
     ":database/help/:helpDocument": "help"
     ":database/manage": "manage"
-    ":database/send/backup": "sendBackup"
-    ":database/save/backup": "saveBackup"
-    ":database/get/cloud/results": "getCloudResults"
     "setup": "setup"
 # TODO handle cloudUrl with http:// in it
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
@@ -138,7 +134,6 @@ class Router extends Backbone.Router
     User.logout()
     Coconut.router.navigate("",true)
     document.location.reload()
-
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
@@ -315,7 +310,6 @@ class Router extends Backbone.Router
           Coconut.questionView = new QuestionView()
           Coconut.menuView = new MenuView()
           Coconut.headerView = new HeaderView() if !Coconut.headerView
-#          Coconut.headerView.render()
           Coconut.syncView = new SyncView()
           Coconut.syncView.sync.setMinMinsBetweenSync()
           Coconut.syncView.update()
