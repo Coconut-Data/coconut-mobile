@@ -2,15 +2,117 @@ _ = require 'underscore'
 global._ = _
 $ = require 'jquery'
 Backbone = require 'backbone'
+Router = require '../Router'
+JSZip = require 'jszip'
+MemoryStream = require 'memorystream'
+Dialog = require '../../js-libraries/modal-dialog'
 
 class ManageView extends Backbone.View
+  events:
+    "click #cloudResults": "getCloudResults"
+    "click #sendBackup": "sendBackup"
+    "click #saveBackup": "saveBackup"
+
+  getCloudResults: ->
+    Coconut.cloudDatabase.query "resultsByUserAndDate",
+      startkey: [Coconut.currentUser.username(), moment().subtract(1,"month").format(Coconut.config.get "date_format")]
+      endkey: [Coconut.currentUser.username(), moment().endOf("day").format(Coconut.config.get "date_format")]
+    .catch (error) => console.error "ERROR, could not download list of results for user: #{Coconut.currentUser.username()}: #{JSON.stringify error}"
+    .then (result) =>
+      lastMonthIds = _.pluck result.rows, "id"
+
+      downloadResults = (docIds) ->
+        Coconut.debug "Downloading #{docIds.length} results"
+        Coconut.database.replicate.from Coconut.cloudDatabase,
+          doc_ids: docIds
+        .on 'complete', (info) =>
+          $("#log").html ""
+          Dialog.showDialog
+            title: "C o m p l e t e",
+            text: "<div>It may take a few minutes before all results are shown, but you can capture new data while these results are loading.</div>"
+            neutral:
+              title: "Close"
+        .on 'error', (error) =>
+          console.log JSON.stringify error
+        .on 'change', (info) =>
+          $("#message").show().html "
+            <h2>
+              #{info.docs_written} written out of #{docIds.length} (#{parseInt(100*(info.docs_written/docIds.length))}%)
+            </h2>
+          "
+      Dialog.showDialog
+        title: 'Confirmation'
+        text: "Do you want to get #{lastMonthIds.length} results from last month saved by #{Coconut.currentUser.username()}"
+        negative:
+          title: 'No'
+        positive:
+            title: 'Yes',
+            onClick: (e) ->
+              downloadResults(lastMonthIds)
+
+  sendBackup: ->
+    # destination server https is configure at the Express config
+    destination = "#{Coconut.config.cloud_url_hostname()}:3000/backup"
+    @dumpDatabase
+      error: (error) -> console.error error
+      success: (dumpedString) ->
+        $.ajax
+          url: destination
+          type: 'post'
+          data:
+            destination: Coconut.config.cloud_url_with_credentials()
+            value: dumpedString
+          success: (result) ->
+            Dialog.showDialog
+              title: "S U C C E S S",
+              text: "<div>Database backup sent to: #{destination} where it was loaded into #{Coconut.config.cloud_url()}<br/>Result from server: #{result}</div>"
+              neutral:
+                title: "Close"
+          error: (error) ->
+            console.error error
+            Dialog.showDialog
+              title: "<span class='errMsg'>E R R O R</span>",
+              text: "<div>Error backing up database: </div><div>#{JSON.stringify error}</div>"
+              neutral:
+                title: "Close"
+
+  saveBackup: ->
+    @dumpDatabase
+      error: (error) -> console.error error
+      success: (dumpedString) ->
+        $("#message").show().html "Database backup created, beginning download. File will be available in Downloads folder on mobile device."
+        zip = new JSZip()
+        zip.file "backup.pouchdb", dumpedString
+        zip.generateAsync
+          type:"blob"
+          compression:"DEFLATE"
+        .then (content) ->
+          FileSaver.saveAs(content, "coconut.pouchdb.zip")
+          Dialog.showDialog
+            title: "S U C C E S S",
+            text: "<div>Database backup saved.</div><div>File will be available in Downloads folder on mobile device.</div>"
+            neutral:
+              title: "Close"
+          $("#message").hide()
+
+  dumpDatabase: (options) =>
+    dumpedString = ''
+    stream = new MemoryStream()
+    stream.on 'data', (chunk) ->
+      dumpedString += chunk.toString()
+
+    Coconut.database.dump stream,
+      filter: (doc) -> doc.collection is "result"
+    .then ->
+      console.log dumpedString
+      options.success(dumpedString)
 
   render: ->
 
     links = [
-      "Get previously sent results from cloud, archive, get/cloud/results"
-      "Send Backup, backup, send/backup"
-      "Save Backup, get_app, save/backup"
+      "Get previously sent results from cloud, archive, get/cloud/results, cloudResults"
+      "Send Backup, backup, send/backup, sendBackup"
+      "Save Backup, get_app, save/backup, saveBackup"
     ]
 
     @$el.html "
@@ -18,23 +120,35 @@ class ManageView extends Backbone.View
         .manageLink{
           display:block;
           margin: 10px;
+          background: #4285f4;
+          color: #ffffff;
+        }
+        #manageCard{
+          font-size: 200%;
+          width: 330px;
+          padding:10px;
+          margin: 0px auto;
+          margin-top: 50px;
+          margin-bottom: 30px;
+        }
+        .buttonIcon {
+          position:relative;
+          bottom:2px
         }
       </style>
-      <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:330px; margin: 0px auto; margin-top: 50px; padding:10px'>
-      </div>
+      <div id='manageCard' class='mdl-card mdl-shadow--8dp coconut-mdl-card'></div>
+      <div id='message'></div>
     "
 
     @$("#manageCard").html( _(links).map (link) ->
-      [text,icon,destination] = link.split(/,\s*/)
+      [text,icon,destination,id] = link.split(/,\s*/)
 
       "
-        <button class='manageLink mdl-button mdl-js-button mdl-button--raised mdl-button--colored'>
-          <a style='color:white; text-decoration:none' href='##{Coconut.databaseName}/#{destination}'>
-            <i style='position:relative; bottom:2px;' class='mdl-color-text--accent material-icons'>
-              #{icon}
-            </i>
-            #{text}
-          </a>
+        <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect manageLink' id='#{id}' type='button'>
+          <i class='buttonIcon material-icons'>
+            #{icon}
+          </i>
+          #{text}
         </button>
       "
     .join(""))
