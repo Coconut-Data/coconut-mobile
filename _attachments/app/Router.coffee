@@ -269,6 +269,7 @@ class Router extends Backbone.Router
     Coconut.resultsView ?= new ResultsView()
     Coconut.resultsView.question = new Question
       id: unescape(question_id)
+    Coconut.toggleSpinner(true)
     Coconut.resultsView.question.fetch
       success: ->
         Coconut.resultsView.render()

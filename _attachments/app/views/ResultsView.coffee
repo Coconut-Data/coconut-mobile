@@ -135,12 +135,12 @@ class ResultsView extends Backbone.View
 
       </div>
     "
-    Coconut.toggleSpinner(true)
+
     @loadResults(false)
     @loadResults(true)
-    Coconut.toggleSpinner(false)
 
   loadResults: (complete) ->
+    Coconut.toggleSpinner(true)
     results = new ResultCollection()
     results.fetch
       include_docs: "true"
@@ -166,5 +166,6 @@ class ResultsView extends Backbone.View
         $("table.complete-#{complete}").dataTable({
           "columnDefs": [{"orderable": false, "targets": 2}]
         })
+    Coconut.toggleSpinner(false)
 
 module.exports = ResultsView
