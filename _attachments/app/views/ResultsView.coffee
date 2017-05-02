@@ -166,6 +166,6 @@ class ResultsView extends Backbone.View
         $("table.complete-#{complete}").dataTable({
           "columnDefs": [{"orderable": false, "targets": 2}]
         })
-    Coconut.toggleSpinner(false)
+        Coconut.toggleSpinner(false)
 
 module.exports = ResultsView

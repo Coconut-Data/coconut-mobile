@@ -42,7 +42,7 @@ class MenuView extends Backbone.View
               "##{Coconut.databaseName}/logout,exit_to_app,Logout"
             ]).map (linkData) ->
               [url,icon,linktext] = linkData.split(",")
-              "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text material-icons'>#{icon}</i>#{linktext}</a>"
+              "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text--blue-grey-400 material-icons'>#{icon}</i>#{linktext}</a>"
             .join("")
           }
       </nav>

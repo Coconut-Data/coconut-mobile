@@ -57,11 +57,12 @@ class LoginView extends Backbone.View
       return @displayErr("Please enter a username and a password")
     loginData = Form2js.form2js('login_form')
     loginData.username = loginData.username.toLowerCase()
-
+    Coconut.toggleSpinner(true)
     Coconut.openDatabase
       username: loginData.username
       password: loginData.password
       success: =>
+        Coconut.toggleSpinner(false)
         @callback()
       error: =>
         @displayErr("Invalid username/password")
