@@ -152,8 +152,7 @@ div.mdl-layout__drawer-button i.material-icons {
 }
 .coconut-navigation .mdl-navigation__link .material-icons {
   font-size: 50px;
-  /* color: rgba(255, 255, 255, 0.56); */
-  margin-right: 32px;
+  margin-right: 15px;
 }
 
 .coconut-navigation .mdl-navigation__link {

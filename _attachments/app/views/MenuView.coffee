@@ -54,15 +54,17 @@ class MenuView extends Backbone.View
         $("#drawer_question_sets").html (Coconut.questions.map (question,index) ->
           new_url = "##{Coconut.databaseName}/new/result/#{escape(question.id)}"
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
+          spanID = question.id.replace(/\s/g,"_")
           "
             <div>
-              <a class='mdl-navigation__link' href='#{results_url}'><i class='mdl-color-text--accent material-icons'>#{menuIcons[question.id]}</i>#{question.id}</a>
+              <a class='mdl-navigation__link' href='#{results_url}'><span id='#{spanID}' class='#{spanID} mdl-badge' data-badge=''><i class='mdl-color-text--accent material-icons'>#{menuIcons[question.id]}</i>
+              <span>#{question.id}</span></span></a>
             </div>
           "
         .join(" "))
 
         componentHandler.upgradeDom()
-
+        Coconut.headerView.update()
 #        @update()
 
   update: ->

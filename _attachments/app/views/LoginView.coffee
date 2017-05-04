@@ -65,6 +65,7 @@ class LoginView extends Backbone.View
         Coconut.toggleSpinner(false)
         @callback()
       error: =>
+        Coconut.toggleSpinner(false)
         @displayErr("Invalid username/password")
 
   displayErr: (msg) =>
