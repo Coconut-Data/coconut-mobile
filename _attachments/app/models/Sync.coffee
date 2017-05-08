@@ -37,7 +37,7 @@ class Sync extends Backbone.Model
   backgroundSync: =>
     @lastSuccessfulSync = moment("2000-01-01") unless @lastSuccessfulSync? # TODO save this in PouchDB or use existing one
     console.log "backgroundSync called at #{moment().toString()} lastSuccessfulSync was #{@lastSuccessfulSync.toString()}}"
-    @setMinMinsBetweenSync()
+    minimumMinutesBetweenSync = @setMinMinsBetweenSync()
     Coconut.headerView.toggleSyncIcon(true)
     Coconut.questions.each (question) =>
       Coconut.database.query "results",
@@ -181,5 +181,6 @@ class Sync extends Backbone.Model
     minimumMinutesBetweenSync = if minimumMinutesBetweenSync < 5 then 5 else minimumMinutesBetweenSync
     if Coconut.config.get('mobile_background_sync')
       _.delay @backgroundSync, minimumMinutesBetweenSync*60*1000
+    return minimumMinutesBetweenSync
 
 module.exports = Sync
