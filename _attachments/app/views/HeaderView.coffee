@@ -14,6 +14,7 @@ class HeaderView extends Backbone.View
       "click a#logout": "Logout"
       "click a#about": "About"
       "click a#support": "Support"
+      "click a#refresh": "Refresh"
 
     Logout: ->
       $('nav.mdl-navigation').html("")
@@ -26,6 +27,9 @@ class HeaderView extends Backbone.View
     Support: ->
       Coconut.supportView = new SupportView() if !Coconut.supportView
       Coconut.supportView.render()
+
+    Refresh: ->
+      window.location.reload()
 
     render: =>
       @$el.html "
@@ -41,6 +45,7 @@ class HeaderView extends Backbone.View
           <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
             <li class='mdl-menu__item'><a id='about' class='mdl-color-text--blue-grey-400'><i class='material-icons'>info</i> About</a></li>
             <li class='mdl-menu__item'><a id='support' class='mdl-color-text--blue-grey-400'><i class='material-icons'>help</i> Support</a></li>
+            <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400'><i class='material-icons'>rotate_right</i> Refresh screen</a></li>
             <li class='mdl-menu__item' id='login_out'><a id='logout' class='mdl-color-text--blue-grey-400'><i class='material-icons'>exit_to_app</i> Logout</a></li>
           </ul>
         </div>

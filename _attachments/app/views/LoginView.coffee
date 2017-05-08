@@ -12,7 +12,7 @@ class LoginView extends Backbone.View
   el: '#content'
 
   render: =>
-    $(".mdl-layout__header-row").html "<div id='appName'>#{Coconut.databaseName}</div>"
+    @displayHeader()
     @$el.html "
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
         <div id='logo-title'><img src='images/cocoLogo.png' id='cslogo_sm'> Coconut</div>
@@ -71,4 +71,15 @@ class LoginView extends Backbone.View
   displayErr: (msg) =>
     $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='material-icons'>error_outline</i> #{msg}"
 
+  displayHeader: =>
+    $(".mdl-layout__header-row").html("<div id='appName'>#{Coconut.databaseName}</div>
+      <div id='right_top_menu'>
+        <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='top-menu-lower-right'>
+          <i class='material-icons'>more_vert</i>
+        </button>
+        <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
+          <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400' onclick='window.location.reload()'><i class='material-icons'>rotate_right</i> Refresh screen</a></li>
+        </ul>
+      </div>
+    ")
   module.exports = LoginView
