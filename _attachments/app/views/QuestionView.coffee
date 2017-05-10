@@ -125,8 +125,11 @@ class QuestionView extends Backbone.View
       }
 
       label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
-        font-size:200%;
+        font-size: 1.1em;
+      }
 
+      input{
+        width: 100%;
       }
 
       .message
@@ -185,11 +188,6 @@ class QuestionView extends Backbone.View
         line-height:normal;
       }
 
-      input{
-        font-size: 1.5em;
-        width: 100%;
-      }
-
       label.radio-option,label.checkbox-option {
         border-radius:20px;
         display:inline-block;
@@ -211,14 +209,6 @@ class QuestionView extends Backbone.View
         background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
         background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
         background-image: -o-linear-gradient(#{@primary1},#{@primary2});
-earchCompleteStop()
-
-      }
-
-      input[type='radio'],input[type='checkbox']{
-        height: 0px;
-        width: 0px;
-        margin: 0px;
       }
 
       input[type='radio'],input[type='checkbox']{
@@ -236,8 +226,6 @@ earchCompleteStop()
         background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
         background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
         background-image: -o-linear-gradient(#{@primary1},#{@primary2});
-earchCompleteStop()
-
       }
       input[type='checkbox']{
         height: 0px;
@@ -737,13 +725,11 @@ earchCompleteStop()
           if ($('[name=complete]').prop("checked"))
             # Return to Summary page after completion
             Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
-
           # Update the menu
           Coconut.headerView.update()
         error: (error) ->
           console.debug error
           console.error error
-
     , 1000)
 
   completeButton: ( value ) ->
@@ -875,14 +861,14 @@ earchCompleteStop()
                   </div>
                   <div>
                     <label for='#{question_id}-description'>Description</label>
-                    <input type='text' name='#{name}-description' id='#{question_id}-description'></input><br/>
+                    <input type='text' name='#{name}-description' id='#{question_id}-description'></input><p/>
                     #{
                       _.map(["latitude", "longitude","accuracy"], (field) ->
                         "
                         <div>
                         <label for='#{question_id}-#{field}'>#{s.capitalize(field)}</label>
                         <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
-                        </div>
+                        </div><p/>
                         "
                       ).join("")
                     }
