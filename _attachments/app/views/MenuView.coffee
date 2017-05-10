@@ -42,7 +42,7 @@ class MenuView extends Backbone.View
               "##{Coconut.databaseName}/logout,exit_to_app,Logout"
             ]).map (linkData) ->
               [url,icon,linktext] = linkData.split(",")
-              "<a class='mdl-navigation__link' href='#{url}'><i class='mdl-color-text--blue-grey-400 material-icons'>#{icon}</i>#{linktext}</a>"
+              "<a class='mdl-navigation__link' href='#{url}' id='#{linktext.toLowerCase()}'><i class='mdl-color-text--blue-grey-400 material-icons'>#{icon}</i>#{linktext}</a>"
             .join("")
           }
       </nav>
@@ -64,8 +64,15 @@ class MenuView extends Backbone.View
         .join(" "))
 
         componentHandler.upgradeDom()
+        @hideMenuOptions()
         Coconut.headerView.update()
 #        @update()
+
+  hideMenuOptions: ->
+    if Coconut.currentUser.isAdmin() then $("#manage").show() else $("#manage").hide()
+    if Coconut.currentUser.hasRole "reports"
+      $("#top-menu").hide()
+      $("#bottom-menu").hide()
 
   update: ->
     User.isAuthenticated
