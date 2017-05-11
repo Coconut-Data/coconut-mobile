@@ -969,7 +969,7 @@ class QuestionView extends Backbone.View
 
 
       $("##{question_id}-timestamp").val(moment(geoposition.timestamp).format("YYYY-MM-DD HH:mm:ss"))
-      $.getJSON "http://api.geonames.org/findNearbyPlaceNameJSON?lat=#{geoposition.coords.latitude}&lng=#{geoposition.coords.longitude}&username=mikeymckay&callback=?", null, (result) =>
+      $.getJSON "https://secure.geonames.org/findNearbyPlaceNameJSON?lat=#{geoposition.coords.latitude}&lng=#{geoposition.coords.longitude}&username=mikeymckay&callback=?", null, (result) =>
         $("##{question_id}-description").val parseFloat(result.geonames[0].distance).toFixed(1) + " km from center of " + result.geonames[0].name
 
     onSuccess = (geoposition) =>
