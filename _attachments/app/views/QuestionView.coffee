@@ -453,6 +453,8 @@ class QuestionView extends Backbone.View
       @updateSkipLogic()
 
       if allQuestionsPassValidation
+        if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
+          CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
         if onValidatedComplete
           console.log "Evaling: #{onValidatedComplete}"
