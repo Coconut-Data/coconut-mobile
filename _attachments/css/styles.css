@@ -44,7 +44,6 @@ html, body {
 
 header .mdi{
   font-size: 34px;
-  vertical-align: middle;
 }
 
 header .mdl-button--icon {
@@ -55,7 +54,15 @@ header .mdl-button--icon {
 header .mdl-layout-title{
   color: #ffffff;
   font-size: 25px;
-  padding-right: 30px;
+  padding: 10px 10px 0px 0px;
+}
+
+a#home_icon {
+  padding: 13px 20px 0px 0px;
+}
+
+a#home_icon:hover {
+  cursor:pointer;
 }
 
 .coconut-avatar {
@@ -339,6 +346,9 @@ font-size: 16px;
 .mdl-layout__header, .mdl-layout__header-row {
   background-color: #4285f4;
 }
+.mdl-layout__header-row {
+  padding-left: 70px;
+}
 
 .mdl-layout__header-row  a {
   color: #ffffff;
@@ -442,7 +452,7 @@ a#sync_icon i {
 }
 
 a.mdl-navigation__link.top_links {
-  padding: 5px 15px 0px;
+  padding: 13px 15px 0px;
 }
 
 .mdl-badge[data-badge]:after {

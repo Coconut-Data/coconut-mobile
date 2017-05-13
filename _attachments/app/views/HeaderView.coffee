@@ -9,7 +9,7 @@ SupportView = require './SupportView'
 menuIcons = { 'Case Notification':'wifi', 'Facility':'hospital', 'Household':'home-map-marker', 'Household Members':'account'}
 class HeaderView extends Backbone.View
     el: ".mdl-layout__header-row"
-    
+
     initialize: ->
       #hack to replace drawer button to use mdi icon.
       $('.mdl-layout__drawer-button i').removeClass('material-icons').addClass('mdi mdi-menu')
@@ -38,6 +38,7 @@ class HeaderView extends Backbone.View
     render: =>
       @$el.html "
         <span class='mdl-layout-title' id='layout-title'>Coconut Mobile</span>
+        <a id='home_icon' class='mdi mdi-home mdi-36px' title='Home'></a>
         <nav class='mdl-navigation'></nav>
         <div class='mdl-layout-spacer'></div>
         <div id='right_top_menu'>
