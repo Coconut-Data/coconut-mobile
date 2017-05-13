@@ -111,8 +111,8 @@ class ManageView extends Backbone.View
 
     links = [
       "Get previously sent results from cloud, archive, cloudResults"
-      "Send Backup, backup, sendBackup"
-      "Save Backup, get_app, saveBackup"
+      "Send Backup, cloud-upload, sendBackup"
+      "Save Backup, briefcase-download, saveBackup"
     ]
 
     @$el.html "
@@ -125,7 +125,7 @@ class ManageView extends Backbone.View
 
       "
         <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect manageLink' id='#{id}' type='button'>
-          <i class='buttonIcon material-icons'>#{icon}</i>
+          <i class='buttonIcon mdi mdi-#{icon} mdi-24px'></i>
           #{text}
         </button>
       "

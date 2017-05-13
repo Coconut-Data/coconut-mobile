@@ -6,9 +6,13 @@ AboutView = require './AboutView'
 User = require '../models/User'
 SupportView = require './SupportView'
 
-menuIcons = { 'Case Notification':'wifi', 'Facility':'local_hospital', 'Household':'home', 'Household Members':'person'}
+menuIcons = { 'Case Notification':'wifi', 'Facility':'hospital', 'Household':'home-map-marker', 'Household Members':'account'}
 class HeaderView extends Backbone.View
     el: ".mdl-layout__header-row"
+    
+    initialize: ->
+      #hack to replace drawer button to use mdi icon.
+      $('.mdl-layout__drawer-button i').removeClass('material-icons').addClass('mdi mdi-menu')
 
     events:
       "click a#logout": "Logout"
@@ -38,15 +42,15 @@ class HeaderView extends Backbone.View
         <div class='mdl-layout-spacer'></div>
         <div id='right_top_menu'>
           <span class='mdl-spinner mdl-js-spinner' id='syncing'></span>
-          <a id='sync_icon' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent material-icons'>sync</i></a>
+          <a id='sync_icon' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent mdi mdi-sync mdi-48px'></i></a>
           <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='top-menu-lower-right'>
-            <i class='material-icons'>more_vert</i>
+            <i class='mdi mdi-dots-vertical mdi-36px'></i>
           </button>
           <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
-            <li class='mdl-menu__item'><a id='about' class='mdl-color-text--blue-grey-400'><i class='material-icons'>info</i> About</a></li>
-            <li class='mdl-menu__item'><a id='support' class='mdl-color-text--blue-grey-400'><i class='material-icons'>help</i> Support</a></li>
-            <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400'><i class='material-icons'>rotate_right</i> Refresh screen</a></li>
-            <li class='mdl-menu__item' id='login_out'><a id='logout' class='mdl-color-text--blue-grey-400'><i class='material-icons'>exit_to_app</i> Logout</a></li>
+            <li class='mdl-menu__item'><a id='about' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-information mdi-24px'></i> About</a></li>
+            <li class='mdl-menu__item'><a id='support' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-help mdi-24px'></i> Support</a></li>
+            <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
+            <li class='mdl-menu__item' id='login_out'><a id='logout' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-exit-to-app mdi-24px'></i> Logout</a></li>
           </ul>
         </div>
       "
@@ -67,7 +71,7 @@ class HeaderView extends Backbone.View
         navlinks = (Coconut.questions.map (question,index) ->
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           spanID = question.id.replace(/\s/g,"_")
-          "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge=''><i class='mdl-layout--small-screen-only material-icons'>#{menuIcons[question.id]}</i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
+          "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge=''><i class='mdl-layout--small-screen-only mdi mdi-#{menuIcons[question.id]}'></i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
         .join(" "))
         $('nav.mdl-navigation').html(navlinks)
 

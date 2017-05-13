@@ -59,7 +59,7 @@ class SelectApplicationView extends Backbone.View
                 "<span class='mdl-chip mdl-chip--deletable'>
                    <span class='mdl-chip__text region'><a href='##{applicationName}'>#{applicationName}</a></span>
                    <button type='button' class='mdl-chip__action'>
-                    <i class='material-icons' id='del_#{applicationName}'>cancel</i>
+                    <i class='mdi mdi-close-circle mdi-24px' id='del_#{applicationName}'></i>
                    </button>
                 </span>"
               .join ""
@@ -67,7 +67,7 @@ class SelectApplicationView extends Backbone.View
             </p>
 
             <p class='text'> <span style='padding-right: 10px'>... or install a new one.</span>
-              <a href='#setup' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='material-icons'>add</i></a>
+              <a href='#setup' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
             </p>
           "
 

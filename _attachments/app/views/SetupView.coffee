@@ -37,7 +37,7 @@ class SetupView extends Backbone.View
           <div class='mdl-card__actions'>
             <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='install' type='button'>Install</button> &nbsp;
             <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='cancel_button' type='button'>Cancel</button> &nbsp;
-            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='help_button'><i class='material-icons'>help</i></button>
+            <button class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect cancel_button' id='help_button'><i class='mdi mdi-help mdi-24px'></i></button>
           </div>
         </div>
       </div>

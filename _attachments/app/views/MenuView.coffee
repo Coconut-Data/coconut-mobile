@@ -6,7 +6,7 @@ Dialog = require '../../js-libraries/modal-dialog'
 
 User = require '../models/User'
 
-menuIcons = { 'Case Notification':'wifi', 'Facility':'local_hospital', 'Household':'home', 'Household Members':'person'}
+menuIcons = { 'Case Notification':'wifi', 'Facility':'hospital', 'Household':'home-map-marker', 'Household Members':'account'}
 class MenuView extends Backbone.View
   el: ".coconut-drawer"
 
@@ -37,12 +37,12 @@ class MenuView extends Backbone.View
           #{
             _([
               "##{Coconut.databaseName}/sync,sync,Sync data"
-              "##{Coconut.databaseName}/reset/database,warning,Reset database"
-              "##{Coconut.databaseName}/manage,build,Manage"
-              "##{Coconut.databaseName}/logout,exit_to_app,Logout"
+              "##{Coconut.databaseName}/reset/database,alert,Reset database"
+              "##{Coconut.databaseName}/manage,wrench,Manage"
+              "##{Coconut.databaseName}/logout,exit-to-app,Logout"
             ]).map (linkData) ->
               [url,icon,linktext] = linkData.split(",")
-              "<a class='mdl-navigation__link' href='#{url}' id='#{linktext.toLowerCase()}'><i class='mdl-color-text--blue-grey-400 material-icons'>#{icon}</i>#{linktext}</a>"
+              "<a class='mdl-navigation__link' href='#{url}' id='#{linktext.toLowerCase()}'><i class='mdl-color-text--blue-grey-400 mdi mdi-#{icon}'></i>#{linktext}</a>"
             .join("")
           }
       </nav>
@@ -57,7 +57,7 @@ class MenuView extends Backbone.View
           spanID = question.id.replace(/\s/g,"_")
           "
             <div>
-              <a class='mdl-navigation__link' href='#{results_url}'><span id='#{spanID}' class='#{spanID} mdl-badge' data-badge=''><i class='mdl-color-text--accent material-icons'>#{menuIcons[question.id]}</i>
+              <a class='mdl-navigation__link' href='#{results_url}'><span id='#{spanID}' class='#{spanID} mdl-badge' data-badge=''><i class='mdl-color-text--accent mdi mdi-#{menuIcons[question.id]}'></i>
               <span>#{question.id}</span></span></a>
             </div>
           "

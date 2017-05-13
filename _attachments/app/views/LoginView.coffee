@@ -69,16 +69,16 @@ class LoginView extends Backbone.View
         @displayErr("Invalid username/password")
 
   displayErr: (msg) =>
-    $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='material-icons'>error_outline</i> #{msg}"
+    $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='mdi mdi-information-outline mdi-36px'></i> #{msg}"
 
   displayHeader: =>
     $(".mdl-layout__header-row").html("<div id='appName'>#{Coconut.databaseName}</div>
       <div id='right_top_menu'>
         <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='top-menu-lower-right'>
-          <i class='material-icons'>more_vert</i>
+          <i class='mdi mdi-dots-vertical mdi-36px'></i>
         </button>
         <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
-          <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400' onclick='window.location.reload()'><i class='material-icons'>rotate_right</i> Refresh screen</a></li>
+          <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400' onclick='window.location.reload()'><i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
         </ul>
       </div>
     ")

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# VERSION 0.8.99
+# VERSION 0.8.171
 
 /
 /bundle.js
@@ -8,6 +8,8 @@ CACHE MANIFEST
 /css/style.min.css
 /css/fonts/fonts.css
 /css/material.css
+/css/materialdesignicons.min.css
+/css/materialdesignicons.min.css.map
 /css/styles.css
 /css/modal-dialog.css
 /css/jquery.dataTables.min.css
@@ -19,11 +21,11 @@ CACHE MANIFEST
 /css/fonts/Roboto-Black.ttf
 /css/fonts/Roboto-Italic.ttf
 /css/fonts/Roboto-BoldItalic.ttf
-/css/fonts/MaterialIcons-Regular.eot
-/css/fonts/MaterialIcons-Regular.ttf
-/css/fonts/MaterialIcons-Regular.woff
-/css/fonts/MaterialIcons-Regular.woff2
-
+/fonts/materialdesignicons-webfont.eot
+/fonts/materialdesignicons-webfont.svg
+/fonts/materialdesignicons-webfont.ttf
+/fonts/materialdesignicons-webfont.woff
+/fonts/materialdesignicons-webfont.woff2
 /images/cocoLogo.png
 /images/back_disabled.png
 /images/back_enabled_hover.png

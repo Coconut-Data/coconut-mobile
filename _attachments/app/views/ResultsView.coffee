@@ -51,7 +51,7 @@ class ResultsView extends Backbone.View
       <h3 class='content_title'>
         #{@question.id}
       </h3>
-      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='material-icons'>add</i></a>
+      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
       <div class='clearfix'></div>
       <h4>Summary statistics</h4>
 
@@ -158,7 +158,7 @@ class ResultsView extends Backbone.View
                 ).join("")
               }
               <td style='text-align: center'><a href='##{Coconut.databaseName}/delete/result/#{result.id}' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-button--accent'>
-                <i class='material-icons'>delete</i>
+                <i class='mdi mdi-delete'></i>
               </a></td>
             </tr>
           "

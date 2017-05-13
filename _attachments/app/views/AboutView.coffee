@@ -13,7 +13,7 @@ class AboutView extends Backbone.View
         text: "
         <div id='version'>Version 1.0</div>
         <div id='license'>
-          <p><i class='material-icons'>copyright</i> Copyright 2012-2017 RTI International. </p>
+          <p><i class='mdi mdi-copyright mdi-24px'></i> Copyright 2012-2017 RTI International. </p>
           <p>RTI International is a registered trademark and a trade name of Research Triangle Institute.</p>
           <div>Licensed under the Apache License, Version 2.0 (the 'License');<br />
           you may not use this file except in compliance with the License.<br />

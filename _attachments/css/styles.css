@@ -42,7 +42,7 @@ html, body {
   margin: 10px;
 }
 
-header .material-icons{
+header .mdi{
   font-size: 34px;
   vertical-align: middle;
 }
@@ -68,7 +68,7 @@ header .mdl-layout-title{
   background: #4285f4;
 }
 
-div.mdl-layout__drawer-button i.material-icons {
+div.mdl-layout__drawer-button i.mdi {
   font-size: 35px;
   margin-top: -15px;
 }
@@ -151,8 +151,8 @@ div.mdl-layout__drawer-button i.material-icons {
   font-weight: 500;
 }
 */
-.coconut-navigation .mdl-navigation__link .material-icons {
-  font-size: 50px;
+.coconut-navigation .mdl-navigation__link .mdi {
+  font-size: 48px;
   margin-right: 15px;
 }
 
@@ -277,7 +277,7 @@ _:-ms-input-placeholder, :root .coconut-graph {
 .coconut-options li {
   margin: 4px 0;
 }
-.coconut-options .material-icons {
+.coconut-options .mdi {
   color: rgba(255, 255, 255, 0.89);
 }
 .coconut-options .mdl-card__actions {
@@ -372,7 +372,7 @@ button#top-menu-lower-right {
   color: #fff;
 }
 
-button#top-menu-lower-right i.material-icons {
+button#top-menu-lower-right i.mdi {
   margin-left: -10px;
 }
 
@@ -414,6 +414,7 @@ button#top-menu-lower-right i.material-icons {
 .f-left {float: left;}
 .m-l-10 { margin-left: 10px;}
 .m-b-10 { margin-bottom: 10px;}
+.p-r-10 { padding-right: 10px;}
 
 #results-tabs {
   margin-bottom: 20px;
@@ -550,4 +551,18 @@ div#appName {
 .buttonIcon {
   position:relative;
   bottom:2px
+}
+
+.mdi-24px {
+  font-size: 24px;
+}
+.mdi-36px {
+  font-size: 36px;
+}
+
+.mdi-48px {
+  font-size: 48px;
+}
+.mdi-50px {
+  font-size: 50px;
 }
