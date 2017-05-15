@@ -38,7 +38,7 @@ class HeaderView extends Backbone.View
     render: =>
       @$el.html "
         <span class='mdl-layout-title' id='layout-title'>Coconut Mobile</span>
-        <a id='home_icon' class='mdi mdi-home mdi-36px' title='Home'></a>
+        <a href='##{Coconut.databaseName}/summary' id='home_icon' class='mdi mdi-home mdi-36px' title='Home'></a>
         <nav class='mdl-navigation'></nav>
         <div class='mdl-layout-spacer'></div>
         <div id='right_top_menu'>
