@@ -99,7 +99,8 @@ class Router extends Backbone.Router
       question.get("default") is true
     if defaultQuestion.length is 0
       defaultQuestion = Coconut.questions.first()
-    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+#    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+    Coconut.router.navigate "##{Coconut.databaseName}/summary", trigger:true
 
   setup: ->
     setupView = new SetupView()
@@ -129,6 +130,7 @@ class Router extends Backbone.Router
     Coconut.loginView.callback =
       success: ->
         Coconut.router.navigate("",true)
+#        Coconut.router.navigate("##{Coconut.databaseName}/summary",true)
 
   logout: ->
     User.logout()

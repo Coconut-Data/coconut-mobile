@@ -19,6 +19,10 @@ class HeaderView extends Backbone.View
       "click a#about": "About"
       "click a#support": "Support"
       "click a#refresh": "Refresh"
+#      "click a#home_icon": "homePage"
+
+    homePage: ->
+      Coconut.router.navigate "##{Coconut.databaseName}/summary", {trigger: true}
 
     Logout: ->
       $('nav.mdl-navigation').html("")
