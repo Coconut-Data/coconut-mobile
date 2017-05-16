@@ -20,6 +20,7 @@
 @media (max-width: 500px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
   a#sync_icon i {margin-right: 10px; }
+  a#home_icon {padding-left: 0px !important;}
 }
 
 @media (max-width: 800px) {
@@ -58,7 +59,7 @@ header .mdl-layout-title{
 }
 
 a#home_icon {
-  padding: 13px 20px 0px 0px;
+  padding: 13px 20px 0px 20px;
 }
 
 a#home_icon:hover {
@@ -475,6 +476,10 @@ table.dataTable.results td {
   padding: 2px 10px;
 }
 
+.dataTables_wrapper .dataTables_scroll {
+  padding-top: 20px;
+}
+
 #message {
   width: 430px;
   margin: auto;
@@ -482,6 +487,7 @@ table.dataTable.results td {
 
 @media (max-width: 360px) {
   #message { width: 330px;}
+  #home_icon {padding-left: 15px;}
 }
 
 .setup_message {
