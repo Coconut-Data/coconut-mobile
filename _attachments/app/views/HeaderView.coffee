@@ -58,7 +58,7 @@ class HeaderView extends Backbone.View
             <li class='mdl-menu__item'><a id='about' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-information mdi-24px'></i> About</a></li>
             <li class='mdl-menu__item'><a id='support' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-help mdi-24px'></i> Support</a></li>
             <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
-            <li class='mdl-menu__item' id='login_out'><a id='logout' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-exit-to-app mdi-24px'></i> Logout</a></li>
+            <li class='mdl-menu__item' id='login_out'><a id='logout' class='mdl-color-text--blue-grey-400'><i class='mdi mdi-logout mdi-24px'></i> Logout</a></li>
           </ul>
         </div>
       "

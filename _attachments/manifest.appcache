@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# VERSION 0.8.171
+# VERSION 0.8.182
 
 /
 /bundle.js
@@ -27,6 +27,7 @@ CACHE MANIFEST
 /fonts/materialdesignicons-webfont.woff
 /fonts/materialdesignicons-webfont.woff2
 /images/cocoLogo.png
+/images/favicon.png
 /images/back_disabled.png
 /images/back_enabled_hover.png
 /images/back_enabled.png
