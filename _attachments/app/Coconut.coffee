@@ -154,7 +154,7 @@ class Coconut
                     error: (error) -> console.error error
                     success: =>
                       @router.startApp
-                        success: ->
+                        success: =>
                           # Look for a global StartPlugins array and then run all of the functions in it
                           if StartPlugins?
                             _(StartPlugins).each (startPlugin) -> startPlugin()
@@ -162,11 +162,11 @@ class Coconut
                             username: options.username
                             error: ->
                               options.error()
-                            success: ->
+                            success: =>
                               options.success()
 
                 else
-                  console.log "Succesfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
+                  console.log "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
                   @database = null
                   options.error()
 
@@ -263,5 +263,5 @@ class Coconut
       $("#pls_wait").show()
     else
       $("#pls_wait").hide()
-      
+
 module.exports = Coconut

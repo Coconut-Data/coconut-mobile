@@ -91,7 +91,8 @@ class Router extends Backbone.Router
       # Delay needed in case routes are added by plugins
       console.debug "Trying route again in 1 second"
       _.delay =>
-        @.navigate Backbone.history.getFragment(), {trigger: true}
+        Backbone.history.loadUrl()
+#        @.navigate Backbone.history.getFragment(), {trigger: true}
       ,1000
 
   default: ->
@@ -100,7 +101,8 @@ class Router extends Backbone.Router
     if defaultQuestion.length is 0
       defaultQuestion = Coconut.questions.first()
 #    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
-    Coconut.router.navigate "##{Coconut.databaseName}/summary", trigger:true
+    Backbone.history.loadUrl()
+    Coconut.router.navigate "##{Coconut.databaseName}/summary", trigger: true
 
   setup: ->
     setupView = new SetupView()
