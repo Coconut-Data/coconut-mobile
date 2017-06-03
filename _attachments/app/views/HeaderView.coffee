@@ -37,7 +37,7 @@ class HeaderView extends Backbone.View
       Coconut.supportView.render()
 
     Refresh: ->
-      window.location.reload()
+      Backbone.history.loadUrl()
 
     render: =>
       @$el.html "
