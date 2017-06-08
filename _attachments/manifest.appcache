@@ -1,13 +1,15 @@
 CACHE MANIFEST
-# VERSION 0.8.182
+# VERSION 0.8.185
 
 /
 /bundle.js
 /js-libraries/material.min.js
+/js-libraries/mdl-select.js
 /js-libraries/coffee-script.js
 /css/style.min.css
 /css/fonts/fonts.css
 /css/material.css
+/css/override_mdl.css
 /css/materialdesignicons.min.css
 /css/materialdesignicons.min.css.map
 /css/styles.css
