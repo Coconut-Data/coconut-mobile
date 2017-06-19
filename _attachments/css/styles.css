@@ -488,6 +488,7 @@ table.dataTable.results td {
 @media (max-width: 360px) {
   #message { width: 330px;}
   #home_icon {padding-left: 15px;}
+  .mdl-select { width: 95%; }
 }
 
 .setup_message {

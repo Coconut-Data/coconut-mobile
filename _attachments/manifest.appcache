@@ -1,11 +1,13 @@
 CACHE MANIFEST
-# VERSION 0.8.185
+# VERSION 0.8.199
 
 /
+/index.html
 /bundle.js
 /js-libraries/material.min.js
 /js-libraries/mdl-select.js
 /js-libraries/coffee-script.js
+/js-libraries/modal-dialog.js
 /css/style.min.css
 /css/fonts/fonts.css
 /css/material.css
@@ -69,6 +71,7 @@ CACHE MANIFEST
 NETWORK:
 *
 http://*
+https://*
 
 FALLBACK:
 / /
