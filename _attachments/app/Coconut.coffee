@@ -16,7 +16,7 @@ BlobUtil = require 'blob-util'
 class Coconut
   debug: (string) ->
     console.log string
-    $("#log").append string + "<br/>"
+#    $("#log").append string + "<br/>"
 
   colors: {
     primary1: "rgb(63,81,181)"

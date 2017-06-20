@@ -3,6 +3,7 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 moment = require 'moment'
+Dialog = require '../../js-libraries/modal-dialog'
 
 class Sync extends Backbone.Model
   initialize: ->
@@ -72,10 +73,17 @@ class Sync extends Backbone.Model
       url: Coconut.config.cloud_url_with_credentials()
       xhrFields: {withCredentials: true}
       error: (error) =>
-        @log "ERROR! #{Coconut.config.cloud_url()} is not reachable. Do you have enough airtime? Are you on WIFI?  Either the internet is not working or the site is down: #{JSON.stringify(error)}"
-        options.error()
+        console.log "ERROR! #{Coconut.config.cloud_url()} is not reachable. Do you have enough airtime? Are you on WIFI?  Either the internet is not working or the site is down: #{JSON.stringify(error)}"
+        options.error(error)
         @save
           last_send_error: true
+        Dialog.showDialog
+          title: "Connection Problem",
+          text: "#{Coconut.config.cloud_url()} is not reachable. Please ensure that you have internet connection before retrying."
+          neutral:
+            title: "Close",
+            onClick: (e) ->
+              document.location.reload()
       success: =>
         @log "#{Coconut.config.cloud_url()} is reachable, so internet is available."
         options.success()
@@ -91,7 +99,7 @@ class Sync extends Backbone.Model
             Coconut.database.query "results", {},
               (error,result) =>
                 if error
-                  @log "Could not retrieve list of results: #{JSON.stringify(error)}"
+                  console.log "Could not retrieve list of results: #{JSON.stringify(error)}"
                   options.error()
                   @save
                     last_send_error: true
@@ -118,7 +126,6 @@ class Sync extends Backbone.Model
                   .on 'error', (error) ->
                     console.error error
                     options.error(error)
-
 
   log: (message) =>
     Coconut.debug message
