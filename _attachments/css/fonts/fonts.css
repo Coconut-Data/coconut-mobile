@@ -1,16 +1,10 @@
-/*
+/* fallback */
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: 400;
-  src: url(./MaterialIcons-Regular.eot);
-  src: local('Material Icons'),
-  local('MaterialIcons-Regular'),
-  url(./MaterialIcons-Regular.woff2) format('woff2'),
-  url(./MaterialIcons-Regular.woff) format('woff'),
-  url(./MaterialIcons-Regular.ttf) format('truetype');
+  src: local('Material Icons'), local('MaterialIcons-Regular'), url(./mdi-regular.woff2) format('woff2');
 }
-*/
 
 .material-icons {
   font-family: 'Material Icons';
@@ -23,7 +17,9 @@
   line-height: 1;
   text-transform: none;
   letter-spacing: normal;
+  white-space: nowrap;
   word-wrap: normal;
+  direction: ltr;
 
   /* Support for all WebKit browsers. */
   -webkit-font-smoothing: antialiased;

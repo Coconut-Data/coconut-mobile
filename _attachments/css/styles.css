@@ -535,8 +535,8 @@ div#appName {
 }
 
 .spin {
-  height:150px;
-  width:150px
+  height:100px;
+  width:100px
 }
 #pls_wait {
   display: none;

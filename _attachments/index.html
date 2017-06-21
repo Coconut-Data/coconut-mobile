@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html manifest="manifest.appcache" lang="en">
+<html manifest="manifest.appcache" type="text/cache-manifest" lang="en">
   <meta charset='utf-8'>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,7 +21,7 @@
     -->
 
     <link href="css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="css/material.css">
+    <link rel="stylesheet" type="text/css" href="css/material.css">
     <link rel="stylesheet" type="text/css" href="css/override_mdl.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/modal-dialog.css">
@@ -33,8 +33,7 @@
   <div class="coconut-layout mdl-layout mdl-js-layout mdl-layout--fixed-header coconut-layer">
     <header class="coconut-header mdl-layout__header">
       <div class='mdl-layout-icon'></div>
-      <div class='mdl-layout__header-row'>
-      </div>
+      <div class='mdl-layout__header-row'></div>
     </header>
     <div class="coconut-drawer mdl-layout__drawer"></div>
     <main class="mdl-layout__content">
@@ -43,7 +42,7 @@
         <div id='log'></div>
       </div>
     </main>
-    <div id='pls_wait' class='spin mdl-spinner mdl-js-spinner is-active'><div ></div>
+    <div id='pls_wait' class='spin mdl-spinner mdl-js-spinner is-active'></div>
   </div>
 
   <script src="./js-libraries/material.min.js"></script>
