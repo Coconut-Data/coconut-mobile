@@ -12,6 +12,7 @@ Backbone = require 'backbone'
 Backbone.$  = $
 BackbonePouch = require 'backbone-pouch'
 BlobUtil = require 'blob-util'
+Dialog = require '../js-libraries/modal-dialog'
 
 class Coconut
   debug: (string) ->
@@ -263,5 +264,27 @@ class Coconut
       $("#pls_wait").show()
     else
       $("#pls_wait").hide()
+
+  checkForInternet: (options) =>
+    cloudUrl = @config.cloud_url_no_http()
+    console.log "Checking for internet to #{cloudUrl}. Please wait..."
+    $.ajax
+      url: @config.cloud_url_with_credentials()
+      xhrFields: {withCredentials: true}
+      error: (error) =>
+        console.log "WARNING! #{cloudUrl} is not reachable. Error encountered:  #{JSON.stringify(error)}"
+        options.error("No Internet connection")
+      success: =>
+          console.log "#{cloudUrl} is reachable, so internet is available."
+          options.success()
+
+  noInternet: =>
+    Dialog.showDialog
+      title: "No Internet Connection",
+      text: "#{@config.cloud_url_no_http()} is not reachable. Please ensure that you have internet connection before retrying."
+      neutral:
+        title: "Close",
+        onClick: (e) ->
+          document.location.reload()
 
 module.exports = Coconut
