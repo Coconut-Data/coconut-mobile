@@ -6,6 +6,7 @@ class Config extends Backbone.Model
   initialize: ->
     @set
       _id: "coconut.config"
+      salt: "HAInmlF250kCAQnM"
 
   fetch: (options) =>
     Coconut.database.get "coconut.config",

@@ -7,6 +7,7 @@ User = require './models/User'
 
 window.PouchDB = require 'pouchdb'
 require 'crypto-pouch'
+crypto = require('crypto')
 
 Backbone = require 'backbone'
 Backbone.$  = $
@@ -127,7 +128,9 @@ class Coconut
 
   openDatabase: (options) =>
     userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
-    userDatabase.crypto(options.password).then =>
+    salt = (new Config()).attributes.salt
+    hashKey = (crypto.pbkdf2Sync options.password, salt, 1000, 256/8, 'sha256').toString('base64')
+    userDatabase.crypto(hashKey).then =>
       userDatabase.get "decryption check"
       .catch (error) ->
         console.log "Error opening decryption check doc, probably invalid username"
