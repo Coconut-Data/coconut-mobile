@@ -137,7 +137,7 @@ class Router extends Backbone.Router
   logout: ->
     User.logout()
     Coconut.router.navigate("",true)
-    document.location.reload()
+#    document.location.reload()
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
@@ -164,13 +164,13 @@ class Router extends Backbone.Router
         Coconut.syncView.sync.getFromCloud
           success: ->
             $("#status").html "Complete!"
-            document.location.reload()
+            Coconut.router.default()
           error: ->
             $("#log").show()
             Coconut.debug "Refreshing app in 5 seconds, please wait"
             $("#status").html "Error occurred, app refreshing in 5 seconds!"
             _.delay ->
-              document.location.reload()
+              Backbone.history.loadUrl()
             , 5000
       error: (error) ->
         $("#log").show()

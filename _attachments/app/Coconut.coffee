@@ -128,7 +128,7 @@ class Coconut
 
   openDatabase: (options) =>
     userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
-    salt = (new Config()).attributes.salt
+    salt = (new Config()).get('salt')
     hashKey = (crypto.pbkdf2Sync options.password, salt, 1000, 256/8, 'sha256').toString('base64')
     userDatabase.crypto(hashKey).then =>
       userDatabase.get "decryption check"
@@ -251,7 +251,6 @@ class Coconut
       cloud_credentials: "#{options["Cloud Username"]}:#{options["Cloud Password"]}"
 
   isValidDatabase: (options) =>
-
     if @database
       @database.get "decryption check"
       .catch (error) ->
@@ -260,6 +259,7 @@ class Coconut
         if result["is the value of this clear text"] is "yes it is"
           options.success()
     else
+      User.logout()
       options.error()
 
   toggleSpinner: (status) =>
