@@ -16,7 +16,7 @@ class LoginView extends Backbone.View
     @$el.html "
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
         <div id='logo-title'><img src='images/cocoLogo.png' id='cslogo_sm'> Coconut</div>
-        <div class='mdl-card__title coconut-mdl-card__title errMsg'></div>
+        <div class='mdl-card__title coconut-mdl-card__title' id='loginErrMsg'></div>
         <form id='login_form'>
 
           <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
@@ -30,7 +30,7 @@ class LoginView extends Backbone.View
           </div>
 
           <div class='mdl-card__actions' id='login_actions'>
-            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Log in</button> &nbsp;
+            <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent' id='login_button'>Log in</button>
             <button type='button' class='mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect' id='login_cancel_button'>Cancel</button>
           </div>
         </form>

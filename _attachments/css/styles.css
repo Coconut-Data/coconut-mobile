@@ -17,6 +17,12 @@
   width: device-width;
 }
 
+@media screen and (min-height: 330px) and (max-height: 415px) {
+  div#login_wrapper { margin: auto auto; }
+  button#login_button { margin-bottom: 5px;}
+  div.mdl-textfield { padding-bottom: 10px;}
+}
+
 @media (max-width: 500px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
   a#sync_icon i {margin-right: 10px; }
@@ -371,8 +377,21 @@ button.mdl-chip__action {
   color: red;
 }
 
+#loginErrMsg {
+  color: red;
+  padding: 0px;
+  font-size: medium;
+}
+
 .clearfix {
   line-height: 10px;
+}
+
+.centered {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 button#top-menu-lower-right {
@@ -504,20 +523,22 @@ button#destroy, button#cancel_delete,button#cancel_error  {
 div#appName {
   color: #ffffff;
   margin: 0px auto;
-  font-size: 20px;
+  font-size: 1.2em;
   width: 320px;
-  text-align: center;
 }
 
 #login_wrapper{
   font-size: 102%;
   width:320px;
-  margin: 70px auto;
-  padding: 25px;
+  margin: 50px auto;
+  padding: 10px 25px;
 }
 #login_message{
   margin-top: 20px;
   margin-bottom: 20px;
+}
+#login_form {
+  padding-top: 5px;
 }
 #login_form input{
   font-size: 120%;
@@ -526,12 +547,11 @@ div#appName {
 .coconut-mdl-card{
   padding:10px;
 }
-#login_actions {
-  padding-top: 30px;
-}
+
 #login_button, #login_cancel_button{
   font-size:100%;
   width: 100%;
+  margin-bottom: 10px;
 }
 
 .spin {
