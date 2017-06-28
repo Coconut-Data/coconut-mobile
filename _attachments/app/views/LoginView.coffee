@@ -20,7 +20,7 @@ class LoginView extends Backbone.View
         <form id='login_form'>
 
           <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
-            <input class='mdl-textfield__input' type='text' id='username' name='username' autofocus style='text-transform:lowercase;' on keyup='javascript:this.value=this.value.toLowerCase()'>
+            <input class='mdl-textfield__input' type='text' id='username' name='username' autofocus style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()'>
             <label class='mdl-textfield__label' for='username'>Username</label>
           </div>
 
@@ -56,7 +56,6 @@ class LoginView extends Backbone.View
     if $("#username").val() is "" or $("#password").val() is ""
       return @displayErr("Please enter a username and a password")
     loginData = Form2js.form2js('login_form')
-#    loginData.username = loginData.username.toLowerCase()
     Coconut.toggleSpinner(true)
     Coconut.openDatabase
       username: loginData.username

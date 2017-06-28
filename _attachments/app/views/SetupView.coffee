@@ -26,9 +26,12 @@ class SetupView extends Backbone.View
         <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:330px; margin: 0px auto; padding:15px'>
         #{
           _(@fields).map (field) =>
+            input_statement = if field.includes("Password") then "<input class='mdl-textfield__input' id='#{s.underscored(field)}' type='password' />"
+            else "<input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()' />"
             "
               <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
-                <input class='mdl-textfield__input' id='#{s.underscored(field)}' autocapitalize='off' type='#{"password" if field.includes("Password")}'/>
+                #{input_statement}
+  <!--              <input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()' type='#{"password" if field.includes("Password")}'/>  -->
                 <label class='mdl-textfield__label' for='#{s.underscored field}'>#{field}</label>
               </div>
             "
@@ -106,7 +109,6 @@ class SetupView extends Backbone.View
     @installUrl()
     applicationName = $("#"+s.underscored("Application Name")).val()
     $('#install_status').show()
-
     $("#spinner").html "<center>Checking to see if #{applicationName} already exists</center>"
     PouchDB.allDbs().then (dbs) =>
       if _(dbs).includes "coconut-#{applicationName}"

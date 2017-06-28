@@ -137,7 +137,7 @@ class Router extends Backbone.Router
   logout: ->
     User.logout()
     Coconut.router.navigate("",true)
-#    document.location.reload()
+    document.location.reload()
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
