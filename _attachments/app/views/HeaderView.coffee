@@ -22,7 +22,7 @@ class HeaderView extends Backbone.View
 #      "click a#home_icon": "homePage"
 
     homePage: ->
-      Coconut.router.navigate "##{Coconut.databaseName}/summary", {trigger: true}
+      Coconut.router.navigate("",true)
 
     Logout: ->
       $('nav.mdl-navigation').html("")
@@ -42,7 +42,7 @@ class HeaderView extends Backbone.View
     render: =>
       @$el.html "
         <span class='mdl-layout-title' id='layout-title'>Coconut Mobile</span>
-        <a href='##{Coconut.databaseName}/summary' id='home_icon' class='mdl-navigation__link top_links'>
+        <a href='##{Coconut.databaseName}' id='home_icon' class='mdl-navigation__link top_links'>
            <span><i class='mdl-layout--small-screen-only mdi mdi-home mdi-36px' title='Home'></i></span>
            <span class='mdl-layout--large-screen-only'>Home</span>
         </a>

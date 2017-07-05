@@ -23,7 +23,7 @@
   div.mdl-textfield { padding-bottom: 10px;}
 }
 
-@media (max-width: 500px) {
+@media (max-width: 575px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
   a#sync_icon i {margin-right: 10px; }
   a#home_icon {padding-left: 0px !important;}
@@ -525,6 +525,7 @@ div#appName {
   margin: 0px auto;
   font-size: 1.2em;
   width: 320px;
+  text-align: center;
 }
 
 #login_wrapper{
