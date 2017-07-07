@@ -28,24 +28,18 @@ class ResultsView extends Backbone.View
           line-height: 15px;
         }
 
-        h4{
-          color: #{Coconut.colors.primary1};
-        }
+        h4{ color: #{Coconut.colors.primary1}; }
         /* Fixes problem with android's refresh on swipe 'feature' */
-        body{
-          overflow-y: hidden;
-        }
+        body{ overflow-y: hidden; }
 
-        th.header {
-          text-align: left;
-        }
-        td a {
-          text-decoration: none;
-        }
+        th.header { text-align: left; }
+        td a { text-decoration: none; }
 
         table.dataTable thead .sorting, table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc_disabled, table.dataTable thead .sorting_desc_disabled {
           background-position: center left;
         }
+        table.results { margin: 10px auto; }
+        .mdl-tabs__tab { font-size: inherit; }
       </style>
 
       <h3 class='content_title'>
@@ -53,8 +47,6 @@ class ResultsView extends Backbone.View
       </h3>
       <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
       <div class='clearfix'></div>
-      <h4>Summary statistics</h4>
-
       <table id='results_metrics'>
       </table>
       #{
@@ -96,7 +88,6 @@ class ResultsView extends Backbone.View
             $("#total-not-completed").html metrics["Total not completed"]
         ""
       }
-      <h4>Detailed results</h4>
 
       <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
