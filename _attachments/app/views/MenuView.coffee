@@ -69,7 +69,6 @@ class MenuView extends Backbone.View
 #        @update()
 
   hideMenuOptions: ->
-    if Coconut.currentUser.isAdmin() then $("#manage").show() else $("#manage").hide()
     if Coconut.currentUser.hasRole "reports"
       $("#top-menu").hide()
       $("#bottom-menu").hide()
