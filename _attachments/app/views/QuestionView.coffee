@@ -163,8 +163,11 @@ class QuestionView extends Backbone.View
       }
 
       label.mdl-textfield__label{
+        display:block;
         color:#{@accent1};
-        font-size:125%;
+        padding:20px 0px 20px;
+        font-size: 1.3em;
+        /* font-size:125%; */
       }
 
       div.radio label.mdl-textfield__label{
@@ -198,6 +201,10 @@ class QuestionView extends Backbone.View
         width:250px;
         line-height:100%;
         vertical-align: top;
+      }
+      label.radio-option {
+        width: inherit;
+        font-size: 100%;
       }
 
       input[type='radio']:checked + label {
@@ -787,7 +794,7 @@ class QuestionView extends Backbone.View
           <div class='message'></div>
           #{
 
-          "<label class='#{question.type()} #{if question.type().match(/text|number/) then "mdl-textfield__label" else "mdl-nontextfield__label" }' type='#{question.type()}' for='#{question_id}'>#{question.label()}</label>" unless ~question.type().indexOf('hidden')
+          "<label class='#{question.type()} mdl-nontextfield__label' type='#{question.type()}' for='#{question_id}'>#{question.label()}</label>" unless ~question.type().indexOf('hidden')
           }
           #{
             switch question.type()
