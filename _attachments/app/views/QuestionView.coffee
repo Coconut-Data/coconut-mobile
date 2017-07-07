@@ -725,7 +725,7 @@ class QuestionView extends Backbone.View
       currentData = @currentData()
 
       # Make sure lastModifiedAt is always updated on save
-      currentData.lastModifiedAt = moment(new Date()).format("YYYY-MM-DD")
+      currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "date_format")
       currentData.savedBy = Cookie('mobile_current_user')
       @result.save currentData,
         success: (model) =>
