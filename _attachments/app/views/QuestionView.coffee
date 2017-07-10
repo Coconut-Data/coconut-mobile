@@ -143,7 +143,7 @@ class QuestionView extends Backbone.View
       }
 
       .message, label.radio{
-        max-width: 600px;
+        max-width: 620px;
       }
 
       label.mdl-nontextfield__label{
@@ -793,8 +793,7 @@ class QuestionView extends Backbone.View
           >
           <div class='message'></div>
           #{
-
-          "<label class='#{question.type()} mdl-nontextfield__label' type='#{question.type()}' for='#{question_id}'>#{question.label()}</label>" unless ~question.type().indexOf('hidden')
+          "<label class='#{question.type()} mdl-nontextfield__label' type='#{question.type()}' for='#{question_id}'>#{question.label()} #{if question.required() is 'true' then '*' else ''}</label>" unless ~question.type().indexOf('hidden')
           }
           #{
             switch question.type()
