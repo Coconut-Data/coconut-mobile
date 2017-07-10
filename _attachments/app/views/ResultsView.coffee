@@ -155,6 +155,7 @@ class ResultsView extends Backbone.View
           "
 
         $("table.complete-#{complete}").dataTable({
+          "retrieve": true,
           "columnDefs": [{"orderable": false, "targets": 2}]
         })
         Coconut.toggleSpinner(false)
