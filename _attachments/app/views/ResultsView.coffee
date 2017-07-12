@@ -39,7 +39,16 @@ class ResultsView extends Backbone.View
           background-position: center left;
         }
         table.results { margin: 10px auto; }
-        .mdl-tabs__tab { font-size: inherit; }
+        table.center {
+          margin: auto;
+        }
+        .mdl-tabs__tab { font-size: 0.8em; }
+        .stats-card-wide.mdl-card {
+          width: 100%;
+          min-height: 150px;
+          background: linear-gradient(to bottom, #fff 0%, #dcdcdc 100%);
+
+        }
       </style>
 
       <h3 class='content_title'>
@@ -47,48 +56,48 @@ class ResultsView extends Backbone.View
       </h3>
       <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
       <div class='clearfix'></div>
-      <table id='results_metrics'>
-      </table>
-      #{
-        # Fill in the results_metrics table
-        metrics = {
-          "Total completed": 0
-          "Total completed this week": 0
-          "Total completed today": 0
-          "Most recently completed result": null
-          "Total not completed": 0
+      <div class='stats-card-wide mdl-card mdl-shadow--2dp'>
+        <table id='results_metrics' class='center'></table>
+        #{
+          # Fill in the results_metrics table
+          metrics = {
+            "Total completed": 0
+            "Total completed this week": 0
+            "Total completed today": 0
+            "Most recently completed result": null
+            "Total not completed": 0
+          }
+
+          Coconut.database.query "results",
+            {
+              startkey: [@question.id],
+              endkey: [@question.id,{},{}]
+            },
+            (error,result) =>
+              _(result.rows).each (row) ->
+                if row.key[1] is false
+                  metrics["Total not completed"] += 1
+                else
+                  resultDate = moment(row.key[2])
+
+                  metrics["Total completed"] +=1
+                  metrics["Total completed this week"] +=1 if moment().isSame(resultDate, 'week')
+                  metrics["Total completed today"] +=1 if moment().isSame(resultDate, 'day')
+                  metrics["Most recently completed result"] = resultDate.fromNow()
+
+              $("#results_metrics").html _(metrics).map( (value, metric) ->
+                "
+                  <tr>
+                    <td style='width: 280px'>#{metric}</td>
+                    <td style='color:#{Coconut.colors.accent1}'>#{value}</td>
+                  </tr>
+                "
+              ).join("")
+              $("#total-completed").html metrics["Total completed"]
+              $("#total-not-completed").html metrics["Total not completed"]
+          ""
         }
-
-        Coconut.database.query "results",
-          {
-            startkey: [@question.id],
-            endkey: [@question.id,{},{}]
-          },
-          (error,result) =>
-            _(result.rows).each (row) ->
-              if row.key[1] is false
-                metrics["Total not completed"] += 1
-              else
-                resultDate = moment(row.key[2])
-
-                metrics["Total completed"] +=1
-                metrics["Total completed this week"] +=1 if moment().isSame(resultDate, 'week')
-                metrics["Total completed today"] +=1 if moment().isSame(resultDate, 'day')
-                metrics["Most recently completed result"] = resultDate.fromNow()
-
-            $("#results_metrics").html _(metrics).map( (value, metric) ->
-              "
-                <tr>
-                  <td style='width: 280px'>#{metric}</td>
-                  <td style='color:#{Coconut.colors.accent1}'>#{value}</td>
-                </tr>
-              "
-            ).join("")
-            $("#total-completed").html metrics["Total completed"]
-            $("#total-not-completed").html metrics["Total not completed"]
-        ""
-      }
-
+      </div>
       <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
         <div class='mdl-tabs__tab-bar' id='results-tabs'>
