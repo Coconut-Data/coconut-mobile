@@ -16,7 +16,7 @@ AboutView = require './views/AboutView'
 LoginView = require './views/LoginView'
 ManageView = require './views/ManageView'
 MenuView = require './views/MenuView'
-HeaderView = require './views/HeaderView'
+global.HeaderView = require './views/HeaderView'
 Question = require './models/Question'
 QuestionCollection = require './models/QuestionCollection'
 QuestionView = require './views/QuestionView'
@@ -100,9 +100,10 @@ class Router extends Backbone.Router
       question.get("default") is true
     if defaultQuestion.length is 0
       defaultQuestion = Coconut.questions.first()
-#    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
-    Backbone.history.loadUrl()
-    Coconut.router.navigate "##{Coconut.databaseName}/summary", trigger: true
+    console.log("Using original default")
+    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+    # Backbone.history.loadUrl()
+    # Coconut.router.navigate "##{Coconut.databaseName}/summary", trigger: true
 
   setup: ->
     setupView = new SetupView()

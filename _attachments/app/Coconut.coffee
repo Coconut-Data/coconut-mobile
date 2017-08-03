@@ -1,7 +1,7 @@
 $ = require 'jquery'
 
 Config = require './models/Config'
-Router = require './Router'
+global.Router = require './Router'
 global.Sync = require './models/Sync'
 User = require './models/User'
 
