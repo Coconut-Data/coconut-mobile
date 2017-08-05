@@ -463,6 +463,7 @@ class QuestionView extends Backbone.View
         if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
           CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
+        console.log(onValidatedComplete)
         if onValidatedComplete
           console.log "Evaling: #{onValidatedComplete}"
           _.delay ->
@@ -768,6 +769,8 @@ class QuestionView extends Backbone.View
         "
       else
         name = question.safeLabel()
+        # use field_value to determine whether to tick a radio button/checkbox during edit.
+        field_value = @result.get(name)
         return if name is "complete" and question.type() is "checkbox" # Complete now added automatically
         window.skipLogicCache[name] = if question.skipLogic() isnt '' then CoffeeScript.compile(question.skipLogic(),bare:true) else ''
         question_id = question.get("id")
@@ -826,7 +829,7 @@ class QuestionView extends Backbone.View
                   _.map(options.split(/, */), (option,index) ->
                     "
                       <label class='mdl-radio mdl-js-radio mdl-js-ripple-effect' for='#{question_id}-#{index}'>
-                      <input class='mdl-radio__button' type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
+                      <input class='mdl-radio__button' type='radio' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}' #{'checked' if field_value is option} />
                       <span class='mdl-radio__label' style='padding-right: 10px'>#{option} </span>
                       </label>
                     "
@@ -840,7 +843,7 @@ class QuestionView extends Backbone.View
                   options = question.get("checkbox-options")
                   _.map(options.split(/, */), (option,index) ->
                     "
-                      <input class='checkbox' type='checkbox' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}'/>
+                      <input class='checkbox' type='checkbox' name='#{name}' id='#{question_id}-#{index}' value='#{_.escape(option)}' #{'checked' if field_value is option} />
                       <label class='checkbox checkbox-option' for='#{question_id}-#{index}'>#{option}</label>
 
                     "

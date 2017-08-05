@@ -40,6 +40,8 @@ class Router extends Backbone.Router
     if name is "setup"
       callback.apply(this, args) if callback
     else
+      # turn off residual spinner from other views that did not complete.
+      Coconut.toggleSpinner(false)
       Coconut.databaseName = args.shift()
       if Coconut.databaseName
         @userLoggedIn
