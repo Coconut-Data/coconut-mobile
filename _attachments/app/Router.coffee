@@ -249,7 +249,6 @@ class Router extends Backbone.Router
           if confirmed is "confirmed"
             Coconut.questionView.result.destroy
               success: ->
-                Coconut.menuView.update()
                 Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
           else
             Coconut.questionView.model = new Question

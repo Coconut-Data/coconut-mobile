@@ -448,9 +448,7 @@ class QuestionView extends Backbone.View
     @oldStamp     = eventStamp
 
     targetName = $target.attr("name")
-
-    if targetName == "complete"
-
+    if targetName == "complete" || $("#question-set-complete").prop("checked")
       allQuestionsPassValidation = @validateAll()
 
       # Update the menu
@@ -458,7 +456,6 @@ class QuestionView extends Backbone.View
       @actionOnChange(event)
       @save()
       @updateSkipLogic()
-
       if allQuestionsPassValidation
         if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
           CoffeeScript.eval @model.get "action_on_questions_loaded"
