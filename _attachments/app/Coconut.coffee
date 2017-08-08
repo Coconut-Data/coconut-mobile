@@ -290,4 +290,11 @@ class Coconut
         onClick: (e) ->
           document.location.reload()
 
+  showNotification: (msg) =>
+    notify = document.querySelector('.mdl-js-snackbar')
+    notify.MaterialSnackbar.showSnackbar(
+      message: msg
+    )
+
+
 module.exports = Coconut
