@@ -432,9 +432,9 @@ class QuestionView extends Backbone.View
   runValidate: -> @validateAll()
 
   onChange: (event) =>
-
     @updateLabelClass()
 
+    prevCompletedState = $("#question-set-complete").prop("checked")
     $target = $(event.target)
 
     #
@@ -460,7 +460,6 @@ class QuestionView extends Backbone.View
         if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
           CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
-        console.log(onValidatedComplete)
         if onValidatedComplete
           console.log "Evaling: #{onValidatedComplete}"
           _.delay ->
@@ -468,6 +467,8 @@ class QuestionView extends Backbone.View
           ,1000
       else
         $("#question-set-complete").prop("checked", false)
+        if prevCompletedState
+          Coconut.showNotification( "ALERT: This form is Incomplete")
     else
       messageVisible = window.questionCache[targetName].find(".message").is(":visible")
 # Hack by Mike to solve problem with autocomplete fields being validated before
