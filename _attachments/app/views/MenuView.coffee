@@ -41,7 +41,7 @@ class MenuView extends Backbone.View
     @generalMenu()
     componentHandler.upgradeDom()
     @hideMenuOptions()
-    Coconut.headerView.update()
+    Coconut.headerView?.update()
 
   hideMenuOptions: ->
     if Coconut.currentUser?.hasRole "reports"
