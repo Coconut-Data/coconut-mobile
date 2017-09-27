@@ -86,10 +86,11 @@ class Result extends Backbone.Model
 
   save: (key,value,options) ->
     @set
-      user: Cookie('mobile_current_user')
+      user: Cookie('current_user')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
     super(key,value,options)
 
+  #TODO move this to plugin
   wasTransferredOut: ->
     transferred = @get "transferred"
     if transferred?
