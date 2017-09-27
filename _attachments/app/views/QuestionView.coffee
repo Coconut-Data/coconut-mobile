@@ -600,6 +600,9 @@ class QuestionView extends Backbone.View
 
     result.push "'#{labelText}' is required." if required && (value is null or value.length is 0) unless question_id is "Location"
 
+    # If not required, then don't validate when value is empty
+    return "" if not required and (value is "")
+
     if validation? && validation isnt ""
 
       try
