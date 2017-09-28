@@ -38,6 +38,7 @@
     "pouchdb": "6.1.2",
     "pouchdb-all-dbs": "^1.0.2",
     "pouchdb-replication-stream": "^1.2.6",
+    "radix-64": "^1.0.4",
     "sha1": "^1.1.1",
     "uglify": "^0.1.5",
     "underscore": "^1.8.3",
