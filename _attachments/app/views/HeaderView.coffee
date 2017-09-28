@@ -75,7 +75,7 @@ class HeaderView extends Backbone.View
       $('nav.mdl-navigation').html("")
 
     if Coconut.currentUser?
-      @questionTabs() 
+      @questionTabs()
       @update()
     componentHandler.upgradeDom()
 

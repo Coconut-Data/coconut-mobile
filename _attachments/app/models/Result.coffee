@@ -90,13 +90,4 @@ class Result extends Backbone.Model
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
     super(key,value,options)
 
-  #TODO move this to plugin
-  wasTransferredOut: ->
-    transferred = @get "transferred"
-    if transferred?
-      transferredTo = transferred[transferred.length-1].to
-      if transferredTo isnt Coconut.currentUser.id
-        return true
-    return false
-
 module.exports = Result
