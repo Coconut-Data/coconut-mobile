@@ -1,4 +1,6 @@
 $ = require 'jquery'
+_ = require 'underscore'
+radix64 = require('radix-64')()
 
 Config = require './models/Config'
 global.Router = require './Router'
@@ -157,17 +159,22 @@ class Coconut
                   @startPlugins
                     error: (error) -> console.error error
                     success: =>
-                      @router.startApp
-                        success: =>
-                          # Look for a global StartPlugins array and then run all of the functions in it
-                          if StartPlugins?
-                            _(StartPlugins).each (startPlugin) -> startPlugin()
-                          User.login
-                            username: options.username
-                            error: ->
-                              options.error()
-                            success: =>
-                              options.success()
+
+                      @getOrAssignInstanceId().then (instanceId) =>
+                        @instanceId = instanceId
+
+
+                        @router.startApp
+                          success: =>
+                            # Look for a global StartPlugins array and then run all of the functions in it
+                            if StartPlugins?
+                              _(StartPlugins).each (startPlugin) -> startPlugin()
+                            User.login
+                              username: options.username
+                              error: ->
+                                options.error()
+                              success: =>
+                                options.success()
 
                 else
                   console.log "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
@@ -222,7 +229,7 @@ class Coconut
               callSuccessWhenFinished()
 
   downloadEncryptionKey: (options) =>
-    @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
     @cloudDB.get "client encryption key"
       .then (result) =>
         @encryptionKey = result.key
@@ -295,6 +302,46 @@ class Coconut
     notify.MaterialSnackbar.showSnackbar(
       message: msg
     )
+
+  getOrAssignInstanceId: =>
+    @database.get "_local/instance_id"
+    .then (doc) ->
+      Promise.resolve(doc.value)
+    .catch (error) =>
+      @assignInstanceId()
+
+  # format: [unix-timestamp-radix64 encoded]
+  assignInstanceId: =>
+
+    unixMillisecondTimestampRadix64Encoded = -> radix64.encodeInt(moment().format('x'))
+
+    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB.get("assigned_instance_ids")
+    .then (assignedInstanceIds) =>
+      # Get the last one from the array
+      lastAssignedInstanceId = assignedInstanceIds.ids[assignedInstanceIds.ids.length-1]
+      lastAssignedInstanceIdIndex = parseInt(lastAssignedInstanceId.split(/ /)[0])
+      assignedInstanceIds.ids.push unixMillisecondTimestampRadix64Encoded()
+      Promise.resolve(assignedInstanceIds)
+    .catch (error) ->
+      console.log error
+      # If it doesn't exist, this must be the first one, so create the doc
+      if error.status is 404
+        Promise.resolve
+          _id: "assigned_instance_ids"
+          ids: [unixMillisecondTimestampRadix64Encoded()]
+      else
+        throw "Error finding existing instance ids in cloud: #{JSON.stringify error}"
+    .then (assignedInstanceIds) =>
+      @cloudDB.put assignedInstanceIds
+      .then =>
+        assignedId = assignedInstanceIds.ids.pop()
+        @database.put
+          _id: '_local/instance_id'
+          value: assignedId
+        .catch (error) -> throw "Could not save _local/instance_id: #{JSON.stringify error}"
+        .then -> Promise.resolve(assignedId)
+      .catch (error) -> throw "Could not save new instance id to cloud: #{JSON.stringify error}"
 
 
 module.exports = Coconut

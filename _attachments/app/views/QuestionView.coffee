@@ -600,6 +600,9 @@ class QuestionView extends Backbone.View
 
     result.push "'#{labelText}' is required." if required && (value is null or value.length is 0) unless question_id is "Location"
 
+    # If not required, then don't validate when value is empty
+    return "" if not required and (value is "")
+
     if validation? && validation isnt ""
 
       try
@@ -721,23 +724,23 @@ class QuestionView extends Backbone.View
 
   # We throttle to limit how fast save can be repeatedly called
   save: _.throttle( ->
-      currentData = @currentData()
+    currentData = @currentData()
 
-      # Make sure lastModifiedAt is always updated on save
-      currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "date_format")
-      currentData.savedBy = Cookie('mobile_current_user')
-      @result.save currentData,
-        success: (model) =>
-          $("#messageText").slideDown().fadeOut()
-          Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
-          if ($('[name=complete]').prop("checked"))
-            # Return to Summary page after completion
-            Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
-          # Update the menu
-          Coconut.headerView.update()
-        error: (error) ->
-          console.debug error
-          console.error error
+    # Make sure lastModifiedAt is always updated on save
+    currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "date_format")
+    currentData.savedBy = Cookie('current_user')
+    @result.save currentData,
+      success: (model) =>
+        $("#messageText").slideDown().fadeOut()
+        Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
+        if ($('[name=complete]').prop("checked"))
+          # Return to Summary page after completion
+          Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
+        # Update the menu
+        Coconut.headerView.update()
+      error: (error) ->
+        console.debug error
+        console.error error
     , 1000)
 
   completeButton: ( value ) ->
@@ -890,7 +893,12 @@ class QuestionView extends Backbone.View
                 "
 
               when "image"
-                "<img style='#{question.get "image-style"}' src='#{question.get "image-path"}'/>"
+                console.log question
+                # Put images in the _attachments directory of the plugin
+                Coconut.database.getAttachment("_design/plugin-#{Coconut.config.cloud_database_name()}", question.get("image-path")).then (imageBlob) ->
+                  $("#img-#{question_id}").attr("src", URL.createObjectURL(imageBlob))
+
+                "<img id='img-#{question_id}' style='#{question.get "image-style"}' />"
               when "label"
                 ""
               when "text"

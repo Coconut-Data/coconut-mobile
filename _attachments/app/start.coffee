@@ -11,7 +11,6 @@ Coconut = require './Coconut'
 
 global.Router = require './Router'
 
-appCacheNanny = require 'appcache-nanny'
 
 window.Coconut = new Coconut()
 
