@@ -161,7 +161,8 @@ class SetupView extends Backbone.View
             _.delay ->
               Coconut.router.navigate "##{applicationName}", trigger: true
               ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
-              window.location.reload()
+              #window.location.reload()
+              ## Line above commented out.For some reason issue no longer exist, and reload was causing other problems.
             , 1000
 
   showHelp: (e) ->
