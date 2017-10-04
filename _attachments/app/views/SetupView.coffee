@@ -27,11 +27,11 @@ class SetupView extends Backbone.View
         #{
           _(@fields).map (field) =>
             input_statement = if field.includes("Password") then "<input class='mdl-textfield__input' id='#{s.underscored(field)}' type='password' />"
-            else "<input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()' />"
+            else "<input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' />"
             "
               <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
                 #{input_statement}
-  <!--              <input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()' type='#{"password" if field.includes("Password")}'/>  -->
+  <!--              <input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' type='#{"password" if field.includes("Password")}'/>  -->
                 <label class='mdl-textfield__label' for='#{s.underscored field}'>#{field}</label>
               </div>
             "
