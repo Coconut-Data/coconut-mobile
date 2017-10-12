@@ -23,10 +23,16 @@
   div.mdl-textfield { padding-bottom: 10px;}
 }
 
-@media (max-width: 575px) {
+@media screen and (max-width: 575px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
-  a#sync_icon i {margin-right: 10px; }
   a#home_icon {padding-left: 0px !important;}
+  /*  a#sync_icon i {margin-right: 10px; } */
+  .awesomplete {
+    border-width: 1px;
+    border-style: inset;
+    border-color: initial;
+    border-image: initial;
+  }
 }
 
 @media (max-width: 800px) {
@@ -76,6 +82,11 @@ a#home_icon:hover {
   width: 48px;
   height: 48px;
   border-radius: 24px;
+}
+.coconut-btn.mdl-button--fab.mdl-button--mini-fab {
+  height: 28px;
+  min-width: 28px;
+  width: 28px;
 }
 
 .coconut-layout .mdl-layout__header .mdl-layout__drawer-button {
@@ -320,7 +331,7 @@ _:-ms-input-placeholder, :root .coconut-graph {
   font-weight: 500;
 }
 
-h3.select_app, h3.content_title {
+h3.select_app, h3.content_title, h4.select_app, h4.content_title {
   color: #2196F3;
   margin-top: 15px;
 }
@@ -347,7 +358,6 @@ font-size: 16px;
 
 #content {
   padding: 15px;
-  font-size: 1.3em;
 }
 
 .mdl-layout__header, .mdl-layout__header-row {
@@ -467,10 +477,11 @@ div#right_top_menu {
 }
 
 a#sync_icon i {
-  font-size: 35px;
+  font-size: 36px;
   font-weight: 900;
-  margin-right: 10px;
 }
+
+main.mdl-layout__content {z-index: 3;}
 
 a.mdl-navigation__link.top_links {
   padding: 13px 15px 0px;

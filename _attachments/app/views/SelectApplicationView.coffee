@@ -53,7 +53,7 @@ class SelectApplicationView extends Backbone.View
           setupView.render()
         else
           @$el.html "
-            <h3 class='select_app'>Select a coconut application</h3>
+            <h4 class='select_app'>Select a coconut application</h4>
             <p id='select_buttons'>
             #{
               _(applicationNames).map (applicationName) ->

@@ -156,7 +156,7 @@ class SetupView extends Backbone.View
             $('#install_status').hide()
           success: =>
             $('#spinner').hide()
-            $("#message").show().html "<h4>#{applicationName} Installed</h4>"
+            $("#message").show().html "<h4 style='text-align: center;'>#{applicationName} Installed</h4>"
             @$el.find("h4").fadeOut 3000
             _.delay ->
               Coconut.router.navigate "##{applicationName}", trigger: true

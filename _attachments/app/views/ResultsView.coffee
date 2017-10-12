@@ -19,7 +19,7 @@ class ResultsView extends Backbone.View
 
     @$el.html "
       <style>
-        h3{
+        h3, h4{
           margin-top:15px;
           margin-right: 10px;
           padding-top: 5px;
@@ -28,7 +28,7 @@ class ResultsView extends Backbone.View
           line-height: 15px;
         }
 
-        h4{ color: #{Coconut.colors.primary1}; }
+/*        h4{ color: #{Coconut.colors.primary1}; } */
         /* Fixes problem with android's refresh on swipe 'feature' */
         body{ overflow-y: hidden; }
 
@@ -42,6 +42,7 @@ class ResultsView extends Backbone.View
         table.center {
           margin: auto;
         }
+        table#results_metrics { font-size: 1.0em;}
         .mdl-tabs__tab { font-size: 0.8em; }
         .stats-card-wide.mdl-card {
           width: 100%;
@@ -51,10 +52,10 @@ class ResultsView extends Backbone.View
         }
       </style>
 
-      <h3 class='content_title'>
+      <h4 class='content_title'>
         #{@question.id}
-      </h3>
-      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
+      </h4>
+      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored coconut-btn' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-24px'></i></a>
       <div class='clearfix'></div>
       <div class='stats-card-wide mdl-card mdl-shadow--2dp'>
         <table id='results_metrics' class='center'></table>
