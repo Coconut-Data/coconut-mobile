@@ -26,7 +26,7 @@
 @media screen and (max-width: 575px) {
   nav.mdl-navigation { display: none; }  /* hide it on small screens */
   a#home_icon {padding-left: 0px !important;}
-  /*  a#sync_icon i {margin-right: 10px; } */
+  a#sync_icon i {margin-right: 10px; }
   .awesomplete {
     border-width: 1px;
     border-style: inset;
@@ -87,6 +87,7 @@ a#home_icon:hover {
   height: 28px;
   min-width: 28px;
   width: 28px;
+  margin: 10px 10px;
 }
 
 .coconut-layout .mdl-layout__header .mdl-layout__drawer-button {
@@ -482,6 +483,8 @@ a#sync_icon i {
 }
 
 main.mdl-layout__content {z-index: 3;}
+
+header.coconut-header.mdl-layout__header { z-index: 4;}
 
 a.mdl-navigation__link.top_links {
   padding: 13px 15px 0px;

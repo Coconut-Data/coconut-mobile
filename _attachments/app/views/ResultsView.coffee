@@ -51,11 +51,11 @@ class ResultsView extends Backbone.View
 
         }
       </style>
-
+      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored f-left coconut-btn' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-24px'></i></a>
       <h4 class='content_title'>
         #{@question.id}
       </h4>
-      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored coconut-btn' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-24px'></i></a>
+
       <div class='clearfix'></div>
       <div class='stats-card-wide mdl-card mdl-shadow--2dp'>
         <table id='results_metrics' class='center'></table>
