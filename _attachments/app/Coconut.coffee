@@ -67,7 +67,12 @@ class Coconut
                       console.error "Updating application docs failed: #{JSON.stringify error}"
                       options.error "Updating the application failed: #{JSON.stringify error}"
                     success: =>
-                      options.success()
+                      @config.save()
+                      .then ->
+                        console.log "SAVED config"
+                        options.success()
+                      .catch (error) ->
+                        options.error "Error saving local config file"
     catch error
       console.error error
       console.error "Removing #{@databaseName} due to incomplete setup"
