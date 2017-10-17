@@ -2,6 +2,7 @@ _ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
+camelize = require("underscore.string/camelize")
 
 class Question extends Backbone.Model
   initialize: ->
@@ -10,7 +11,7 @@ class Question extends Backbone.Model
 
   type: -> @get("type")
   label: => @get("label") or @get("id") or @get("_id")
-  safeLabel: -> @label().replace(/[^a-zA-Z0-9 -]/g,"").replace(/[ -]/g,"")
+  safeLabel: -> camelize(@label())
   repeatable: -> @get("repeatable")
   questions: -> @get("questions")
   value: -> if @get("value")? then @get("value") else ""

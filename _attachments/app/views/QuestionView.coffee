@@ -13,7 +13,16 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
     else
       question.removeClass disabledClass
 
-global.ResultOfQuestion = ( name ) -> return window.getValueCache[name]?() || null
+global.ResultOfQuestion = (name) ->
+  return window.getValueCache[name]?() or  $("[name=#{camelize(name)}]").val()  or null
+
+global.camelize = require("underscore.string/camelize")
+
+global.setValue = (targetLabel, value) ->
+  $("[name=#{camelize(targetLabel)}]").val(value)
+
+global.setLabelText = (targetLabel, value) ->
+  $("[data-question-name=#{camelize(targetLabel)}] label").html(value)
 
 # # # #
 
@@ -747,7 +756,7 @@ class QuestionView extends Backbone.View
     if $('[name=complete]').prop("checked") isnt value
       $('[name=complete]').click()
 
-  toHTMLForm: (questions = @model, groupId) ->
+  toHTMLForm: (questions = @model, groupId) =>
     window.skipLogicCache = {}
     # Need this because we have recursion later
     questions = [questions] unless questions.length?
@@ -774,10 +783,10 @@ class QuestionView extends Backbone.View
         field_value = @result.get(name)
         return if name is "complete" and question.type() is "checkbox" # Complete now added automatically
         window.skipLogicCache[name] = if question.skipLogic() isnt '' then CoffeeScript.compile(question.skipLogic(),bare:true) else ''
-        question_id = question.get("id")
+        question_id = if @currentId then @currentId+=1 else @currentId = 1
         if question.repeatable() == "true"
           name = name + "[0]"
-          question_id = question.get("id") + "-0"
+          question_id = question_id + "-0"
         if groupId?
           name = "group.#{groupId}.#{name}"
         return "
