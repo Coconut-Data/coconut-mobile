@@ -2,6 +2,7 @@ _ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
+radix64 = require('radix-64')()
 
 window.PouchDB = require 'pouchdb'
 require('pouchdb-all-dbs')(window.PouchDB)
@@ -12,14 +13,14 @@ PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
 
 Config = require './models/Config'
 HelpView = require './views/HelpView'
-AboutView = require './views/AboutView'
+global.AboutView = require './views/AboutView'
 LoginView = require './views/LoginView'
 ManageView = require './views/ManageView'
 global.MenuView = require './views/MenuView'
 global.HeaderView = require './views/HeaderView'
-Question = require './models/Question'
+global.Question = require './models/Question'
 QuestionCollection = require './models/QuestionCollection'
-QuestionView = require './views/QuestionView'
+global.QuestionView = require './views/QuestionView'
 # Make this global so that plugins can create new results
 global.Result = require './models/Result'
 global.ResultsView = require './views/ResultsView'
@@ -32,7 +33,11 @@ User = require './models/User'
 UserCollection = require './models/UserCollection'
 
 Cookie = require 'js-cookie'
+JSZip = require 'jszip'
+MemoryStream = require 'memorystream'
 global.FileSaver = require 'file-saver'
+titleize = require "underscore.string/titleize"
+underscored = require("underscore.string/underscored")
 
 class Router extends Backbone.Router
   # This gets called before a route is applied
@@ -43,6 +48,10 @@ class Router extends Backbone.Router
       # turn off residual spinner from other views that did not complete.
       Coconut.toggleSpinner(false)
       Coconut.databaseName = args.shift()
+
+      document.title = _(document.location.hash.split("/")).map (fragment) ->
+        titleize(fragment.replace('#',""))
+      .join(": ")
       if Coconut.databaseName
         @userLoggedIn
           success: ->
@@ -76,6 +85,10 @@ class Router extends Backbone.Router
     ":database/help": "help"
     ":database/help/:helpDocument": "help"
     ":database/manage": "manage"
+    ":database/send/backup": "sendBackup"
+    ":database/save/backup": "saveBackup"
+    ":database/get/cloud/results": "getCloudResults"
+
     "setup": "setup"
 # TODO handle cloudUrl with http:// in it
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
@@ -90,22 +103,19 @@ class Router extends Backbone.Router
       $("#content").html "Page not found."
     else
       @routeFails = true
-      # Delay needed in case routes are added by plugins
-      console.debug "Trying route again in 1 second"
+      @targetURL = Backbone.history.getFragment()
+      # Strange hack needed because plugins load routes
+      @.navigate "##{Coconut.databaseName}/nowhere", {trigger: true}
       _.delay =>
-        Backbone.history.loadUrl()
-#        @.navigate Backbone.history.getFragment(), {trigger: true}
-      ,1000
+        @.navigate @targetURL, {trigger: true}
+      , 100
 
   default: ->
     defaultQuestion = Coconut.questions.filter (question) ->
       question.get("default") is true
     if defaultQuestion.length is 0
       defaultQuestion = Coconut.questions.first()
-    console.log("Using original default")
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
-    # Backbone.history.loadUrl()
-    # Coconut.router.navigate "##{Coconut.databaseName}/summary", trigger: true
 
   setup: ->
     setupView = new SetupView()
@@ -167,7 +177,25 @@ class Router extends Backbone.Router
         Coconut.syncView.sync.getFromCloud
           success: ->
             $("#status").html "Complete!"
-            Coconut.router.default()
+
+            # Save last_sync as a local doc
+            time = moment().format("HH:mm, Do MMM YYYY")
+            Coconut.database.get('_local/last_sync')
+            .then (doc) ->
+              doc.time = time
+              Coconut.database.put doc
+              .then -> 
+                Coconut.router.default()
+            .catch (error) =>
+              if error.name is "not_found"
+                Coconut.database.put
+                  _id: "_local/last_sync"
+                  time: moment().format("HH:mm, Do MMM YYYY")
+                  document.location.reload()
+                  Coconut.router.default()
+              else
+                console.error error
+
           error: ->
             $("#log").show()
             Coconut.debug "Refreshing app in 5 seconds, please wait"
@@ -187,6 +215,9 @@ class Router extends Backbone.Router
     Coconut.questionView.readonly = false
     Coconut.questionView.result = new Result
       question: unescape(question_id)
+      # result ids now don't use UUIDs to reduce indexing, format is:
+      # result-questionName-millisecondtimestamp-instanceId
+      _id: "result-#{underscored(question_id)}-#{radix64.encodeInt(moment().format('x'))}-#{Coconut.instanceId}"
     Coconut.questionView.model = new Question {id: unescape(question_id)}
     Coconut.questionView.model.fetch
       success: ->
@@ -288,8 +319,8 @@ class Router extends Backbone.Router
         success: ->
 
           # Forces a new login to occur
-          Cookie('mobile_current_user', '')
-          Cookie('mobile_current_password', '')
+          Cookie('current_user', '')
+          Cookie('current_password', '')
 
           cloudUrl = Coconut.config.get("cloud")
           applicationName = Coconut.config.get("cloud_database_name")
@@ -299,6 +330,81 @@ class Router extends Backbone.Router
   manage: ->
     Coconut.manageView ?= new ManageView( el: $("#content") )
     Coconut.manageView.render()
+
+  dumpDatabase: (options) =>
+    dumpedString = ''
+    stream = new MemoryStream()
+    stream.on 'data', (chunk) ->
+      dumpedString += chunk.toString()
+
+    Coconut.database.dump stream,
+      filter: (doc) -> doc.collection is "result"
+    .then ->
+      console.log dumpedString
+      options.success(dumpedString)
+
+  sendBackup: =>
+    # TODO figure out how to make the destination server use https
+    destination = "#{Coconut.config.cloud_url_hostname()}:3000/backup"
+    @dumpDatabase
+      error: (error) -> console.error error
+      success: (dumpedString) ->
+        $.ajax
+          url: destination
+          type: 'post'
+          data:
+            destination: Coconut.config.cloud_url_with_credentials()
+            value: dumpedString
+          success: (result) ->
+            $("#content").html "Database backup sent to: #{destination} where it was loaded into #{Coconut.config.cloud_url()}<br/>Result from server: #{result}"
+          error: (error) ->
+            console.error error
+            $("#content").html "Error backing up database: #{JSON.stringify error}"
+
+  saveBackup: =>
+    @dumpDatabase
+      error: (error) -> console.error error
+      success: (dumpedString) ->
+        $("#content").html "Database backup created, beginning download. File will be available in Downloads folder on tablet."
+        zip = new JSZip()
+        zip.file "backup.pouchdb", dumpedString
+        zip.generateAsync
+          type:"blob"
+          compression:"DEFLATE"
+        .then (content) ->
+          FileSaver.saveAs(content, "coconut.pouchdb.zip")
+
+  getCloudResults: =>
+    Coconut.cloudDatabase.query "resultsByUserAndDate",
+      startkey: [Coconut.currentUser.username(), moment().subtract(1,"month").format(Coconut.config.get "date_format")]
+      endkey: [Coconut.currentUser.username(), moment().endOf("day").format(Coconut.config.get "date_format")]
+    .catch (error) => console.error "ERROR, could not download list of results for user: #{Coconut.currentUser.username()}: #{JSON.stringify error}"
+    .then (result) =>
+      lastMonthIds = _.pluck result.rows, "id"
+
+      downloadResults = (docIds) ->
+        Coconut.debug "Downloading #{docIds.length} results"
+        Coconut.database.replicate.from Coconut.cloudDatabase,
+          doc_ids: docIds
+        .on 'complete', (info) =>
+          $("#log").html ""
+          $("#content").html "
+            <h2>
+              Complete.
+            </h2>
+            It may take a few minutes before all results are shown, but you can capture new data while these results are loading.<br/>
+          "
+        .on 'error', (error) =>
+          console.log JSON.stringify error
+        .on 'change', (info) =>
+          $("#content").html "
+            <h2>
+              #{info.docs_written} written out of #{docIds.length} (#{parseInt(100*(info.docs_written/docIds.length))}%)
+            </h2>
+          "
+
+      if confirm "Do you want to get #{lastMonthIds.length} results from last month saved by #{Coconut.currentUser.username()}"
+        downloadResults(lastMonthIds)
 
   settings: ->
     Coconut.settingsView ?= new SettingsView()

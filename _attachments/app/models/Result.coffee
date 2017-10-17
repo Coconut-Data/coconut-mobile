@@ -86,16 +86,8 @@ class Result extends Backbone.Model
 
   save: (key,value,options) ->
     @set
-      user: Cookie('mobile_current_user')
+      user: Cookie('current_user')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
     super(key,value,options)
-
-  wasTransferredOut: ->
-    transferred = @get "transferred"
-    if transferred?
-      transferredTo = transferred[transferred.length-1].to
-      if transferredTo isnt Coconut.currentUser.id
-        return true
-    return false
 
 module.exports = Result
