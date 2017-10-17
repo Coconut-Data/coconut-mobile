@@ -5,20 +5,18 @@ Backbone.$  = $
 class Config extends Backbone.Model
   initialize: ->
     @set
-      _id: "coconut.config"
-      salt: "HAInmlF250kCAQnM"
+      _id: "_local/mobile.config"
 
   fetch: (options) =>
-    Coconut.database.get "coconut.config",
+    Coconut.database.get "_local/mobile.config",
       (error,result) =>
         @set(result)
-        Coconut.database.get "coconut.config.local",
-          (error,result) =>
-            Coconut.config.local = new Backbone.Model()
-            Coconut.config.local.set(result)
-            options.success?()
+        options.success?()
 
   title: -> @get("title") || "Coconut"
+
+  save: =>
+    Coconut.database.put @attributes
 
   # See app/config.js
   database_name: -> Coconut.databaseName

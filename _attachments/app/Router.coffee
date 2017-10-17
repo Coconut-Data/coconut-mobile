@@ -111,11 +111,13 @@ class Router extends Backbone.Router
       , 100
 
   default: ->
-    defaultQuestion = Coconut.questions.filter (question) ->
-      question.get("default") is true
-    if defaultQuestion.length is 0
-      defaultQuestion = Coconut.questions.first()
-    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+    # Hack by SL to refresh to the plugin's default method.
+    Backbone.history.loadUrl()
+#    defaultQuestion = Coconut.questions.filter (question) ->
+#      question.get("default") is true
+#    if defaultQuestion.length is 0
+#      defaultQuestion = Coconut.questions.first()
+#    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: ->
     setupView = new SetupView()
@@ -124,7 +126,6 @@ class Router extends Backbone.Router
   userLoggedIn: (options) ->
     User.isAuthenticated
       success: (user) ->
-        Coconut.menuView.render()
         options.success(user)
       error: ->
         Coconut.loginView = new LoginView()
@@ -149,8 +150,9 @@ class Router extends Backbone.Router
 
   logout: ->
     User.logout()
-    Coconut.router.navigate("",true)
     document.location.reload()
+    Coconut.router.navigate("",true)
+
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)
@@ -184,8 +186,9 @@ class Router extends Backbone.Router
             .then (doc) ->
               doc.time = time
               Coconut.database.put doc
-              .then -> 
+              .then ->
                 Coconut.router.default()
+                document.location.reload() # Without this, plugin changes aren't applied
             .catch (error) =>
               if error.name is "not_found"
                 Coconut.database.put
@@ -411,35 +414,30 @@ class Router extends Backbone.Router
     Coconut.settingsView.render()
 
   startApp: (options) ->
-    Coconut.config = new Config()
-    Coconut.config.fetch
-      error: ->
-        Coconut.debug "Error loading config"
+
+    # This makes sure all views are created and loads any classes that are necessary
+    classesToLoad = [UserCollection, ResultCollection]
+
+    startApplication = _.after classesToLoad.length, ->
+      Coconut.questionView = new QuestionView()
+      Coconut.menuView = new MenuView()
+      Coconut.headerView = new HeaderView() if !Coconut.headerView
+      Coconut.syncView = new SyncView()
+      Coconut.syncView.sync.setMinMinsBetweenSync()
+      Coconut.syncView.update()
+      options.success()
+
+    QuestionCollection.load
+      error: (error) ->
+        alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
       success: ->
-
-        # This makes sure all views are created and loads any classes that are necessary
-        classesToLoad = [UserCollection, ResultCollection]
-
-        startApplication = _.after classesToLoad.length, ->
-          Coconut.questionView = new QuestionView()
-          Coconut.menuView = new MenuView()
-          Coconut.headerView = new HeaderView() if !Coconut.headerView
-          Coconut.syncView = new SyncView()
-          Coconut.syncView.sync.setMinMinsBetweenSync()
-          Coconut.syncView.update()
-          options.success()
-
-        QuestionCollection.load
-          error: (error) ->
-            alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
-          success: ->
-            _.each classesToLoad, (ClassToLoad) ->
-              ClassToLoad.load
-                success: ->
-                  startApplication()
-                error: (error) ->
-                  alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
-                  #start application even on error to enable syncing to fix problems
-                  startApplication()
+        _.each classesToLoad, (ClassToLoad) ->
+          ClassToLoad.load
+            success: ->
+              startApplication()
+            error: (error) ->
+              alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
+              #start application even on error to enable syncing to fix problems
+              startApplication()
 
 module.exports = Router

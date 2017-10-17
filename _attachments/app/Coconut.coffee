@@ -67,7 +67,12 @@ class Coconut
                       console.error "Updating application docs failed: #{JSON.stringify error}"
                       options.error "Updating the application failed: #{JSON.stringify error}"
                     success: =>
-                      options.success()
+                      @config.save()
+                      .then ->
+                        console.log "SAVED config"
+                        options.success()
+                      .catch (error) ->
+                        options.error "Error saving local config file"
     catch error
       console.error error
       console.error "Removing #{@databaseName} due to incomplete setup"
@@ -130,7 +135,10 @@ class Coconut
 
   openDatabase: (options) =>
     userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
-    salt = (new Config()).get('salt')
+    #salt = (new Config()).get('salt')
+    # No point in reusing same salt and no simple way to store salt per user, since only have username/password
+    # Could change when/if we switch to use _users database
+    salt = ""
     hashKey = (crypto.pbkdf2Sync options.password, salt, 1000, 256/8, 'sha256').toString('base64')
     userDatabase.crypto(hashKey).then =>
       userDatabase.get "decryption check"
@@ -155,26 +163,33 @@ class Coconut
               .then (result) =>
                 if result["is the value of this clear text"] is "yes it is"
                   console.log "Project database opened and decrypted"
-                  @setupBackbonePouch()
-                  @startPlugins
-                    error: (error) -> console.error error
+                  console.log @config
+
+                  @config = new Config()
+                  @config.fetch
+                    error: ->
+                      Coconut.debug "Error loading config"
                     success: =>
+                      @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+                      @setupBackbonePouch()
+                      @startPlugins
+                        error: (error) -> console.error error
+                        success: =>
 
-                      @getOrAssignInstanceId().then (instanceId) =>
-                        @instanceId = instanceId
+                          @getOrAssignInstanceId().then (instanceId) =>
+                            @instanceId = instanceId
 
-
-                        @router.startApp
-                          success: =>
-                            # Look for a global StartPlugins array and then run all of the functions in it
-                            if StartPlugins?
-                              _(StartPlugins).each (startPlugin) -> startPlugin()
-                            User.login
-                              username: options.username
-                              error: ->
-                                options.error()
+                            @router.startApp
                               success: =>
-                                options.success()
+                                # Look for a global StartPlugins array and then run all of the functions in it
+                                if StartPlugins?
+                                  _(StartPlugins).each (startPlugin) -> startPlugin()
+                                User.login
+                                  username: options.username
+                                  error: ->
+                                    options.error()
+                                  success: =>
+                                    options.success()
 
                 else
                   console.log "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
