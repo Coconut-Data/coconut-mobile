@@ -13,16 +13,16 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
     else
       question.removeClass disabledClass
 
-global.ResultOfQuestion = (name) ->
-  return window.getValueCache[name]?() or  $("[name=#{camelize(name)}]").val()  or null
+global.slugify = require("underscore.string/slugify")
 
-global.camelize = require("underscore.string/camelize")
+global.ResultOfQuestion = (name) ->
+  return window.getValueCache[name]?() or  $("[name=#{slugify(name)}]").val()  or null
 
 global.setValue = (targetLabel, value) ->
-  $("[name=#{camelize(targetLabel)}]").val(value)
+  $("[name=#{slugify(targetLabel)}]").val(value)
 
 global.setLabelText = (targetLabel, value) ->
-  $("[data-question-name=#{camelize(targetLabel)}] label").html(value)
+  $("[data-question-name=#{slugify(targetLabel)}] label").html(value)
 
 # # # #
 
