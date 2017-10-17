@@ -130,7 +130,7 @@ class QuestionView extends Backbone.View
         display: block;
       }
       .mdl-textfield__input{
-        width: 100%;
+        width: 98%;
       }
 
       label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
@@ -138,7 +138,7 @@ class QuestionView extends Backbone.View
       }
 
       input{
-        width: 100%;
+        width: 98%;
       }
 
       .message
@@ -159,7 +159,7 @@ class QuestionView extends Backbone.View
         display:block;
         color: #{@accent1};
         padding:20px 0px 20px;
-        font-size: 1.3em;
+        font-size: 1.2em;
       }
 
       label.mdl-nontextfield__label.has-value{
@@ -264,7 +264,7 @@ class QuestionView extends Backbone.View
         -o-transform: scale(3); /* Opera */
         height:20px;
         width: 15px;
-        margin: 10px;
+        margin: 10px 10px;
       }
 
       div.question.radio{
@@ -347,7 +347,7 @@ class QuestionView extends Backbone.View
       </div>
 
 
-      <h3 class='content_title'>#{@model.id}</h3>
+      <h4 class='content_title'>#{@model.id}</h4>
       <div id='askConfirm'></div>
       <div id='question-view'>
         <form id='questions'>
@@ -769,8 +769,8 @@ class QuestionView extends Backbone.View
         return "
           <div data-group-id='#{question_id}' class='question group'>
             #{@toHTMLForm(question.questions(), newGroupId)}
-            <hr/>
-            <div style='padding-top:20px'>
+
+            <div style='padding-top:30px'>
               <input name='complete' id='question-set-complete' type='checkbox' value='true'></input>
               <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
             </div>

@@ -111,11 +111,13 @@ class Router extends Backbone.Router
       , 100
 
   default: ->
-    defaultQuestion = Coconut.questions.filter (question) ->
-      question.get("default") is true
-    if defaultQuestion.length is 0
-      defaultQuestion = Coconut.questions.first()
-    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+    # Hack by SL to refresh to the plugin's default method.
+    Backbone.history.loadUrl()
+#    defaultQuestion = Coconut.questions.filter (question) ->
+#      question.get("default") is true
+#    if defaultQuestion.length is 0
+#      defaultQuestion = Coconut.questions.first()
+#    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: ->
     setupView = new SetupView()
@@ -124,7 +126,6 @@ class Router extends Backbone.Router
   userLoggedIn: (options) ->
     User.isAuthenticated
       success: (user) ->
-        Coconut.menuView.render()
         options.success(user)
       error: ->
         Coconut.loginView = new LoginView()
@@ -149,8 +150,9 @@ class Router extends Backbone.Router
 
   logout: ->
     User.logout()
-    Coconut.router.navigate("",true)
     document.location.reload()
+    Coconut.router.navigate("",true)
+
 
   syncSend: (action) ->
     Coconut.router.navigate("",false)

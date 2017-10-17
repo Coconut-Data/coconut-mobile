@@ -49,7 +49,7 @@ class HeaderView extends Backbone.View
       <div class='mdl-layout-spacer'></div>
       <div id='right_top_menu'>
         <span class='mdl-spinner mdl-js-spinner' id='syncing'></span>
-        <a id='sync_icon' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent mdi mdi-sync mdi-48px'></i></a>
+        <a id='sync_icon' class='mdl-navigation__link' href='##{Coconut.databaseName}/sync'><i class='mdl-color-text--accent mdi mdi-sync'></i></a>
         <button class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon' id='top-menu-lower-right'>
           <i class='mdi mdi-dots-vertical mdi-36px'></i>
         </button>

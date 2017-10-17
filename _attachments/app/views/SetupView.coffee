@@ -27,11 +27,11 @@ class SetupView extends Backbone.View
         #{
           _(@fields).map (field) =>
             input_statement = if field.includes("Password") then "<input class='mdl-textfield__input' id='#{s.underscored(field)}' type='password' />"
-            else "<input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()' />"
+            else "<input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' />"
             "
               <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
                 #{input_statement}
-  <!--              <input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' onkeyup='javascript:this.value=this.value.toLowerCase()' type='#{"password" if field.includes("Password")}'/>  -->
+  <!--              <input class='mdl-textfield__input' id='#{s.underscored(field)}' style='text-transform:lowercase;' type='#{"password" if field.includes("Password")}'/>  -->
                 <label class='mdl-textfield__label' for='#{s.underscored field}'>#{field}</label>
               </div>
             "
@@ -156,12 +156,13 @@ class SetupView extends Backbone.View
             $('#install_status').hide()
           success: =>
             $('#spinner').hide()
-            $("#message").show().html "<h4>#{applicationName} Installed</h4>"
+            $("#message").show().html "<h4 style='text-align: center;'>#{applicationName} Installed</h4>"
             @$el.find("h4").fadeOut 3000
             _.delay ->
               Coconut.router.navigate "##{applicationName}", trigger: true
               ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
-              window.location.reload()
+              #window.location.reload()
+              ## Line above commented out.For some reason issue no longer exist, and reload was causing other problems.
             , 1000
 
   showHelp: (e) ->
