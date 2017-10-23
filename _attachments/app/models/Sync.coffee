@@ -103,8 +103,10 @@ class Sync extends Backbone.Model
 
                   @log "Synchronizing #{resultIDs.length} results. Please wait."
 
-                  Coconut.database.replicate.to Coconut.config.cloud_url_with_credentials(),
+                  Coconut.database.replicate.to Coconut.cloudDB,
                     doc_ids: resultIDs
+                    timeout: 60000
+                    batch_size: 20
                   .on 'complete', (info) =>
                     @log "Success! Send data finished: created, updated or deleted #{info.docs_written} results on the server."
                     @save
@@ -166,8 +168,10 @@ class Sync extends Backbone.Model
           success: (result) =>
             doc_ids = _(result.rows).chain().pluck("id").without("_design/coconut").uniq().value()
             @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(', ')})</small>. Please wait."
-            Coconut.database.replicate.from Coconut.config.cloud_url_with_credentials(),
+            Coconut.database.replicate.from Coconut.cloudDB,
               doc_ids: doc_ids
+              timeout: 60000
+              batch_size: 20
             .on 'change', (info) =>
               console.log info
             .on 'complete', (info) =>

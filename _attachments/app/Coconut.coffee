@@ -87,7 +87,7 @@ class Coconut
 
   syncPlugins: (options) =>
     $("#status").html "Checking for available plugins"
-    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
     @cloudDB.allDocs
       include_docs:false
       startkey: "_design/plugin-#{@databaseName}"
@@ -98,6 +98,8 @@ class Coconut
       $("#status").html "Loading #{@databaseName} plugins: #{pluginIds}"
       @cloudDB.replicate.to pluginDatabase,
         doc_ids: pluginIds
+        timeout: 60000
+        batch_size: 20
       .on 'error', (error) ->
         console.error "Error while replicating plugins:"
         console.error error
