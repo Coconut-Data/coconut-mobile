@@ -16,7 +16,8 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
 global.slugify = require("underscore.string/slugify")
 
 global.ResultOfQuestion = (name) ->
-  return window.getValueCache[name]?() or  $("[name=#{slugify(name)}]").val()  or null
+  window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or null
+#return window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or $("[name=#{slugify(name)}]").val() or null
 
 global.setValue = (targetLabel, value) ->
   $("[name=#{slugify(targetLabel)}]").val(value)
@@ -385,7 +386,7 @@ class QuestionView extends Backbone.View
       skipperList.push(question.safeLabel()) if question.actionOnChange().match(/skip/i)
 
       if question.get("action_on_questions_loaded")? and question.get("action_on_questions_loaded") isnt ""
-        console.debug question.get "action_on_questions_loaded"
+        global.currentLabel = question.get "label"
         CoffeeScript.eval question.get "action_on_questions_loaded"
 
     # Trigger a change event for each of the questions that contain skip logic in their actionOnChange code
@@ -470,7 +471,6 @@ class QuestionView extends Backbone.View
           CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
         if onValidatedComplete
-          console.log "Evaling: #{onValidatedComplete}"
           _.delay ->
             CoffeeScript.eval onValidatedComplete
           ,1000
@@ -644,8 +644,6 @@ class QuestionView extends Backbone.View
       $target = $(event.target)
       window.scrollTargetName = $target.attr("name")
       $div = window.questionCache[window.scrollTargetName]
-
-    console.log $div
 
     @$next = $div.next()
 
@@ -902,7 +900,6 @@ class QuestionView extends Backbone.View
                 "
 
               when "image"
-                console.log question
                 # Put images in the _attachments directory of the plugin
                 Coconut.database.getAttachment("_design/plugin-#{Coconut.config.cloud_database_name()}", question.get("image-path")).then (imageBlob) ->
                   $("#img-#{question_id}").attr("src", URL.createObjectURL(imageBlob))
