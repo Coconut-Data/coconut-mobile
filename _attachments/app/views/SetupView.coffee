@@ -67,6 +67,8 @@ class SetupView extends Backbone.View
     _(options).each (value , key) ->
       $("##{s.underscored(key)}").val(value)
       $("##{s.underscored(key)}").parent().addClass "is-dirty" if value and value isnt ""
+    if not $("#cloud_url").val().match(/http:\/\//)
+      $("#cloud_url").val("http://" +  $("#cloud_url").val())
     $("#cloud_url").val $("#cloud_url").val().replace(/^(http:\/\/)/, httpType + "://")
 
 
