@@ -158,31 +158,33 @@ class Sync extends Backbone.Model
       success: =>
         @log "Getting list of application documents to replicate"
         # Updating design_doc, users & forms
-        $.ajax
-          url: "#{Coconut.config.cloud_url_with_credentials()}/_design/docIDsForUpdating/_view/docIDsForUpdating"
-          xhrFields: {withCredentials: true}
-          dataType: "json"
+        Coconut.cloudDB.query "docIDsForUpdating",
           include_docs: false
-          error: (a,b,error) =>
+        .then (result) =>
+          doc_ids = _(result.rows).chain().pluck("id").without("_design/coconut").uniq().value()
+          @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(', ')})</small>. Please wait."
+          Coconut.database.replicate.from Coconut.cloudDB,
+            doc_ids: doc_ids
+            timeout: 60000
+          .on 'change', (info) =>
+            console.log info
+          .on 'complete', (info) =>
+            console.log "COMPLETE"
+            console.log info
+            Coconut.syncPlugins
+              success: -> options?.success?()
+              error: -> options?.error?()
+        .catch (error) =>
+          @log "Error while updating application documents: #{JSON.stringify error}"
+          @syncAttempts = 1 unless @syncAttempts
+          if @syncAttempts < 5
+            @syncAttempts += 1
+            console.log "Attempting to sync plugins again (#{@syncAttempts}/5"
+            @replicateApplicationDocs(options)
+          else
+            throw "Failed to sync plugins after #{@syncAttempts} attempts"
             options.error?(error)
-          success: (result) =>
-            doc_ids = _(result.rows).chain().pluck("id").without("_design/coconut").uniq().value()
-            @log "Updating #{doc_ids.length} docs <small>(users and forms: #{doc_ids.join(', ')})</small>. Please wait."
-            Coconut.database.replicate.from Coconut.cloudDB,
-              doc_ids: doc_ids
-              timeout: 60000
-              batch_size: 20
-            .on 'change', (info) =>
-              console.log info
-            .on 'complete', (info) =>
-              console.log "COMPLETE"
-              console.log info
-              Coconut.syncPlugins
-                success: -> options?.success?()
-                error: -> options?.error?()
-            .on 'error', (error) =>
-              @log "Error while updating application documents: #{JSON.stringify error}"
-              options.error?(error)
+
 
   setMinMinsBetweenSync: =>
     minimumMinutesBetweenSync = if Coconut.config.get('mobile_background_sync_freq') > 1440 then 1440 else Coconut.config.get('mobile_background_sync_freq')
