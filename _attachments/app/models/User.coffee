@@ -2,7 +2,7 @@ _ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
-Cookie = require 'js-cookie'
+global.Cookie = require 'js-cookie'
 
 class User extends Backbone.Model
   url: "/user"
@@ -31,6 +31,7 @@ class User extends Backbone.Model
 User.isAuthenticated = (options) ->
   Coconut.isValidDatabase
     error:  (error) ->
+      console.log "ZZZZ"
       # See if we have cookies that can login
       userCookie = Cookie('current_user')
       passwordCookie = Cookie('current_password')
@@ -58,10 +59,10 @@ User.login = (options) ->
     success: =>
       Coconut.currentUser = user
       Cookie('current_user', user.username())
-      Cookie('current_password',user.get "password")
+      Cookie('current_password', options.password)
       options.success()
-    error: =>
-      options.error()
+    error: (error) =>
+      options.error(error)
 
 User.logout = ->
   Cookie('current_user',"")
