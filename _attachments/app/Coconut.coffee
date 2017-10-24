@@ -55,17 +55,18 @@ class Coconut
               "_id": "decryption check"
               "is the value of this clear text": "yes it is"
             .then =>
-              @createDatabaseForEachUser
+              $("#status").html "Downloading forms and other application documents"
+              sync = new Sync
+              sync.replicateApplicationDocs
                 error: (error) ->
-                  console.error error
-                  options.error error
+                  console.error "Updating application docs failed: #{JSON.stringify error}"
+                  alert(error)
+                  options.error "Updating the application failed: #{JSON.stringify error}"
                 success: =>
-                  $("#status").html "Downloading forms and other application documents"
-                  sync = new Sync
-                  sync.replicateApplicationDocs
+                  @createDatabaseForEachUser
                     error: (error) ->
-                      console.error "Updating application docs failed: #{JSON.stringify error}"
-                      options.error "Updating the application failed: #{JSON.stringify error}"
+                      console.error error
+                      options.error error
                     success: =>
                       @config.save()
                       .then ->
@@ -92,6 +93,9 @@ class Coconut
       include_docs:false
       startkey: "_design/plugin-#{@databaseName}"
       endkey: "_design/plugin-#{@databaseName}\ufff0" #https://wiki.apache.org/couchdb/View_collation
+    .catch (error) ->
+      console.error "Error while downloading list of plugin ids:"
+      console.error error
     .then (result) =>
       pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins")
       pluginIds = _(result.rows).pluck "id"
@@ -100,17 +104,21 @@ class Coconut
         doc_ids: pluginIds
         timeout: 60000
         batch_size: 20
-      .on 'error', (error) ->
-        console.error "Error while replicating plugins:"
-        console.error error
       .on 'change', (result) =>
         $("#status").append "*"
       .on 'complete', (result) =>
         console.log "Completed replicating plugins: #{pluginIds.join(',')}"
         options?.success?()
-    .catch (error) ->
-      console.error "Error while downloading list of plugin ids:"
-      console.error error
+      .on 'error', (error) =>
+        console.error "Error while replicating plugins:"
+        console.error error
+        @syncPluginAttempts = 0 unless @syncPluginAttempts
+        if @syncPluginAttempts < 5
+          @syncPluginAttempts += 1
+          console.log "Attempting to sync plugins again"
+          @syncPlugins(options)
+        else
+          throw "Failed to sync plugins after #{@syncPluginAttempts} attempts"
 
   startPlugins: (options) =>
     pluginDatabase = new PouchDB "coconut-#{@databaseName}-plugins"
@@ -164,7 +172,7 @@ class Coconut
               .catch (error) -> console.error error
               .then (result) =>
                 if result["is the value of this clear text"] is "yes it is"
-                  console.log "Project database opened and decrypted"
+                  console.log "Login credentials successful, project database opened and decrypted"
                   console.log @config
 
                   @config = new Config()
@@ -188,8 +196,10 @@ class Coconut
                                   _(StartPlugins).each (startPlugin) -> startPlugin()
                                 User.login
                                   username: options.username
-                                  error: ->
-                                    options.error()
+                                  password: options.password
+                                  error: (error) ->
+                                    console.log error
+                                    options.error(error)
                                   success: =>
                                     options.success()
 
@@ -216,7 +226,7 @@ class Coconut
           options.success?()
 
   createDatabaseForEachUser: (options) =>
-    @cloudDB.allDocs
+    @database.allDocs
       include_docs: true
       startkey: "user"
       endkey: "user\ufff0" #https://wiki.apache.org/couchdb/View_collation
