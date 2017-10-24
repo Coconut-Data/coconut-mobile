@@ -42,7 +42,7 @@ underscored = require("underscore.string/underscored")
 class Router extends Backbone.Router
   # This gets called before a route is applied
   execute: (callback, args, name) ->
-    if name is "setup"
+    if name.match(/^setup/)
       callback.apply(this, args) if callback
     else
       # turn off residual spinner from other views that did not complete.
@@ -88,10 +88,9 @@ class Router extends Backbone.Router
     ":database/send/backup": "sendBackup"
     ":database/save/backup": "saveBackup"
     ":database/get/cloud/results": "getCloudResults"
-
     "setup": "setup"
-# TODO handle cloudUrl with http:// in it
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
+    "sz": "setupZanzibar"
     ":database": "default"
     "": "default"
     ":database/*noMatch": "noMatch"
@@ -102,11 +101,13 @@ class Router extends Backbone.Router
       console.error "Invalid URL, no matching route"
       $("#content").html "Page not found."
     else
+      console.log "ROUTE FAILS"
       @routeFails = true
       @targetURL = Backbone.history.getFragment()
       # Strange hack needed because plugins load routes
       @.navigate "##{Coconut.databaseName}/nowhere", {trigger: true}
       _.delay =>
+        console.log @targetURL
         @.navigate @targetURL, {trigger: true}
       , 100
 
@@ -119,9 +120,18 @@ class Router extends Backbone.Router
       defaultQuestion = Coconut.questions.first()
     Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
-  setup: ->
+  setup: (httpType, cloudUrl, applicationName, cloudUsername, cloudPassword) ->
     setupView = new SetupView()
     setupView.render()
+    if httpType and cloudUrl and applicationName and cloudUsername and cloudPassword
+      setupView.prefill httpType,
+        cloudUrl: cloudUrl
+        applicationName: applicationName
+        cloudUsername: cloudUsername
+        cloudPassword: cloudPassword
+
+  setupZanzibar: =>
+    @setup("https", "coconut.zmcp.org", "zanzibar", "coconutsurveillance", "zanzibar")
 
   userLoggedIn: (options) ->
     User.isAuthenticated
