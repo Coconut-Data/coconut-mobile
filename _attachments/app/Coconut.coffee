@@ -173,7 +173,6 @@ class Coconut
               .then (result) =>
                 if result["is the value of this clear text"] is "yes it is"
                   console.log "Login credentials successful, project database opened and decrypted"
-                  console.log @config
 
                   @config = new Config()
                   @config.fetch
@@ -293,7 +292,7 @@ class Coconut
         if result["is the value of this clear text"] is "yes it is"
           options.success()
     else
-      User.logout()
+      #User.logout()  # not sure why this was here, but it broken autologin after refresh
       options.error()
 
   toggleSpinner: (status) =>
