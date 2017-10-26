@@ -113,12 +113,12 @@ class Router extends Backbone.Router
 
   default: ->
     # Hack by SL to refresh to the plugin's default method.
-#    Backbone.history.loadUrl()
+    Backbone.history.loadUrl()
     defaultQuestion = Coconut.questions.filter (question) ->
       question.get("default") is true
     if defaultQuestion.length is 0
       defaultQuestion = Coconut.questions.first()
-    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+#    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: (httpType, cloudUrl, applicationName, cloudUsername, cloudPassword) ->
     setupView = new SetupView()
