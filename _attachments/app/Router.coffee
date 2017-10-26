@@ -131,7 +131,7 @@ class Router extends Backbone.Router
         cloudPassword: cloudPassword
 
   setupZanzibar: =>
-    @setup("https", "zanzibar.cococloud.co", "zanzibar", "zanzibar", "barzanzi")
+    @setup("https", "zanzibar.cococloud.co", "zanzibar", "admin", "nuttycoco")
 
   userLoggedIn: (options) ->
     User.isAuthenticated

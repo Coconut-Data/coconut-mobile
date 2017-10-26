@@ -22,16 +22,15 @@ class User extends Backbone.Model
   nameOrUsername: ->
     @get("name") or @username()
 
-  login: ->
-    Coconut.currentUser = @
-    Cookie('current_user', @username())
-    Cookie('current_password', @get "password")
+  #login: ->
+    #Coconut.currentUser = @
+    #Cookie('current_user', @username())
+    #Cookie('current_password', @get "password")
 
 
 User.isAuthenticated = (options) ->
   Coconut.isValidDatabase
     error:  (error) ->
-      console.log "ZZZZ"
       # See if we have cookies that can login
       userCookie = Cookie('current_user')
       passwordCookie = Cookie('current_password')
@@ -58,6 +57,7 @@ User.login = (options) ->
   user.fetch
     success: =>
       Coconut.currentUser = user
+      Cookie('stinky_sue', "peeyou")
       Cookie('current_user', user.username())
       Cookie('current_password', options.password)
       options.success()
