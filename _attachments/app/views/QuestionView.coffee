@@ -719,7 +719,11 @@ class QuestionView extends Backbone.View
 
   currentData: ->
     currentData = Form2js.form2js('questions', ".", false)
-
+    #Temporary hack by SL. form2js returns complete attribute named as Complete
+    # in the case doc, the attibute is not capitalize.
+    currentData.complete = currentData.Complete.valueOf()
+    delete currentData.Complete
+    console.log("CurrentData = ",currentData)
     # HACK Form2js doesn't work for checkboxes with multiple values
     # Check if any values are checkboxes, then overwrite with correct value
     _(currentData).each (value,key) ->
