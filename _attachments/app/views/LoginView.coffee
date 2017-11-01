@@ -20,7 +20,7 @@ class LoginView extends Backbone.View
         <form id='login_form'>
 
           <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
-            <input class='mdl-textfield__input' type='text' id='username' name='username' autofocus style='text-transform:lowercase;'>
+            <input class='mdl-textfield__input' type='text' id='username' name='username' autofocus autocorrect='off' autocapitalize='none' style='text-transform:lowercase;'>
             <label class='mdl-textfield__label' for='username'>Username</label>
           </div>
 
