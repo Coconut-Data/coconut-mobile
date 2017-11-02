@@ -52,11 +52,12 @@ class Question extends Backbone.Model
       return resultSummaryFields
     else
       # If this hasn't been defined, default to first 3 fields if it has that many
-      numberOfFields = Math.min(2,@questions().length-1)
       returnValue = {}
-      _.each([0..numberOfFields], (index) =>
-        returnValue[@questions()[index]?.label()] = "on"
-      )
+      if @questions()
+        numberOfFields = Math.min(2,@questions().length-1)
+        _.each([0..numberOfFields], (index) =>
+          returnValue[@questions()[index]?.label()] = "on"
+        )
       return returnValue
 
   summaryFieldNames: =>
@@ -88,7 +89,7 @@ Question.fromDomNode = (domNode) ->
 
       result.set
         safeLabel: result.safeLabel()
-        
+
       if question.find(".question-definition").length > 0
         result.set {questions: Question.fromDomNode(question.children(".question-definition"))}
       return result
