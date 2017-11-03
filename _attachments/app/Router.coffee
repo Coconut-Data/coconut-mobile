@@ -11,6 +11,7 @@ replicationStream = require('pouchdb-replication-stream')
 PouchDB.plugin(replicationStream.plugin)
 PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
 
+Dialog = require '../js-libraries/modal-dialog'
 Config = require './models/Config'
 HelpView = require './views/HelpView'
 global.AboutView = require './views/AboutView'
@@ -42,7 +43,7 @@ underscored = require("underscore.string/underscored")
 class Router extends Backbone.Router
   # This gets called before a route is applied
   execute: (callback, args, name) ->
-    if name.match(/^setup/)
+    if name.match(/^setup/) or name.match(/^selectApplication/)
       callback.apply(this, args) if callback
     else
       # turn off residual spinner from other views that did not complete.
@@ -53,19 +54,27 @@ class Router extends Backbone.Router
         titleize(fragment.replace('#',""))
       .join(": ")
       if Coconut.databaseName
-        @userLoggedIn
-          success: ->
-            Coconut.headerView.render()
-            Coconut.menuView.render()
-            Coconut.syncView.update()
-            callback.apply(this, args) if callback
+        @dbExist(Coconut.databaseName,(check) =>
+          if check
+            @userLoggedIn
+              success: ->
+                Coconut.headerView.render()
+                Coconut.menuView.render()
+                Coconut.syncView.update()
+                callback.apply(this, args) if callback
+          else
+            Dialog.showDialog
+              title: "Missing Application",
+              text: "#{Coconut.databaseName} no longer exist on local device. Please reinstall or select a new application."
+              neutral:
+                title: "Close",
+            Coconut.router.navigate("#selectapp",true)
+
+        )
       else
         # forced user logout. User should not be logged in at this point.
         User.logout()
-        Coconut.headerView = (new HeaderView()).render()
-        selectDatabaseView = new SelectApplicationView()
-        selectDatabaseView.render()
-
+        Coconut.router.navigate("#selectapp",true)
 
   routes:
     # Note that the database param gets removed from the args pased to the route handler in the execute function
@@ -91,6 +100,7 @@ class Router extends Backbone.Router
     "setup": "setup"
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
     "sz": "setupZanzibar"
+    "selectapp": "selectApplication"
     ":database": "default"
     "": "default"
     ":database/*noMatch": "noMatch"
@@ -130,8 +140,24 @@ class Router extends Backbone.Router
         cloudUsername: cloudUsername
         cloudPassword: cloudPassword
 
+  selectApplication: =>
+    Coconut.headerView = (new HeaderView()).render()
+    selectDatabaseView = new SelectApplicationView()
+    selectDatabaseView.render()
+
   setupZanzibar: =>
     @setup("https", "zanzibar.cococloud.co", "zanzibar", "admin", "nuttycoco")
+
+  dbExist: (dbname, callback) =>
+    PouchDB.allDbs()
+    .then (dbs) =>
+      if dbs.indexOf("coconut-#{dbname}") isnt -1
+        callback true
+      else
+        callback false
+    .catch (err) ->
+      console.log("Error checking Pouchdb.allDbs")
+      callback false
 
   userLoggedIn: (options) ->
     User.isAuthenticated
