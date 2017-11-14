@@ -95,6 +95,7 @@ class SetupView extends Backbone.View
     options = @options || {}
     _(@fields).each (field) ->
       options[field] = $("##{s.underscored(field)}").val()
+      options[field] = options[field].toLowerCase() if field isnt 'Cloud Password'
     return options
 
   installUrl: ->
@@ -109,7 +110,7 @@ class SetupView extends Backbone.View
 
   install: ->
     @installUrl()
-    applicationName = $("#"+s.underscored("Application Name")).val()
+    applicationName = $("#"+s.underscored("Application Name")).val().toLowerCase()
     $('#install_status').show()
     $("#spinner").html "<center>Checking to see if #{applicationName} already exists</center>"
     PouchDB.allDbs().then (dbs) =>

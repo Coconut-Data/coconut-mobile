@@ -56,6 +56,7 @@ class LoginView extends Backbone.View
     if $("#username").val() is "" or $("#password").val() is ""
       return @displayErr("Please enter a username and a password")
     loginData = Form2js.form2js('login_form')
+    loginData.username = loginData.username.toLowerCase()
     Coconut.toggleSpinner(true)
     Coconut.openDatabase
       username: loginData.username
