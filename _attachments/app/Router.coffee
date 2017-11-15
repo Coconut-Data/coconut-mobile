@@ -54,23 +54,23 @@ class Router extends Backbone.Router
         titleize(fragment.replace('#',""))
       .join(": ")
       if Coconut.databaseName
-        @dbExist(Coconut.databaseName,(check) =>
-          if check
+        @dbExist
+          dbname: Coconut.databaseName
+          success: =>
             @userLoggedIn
-              success: ->
+              success: =>
                 Coconut.headerView.render()
                 Coconut.menuView.render()
                 Coconut.syncView.update()
                 callback.apply(this, args) if callback
-          else
+          error: (err) =>
+            console.log(err)
             Dialog.showDialog
               title: "Missing Application",
               text: "#{Coconut.databaseName} no longer exist on local device. Please reinstall or select a new application."
               neutral:
-                title: "Close",
+                title: "Close"
             Coconut.router.navigate("#selectapp",true)
-
-        )
       else
         # forced user logout. User should not be logged in at this point.
         User.logout()
@@ -148,16 +148,16 @@ class Router extends Backbone.Router
   setupZanzibar: =>
     @setup("https", "zanzibar.cococloud.co", "zanzibar", "admin", "nuttycoco")
 
-  dbExist: (dbname, callback) =>
+  dbExist: (options) =>
     PouchDB.allDbs()
     .then (dbs) =>
-      if dbs.indexOf("coconut-#{dbname}") isnt -1
-        callback true
+      if dbs.indexOf("coconut-#{options.dbname}") isnt -1
+        options.success(true)
       else
-        callback false
+        options.error(false)
     .catch (err) ->
       console.log("Error checking Pouchdb.allDbs")
-      callback false
+      options.error(err)
 
   userLoggedIn: (options) ->
     User.isAuthenticated
