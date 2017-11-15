@@ -58,6 +58,7 @@ class SetupView extends Backbone.View
   cancel_deleteDB: ->
     $("#message").hide()
     @$el.find("div.mdl-card").show()
+    $('#cloud_password').val('')
     $("#spinner").hide()
 
   cancel: ->
