@@ -255,7 +255,7 @@ class Coconut
               callSuccessWhenFinished()
 
   downloadEncryptionKey: (options) =>
-    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
     @cloudDB.get "client encryption key"
       .then (result) =>
         @encryptionKey = result.key
