@@ -54,6 +54,8 @@ class Router extends Backbone.Router
         titleize(fragment.replace('#',""))
       .join(": ")
       if Coconut.databaseName
+        # SL - hack to reverse strange value in Coconut.databaseName that came out of the blue
+        Coconut.databaseName = Coconut.database.name.replace(/coconut-/,"") if Coconut.databaseName is 'not-complete-panel'
         @dbExist
           dbname: Coconut.databaseName
           success: =>
@@ -64,7 +66,6 @@ class Router extends Backbone.Router
                 Coconut.syncView.update()
                 callback.apply(this, args) if callback
           error: (err) =>
-            console.log(err)
             Dialog.showDialog
               title: "Missing Application",
               text: "#{Coconut.databaseName} no longer exist on local device. Please reinstall or select a new application."
@@ -167,7 +168,6 @@ class Router extends Backbone.Router
         Coconut.loginView = new LoginView()
         Coconut.loginView.callback = options.success
         Coconut.loginView.render()
-        $('.mdl-layout__drawer-button').hide()
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()

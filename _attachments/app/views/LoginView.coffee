@@ -13,6 +13,7 @@ class LoginView extends Backbone.View
 
   render: =>
     @displayHeader()
+    $('.mdl-layout__drawer-button').hide()
     @$el.html "
       <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' id='login_wrapper'>
         <div id='logo-title'><img src='images/cocoLogo.png' id='cslogo_sm'> Coconut</div>
