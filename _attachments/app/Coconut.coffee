@@ -251,9 +251,6 @@ class Coconut
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
     @cloudDB.get "client encryption key"
-      .then (result) =>
-        @encryptionKey = result.key
-        options.success()
       .catch (error) =>
         console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
         console.error error
@@ -270,6 +267,10 @@ class Coconut
             error_msg = error.message
 
         options.error "Failed to get client encryption key. <br /> #{error_msg}"
+
+      .then (result) =>
+        @encryptionKey = result.key
+        options.success()
 
   setConfig: (options) =>
     @config = new Config
