@@ -48,7 +48,6 @@ class Coconut
           options.error(error)
         success:  =>
           $("#status").html "Creating #{@databaseName} database"
-          new PouchDB("coconut-#{options.params["Application Name"]}")
           @database = new PouchDB("coconut-#{options.params["Application Name"]}")
           @database.crypto(@encryptionKey).then =>
             @database.put
@@ -179,7 +178,7 @@ class Coconut
                     error: ->
                       Coconut.debug "Error loading config"
                     success: =>
-                      @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+                      @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
                       @setupBackbonePouch()
                       @startPlugins
                         error: (error) -> console.error error
@@ -213,15 +212,10 @@ class Coconut
         dbsToDestroy = _(dbs).filter (dbName) ->
           dbName.match "^coconut-"+options.applicationName
 
-        promises = []
-        _(dbsToDestroy).each (db) ->
-          console.log "Deleting #{db}"
-          promise = (new PouchDB(db)).destroy().then (response) ->
-             console.log "#{db} Destroyed"
-           .catch (err) ->
-             console.error(err)
-          promises.push(promise)
-        Promise.all(promises).then ->
+        Promise.all(dbsToDestroy.map (db) ->
+          (new PouchDB(db)).destroy()
+        )
+        .then ->
           options.success?()
 
   createDatabaseForEachUser: (options) =>
@@ -255,7 +249,7 @@ class Coconut
               callSuccessWhenFinished()
 
   downloadEncryptionKey: (options) =>
-    @cloudDB = new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
     @cloudDB.get "client encryption key"
       .then (result) =>
         @encryptionKey = result.key
@@ -341,7 +335,7 @@ class Coconut
 
     unixMillisecondTimestampRadix64Encoded = -> radix64.encodeInt(moment().format('x'))
 
-    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials())
+    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
     @cloudDB.get("assigned_instance_ids")
     .then (assignedInstanceIds) =>
       # Get the last one from the array
