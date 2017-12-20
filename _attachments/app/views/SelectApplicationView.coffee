@@ -35,7 +35,7 @@ class SelectApplicationView extends Backbone.View
                    neutral:
                      title: "Close",
                      onClick: (e) ->
-                       document.location.reload()
+                       window.location.reload()
 
   render: =>
     $('.mdl-layout__drawer-button').hide()
