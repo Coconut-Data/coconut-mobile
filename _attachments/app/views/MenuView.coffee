@@ -25,6 +25,7 @@ class MenuView extends Backbone.View
           <div id='version'>Version: 1.0.0</div>
         </div>
         <div style='margin: 5px 0 0 25px'>
+        Application: #{Coconut.databaseName}<br/>
         Logged in as: #{Coconut.currentUser?.nameOrUsername()}<br/>
         <div>Last sync: <span id='sync_sent_status'>#{Coconut.sync_status}</span></div>
         <div>Last get: <span id='sync_get_status'>#{Coconut.sync_get_status}</span></div>
