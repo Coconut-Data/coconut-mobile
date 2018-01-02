@@ -61,14 +61,19 @@ class Router extends Backbone.Router
           success: =>
             @userLoggedIn
               success: =>
-                Coconut.headerView.render()
-                Coconut.menuView.render()
-                Coconut.syncView.update()
+                try
+                  console.log "DOO"
+                  Coconut.headerView.render()
+                  Coconut.menuView.render()
+                  Coconut.syncView.update()
+                catch error
+                  console.error error
                 callback.apply(this, args) if callback
           error: (err) =>
+            console.error err
             Dialog.showDialog
               title: "Missing Application",
-              text: "#{Coconut.databaseName} no longer exist on local device. Please reinstall or select a new application."
+              text: "#{Coconut.databaseName} no longer exists on local device. Please reinstall or select a new application."
               neutral:
                 title: "Close"
             Coconut.router.navigate("#selectapp",true)
