@@ -43,6 +43,15 @@ class Coconut
     @databaseName = options.params["Application Name"]
     try
       @setConfig(options.params)
+
+      # retrieve selective general application settings from cloud and merge with local settings
+      cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
+      cloudDB.get "coconut.config",
+        (error,result) =>
+          @config.attributes.mobile_background_sync = result.mobile_background_sync || true
+          @config.attributes.mobile_background_sync_freq = result.mobile_background_sync_freq || 5
+          @config.attributes.date_format = result.date_format || "YYYY-MM-DD HH:mm:ss"
+
       @downloadEncryptionKey
         error: (error) ->
           options.error(error)
