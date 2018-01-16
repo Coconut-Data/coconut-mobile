@@ -43,7 +43,7 @@ underscored = require("underscore.string/underscored")
 class Router extends Backbone.Router
   # This gets called before a route is applied
   execute: (callback, args, name) ->
-    if name.match(/^setup/) or name.match(/^selectApplication/)
+    if name.match(/^(setup|selectApplication|presetInstall)/)
       callback.apply(this, args) if callback
     else
       # turn off residual spinner from other views that did not complete.
@@ -106,6 +106,7 @@ class Router extends Backbone.Router
     "setup": "setup"
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
     "sz": "setupZanzibar"
+    "i/:installName": "presetInstall"
     "selectapp": "selectApplication"
     ":database": "default"
     "": "default"
@@ -153,6 +154,12 @@ class Router extends Backbone.Router
 
   setupZanzibar: =>
     @setup("https", "zanzibar.cococloud.co", "zanzibar", "admin", "***REMOVED***")
+
+  presetInstall: (installName) =>
+    (new PouchDB("https://installer:***REMOVED***@cococloud.co/install-configuration")).get "install-#{installName}"
+    .catch (error) -> console.error error
+    .then (configuration) =>
+      @setup.apply(null, configuration.options)
 
   dbExist: (options) =>
     PouchDB.allDbs()
