@@ -37,39 +37,46 @@ class SelectApplicationView extends Backbone.View
                      onClick: (e) ->
                        window.location.reload()
 
-  render: =>
-    $('.mdl-layout__drawer-button').hide()
-    $('#home_icon').hide()
+  getApplicationNames: =>
     PouchDB.allDbs()
       .then (dbs) =>
-        applicationNames = _(dbs).chain().filter (dbName) ->
+        @applicationNames = _(dbs).chain().filter (dbName) ->
           dbName.match(/^coconut/) and not dbName.match(/-user./) and not dbName.match(/-plugins/)
         .map (dbName) ->
           dbName.replace(/coconut-/,"")
         .value()
 
-        if applicationNames.length is 0
-          setupView = new SetupView()
-          setupView.render()
-        else
-          @$el.html "
-            <h4 class='select_app'>Select a coconut application</h4>
-            <p id='select_buttons'>
-            #{
-              _(applicationNames).map (applicationName) ->
-                "<span class='mdl-chip mdl-chip--deletable'>
-                   <span class='mdl-chip__text region'><a href='##{applicationName}'>#{applicationName}</a></span>
-                   <button type='button' class='mdl-chip__action'>
-                    <i class='mdi mdi-close-circle mdi-24px' id='del_#{applicationName}'></i>
-                   </button>
-                </span>"
-              .join ""
-            }
-            </p>
+  render: =>
+    $('.mdl-layout__drawer-button').hide()
+    $('#home_icon').hide()
+    @getApplicationNames()
+    .then =>
 
-            <p class='text'> <span style='padding-right: 10px'>... or install a new one.</span>
-              <a href='#setup' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
-            </p>
-          "
+      if @applicationNames.length is 0
+        setupView = new SetupView()
+        setupView.render()
+      else if @applicationNames.length is 1
+        Coconut.router.navigate "##{@applicationNames[0]}", {trigger: true}
+        return
+      else
+        @$el.html "
+          <h4 class='select_app'>Select a coconut application</h4>
+          <p id='select_buttons'>
+          #{
+            _(@applicationNames).map (applicationName) ->
+              "<span class='mdl-chip mdl-chip--deletable'>
+                 <span class='mdl-chip__text region'><a href='##{applicationName}'>#{applicationName}</a></span>
+                 <button type='button' class='mdl-chip__action'>
+                  <i class='mdi mdi-close-circle mdi-24px' id='del_#{applicationName}'></i>
+                 </button>
+              </span>"
+            .join ""
+          }
+          </p>
+
+          <p class='text'> <span style='padding-right: 10px'>... or install a new one.</span>
+            <a href='#setup' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-36px'></i></a>
+          </p>
+        "
 
 module.exports = SelectApplicationView
