@@ -62,7 +62,6 @@ class Router extends Backbone.Router
             @userLoggedIn
               success: =>
                 try
-                  console.log "DOO"
                   Coconut.headerView.render()
                   Coconut.menuView.render()
                   Coconut.syncView.update()
@@ -157,9 +156,18 @@ class Router extends Backbone.Router
 
   presetInstall: (installName) =>
     (new PouchDB("https://installer:installfoo@cococloud.co/install-configuration")).get "install-#{installName}"
-    .catch (error) -> console.error error
+    .catch (error) ->
+      console.error error
+      @setup()
     .then (configuration) =>
-      @setup.apply(null, configuration.options)
+      setupView = new SetupView()
+      setupView.render()
+      setupView.prefill configuration.options[0],
+        cloudUrl: configuration.options[1]
+        applicationName: configuration.options[2]
+        cloudUsername: configuration.options[3]
+        cloudPassword: configuration.options[4]
+      setupView.install()
 
   dbExist: (options) =>
     PouchDB.allDbs()
@@ -242,6 +250,7 @@ class Router extends Backbone.Router
                 Coconut.database.put
                   _id: "_local/last_sync"
                   time: moment().format("HH:mm, Do MMM YYYY")
+                .then ->
                   document.location.reload()
                   Coconut.router.default()
               else
