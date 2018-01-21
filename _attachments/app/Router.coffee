@@ -58,24 +58,27 @@ class Router extends Backbone.Router
         Coconut.databaseName = Coconut.database.name.replace(/coconut-/,"") if Coconut.databaseName is 'not-complete-panel'
         @dbExist
           dbname: Coconut.databaseName
-          success: =>
-            @userLoggedIn
-              success: =>
-                try
-                  Coconut.headerView.render()
-                  Coconut.menuView.render()
-                  Coconut.syncView.update()
-                catch error
-                  console.error error
-                callback.apply(this, args) if callback
+          success: (dbFound)=>
+            if dbFound
+              @userLoggedIn
+                success: =>
+                  try
+                    Coconut.headerView.render()
+                    Coconut.menuView.render()
+                    Coconut.syncView.update()
+                  catch error
+                    console.error error
+                  callback.apply(this, args) if callback
+            else
+              Dialog.showDialog
+                title: "Missing Application",
+                text: "#{Coconut.databaseName} no longer exists on local device. Please reinstall or select a new application."
+                neutral:
+                  title: "Close"
+              Coconut.router.navigate("#selectapp",true)
+
           error: (err) =>
             console.error err
-            Dialog.showDialog
-              title: "Missing Application",
-              text: "#{Coconut.databaseName} no longer exists on local device. Please reinstall or select a new application."
-              neutral:
-                title: "Close"
-            Coconut.router.navigate("#selectapp",true)
       else
         # forced user logout. User should not be logged in at this point.
         User.logout()
@@ -175,7 +178,7 @@ class Router extends Backbone.Router
       if dbs.indexOf("coconut-#{options.dbname}") isnt -1
         options.success(true)
       else
-        options.error(false)
+        options.success(false)
     .catch (err) ->
       console.log("Error checking Pouchdb.allDbs")
       options.error(err)
