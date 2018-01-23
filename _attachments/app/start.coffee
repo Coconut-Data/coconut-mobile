@@ -1,5 +1,4 @@
 # Make these global so that plugins can use them
-
 global.$ = require 'jquery'
 global.Backbone = require 'backbone'
 global._ = require 'underscore'
@@ -10,7 +9,6 @@ Backbone.$  = $
 Coconut = require './Coconut'
 
 global.Router = require './Router'
-
 
 window.Coconut = new Coconut()
 

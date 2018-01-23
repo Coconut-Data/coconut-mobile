@@ -11,21 +11,26 @@
   <head>
   	<title>Coconut</title>
     <link rel="icon" sizes="192x192" href="images/favicon.png">
+    <!-- all css moved to bundle-css.css -->
     <!--
     <link rel="stylesheet" type="text/css" href="css/style.min.css" />
-    -->
-
     <link href="css/fonts/fonts.css" rel="stylesheet">
+    -->
     <!--
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     -->
 
+    <!--
     <link href="css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="css/material.css">
     <link rel="stylesheet" type="text/css" href="css/override_mdl.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/modal-dialog.css">
     <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    -->
+
+    <link rel="stylesheet" href="css/bundle-css.min.css">
+
   </head>
 
   <body>
@@ -49,9 +54,12 @@
     </div>
   </div>
 
+  <!--
   <script src="./js-libraries/material.min.js"></script>
   <script src="./js-libraries/mdl-select.js"></script>
   <script type="text/javascript" src="js-libraries/coffee-script.js"></script>
+  -->
+  <script type="text/javascript" src="./bundle-libraries.min.js"></script>
   <script type="text/javascript" src="./bundle.js"></script>
   </body>
 </html>
