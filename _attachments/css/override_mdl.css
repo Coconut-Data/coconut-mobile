@@ -15,11 +15,14 @@
   .mdl-cell--9-col, .mdl-cell--9-col-phone.mdl-cell--9-col-phone {
       width: calc(50% - 16px);
   }
-  div.demo-card-square.mdl-card.mdl-shadow--2dp {
+  div.card-square.mdl-card.mdl-shadow--2dp {
     width: 170px;
+    height: 100px;
+    min-height: 100px;
   }
   .mdl-card__supporting-text {
     font-size: 0.9em;
+    line-height: 12px;
   }
 }
 
