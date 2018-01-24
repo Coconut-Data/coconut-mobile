@@ -48,7 +48,7 @@ class Coconut
       cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
       cloudDB.get "coconut.config",
         (error,result) =>
-          @config.attributes.mobile_background_sync = result.mobile_background_sync || true
+          @config.attributes.mobile_background_sync = result.mobile_background_sync || false
           @config.attributes.mobile_background_sync_freq = result.mobile_background_sync_freq || 5
           @config.attributes.date_format = result.date_format || "YYYY-MM-DD HH:mm:ss"
 
@@ -187,6 +187,8 @@ class Coconut
                     error: ->
                       Coconut.debug "Error loading config"
                     success: =>
+                      # temporarily forcing to false for all preinstalled app
+                      @config.attributes.mobile_background_sync = false
                       @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
                       @setupBackbonePouch()
                       @startPlugins
