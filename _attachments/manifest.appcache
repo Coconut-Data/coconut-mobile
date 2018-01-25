@@ -1,21 +1,10 @@
 CACHE MANIFEST
-# VERSION 0.8.231
+# VERSION 0.8.239
 
 index.html
 bundle.js
-js-libraries/material.min.js
-js-libraries/mdl-select.js
-js-libraries/coffee-script.js
-js-libraries/modal-dialog.js
-css/style.min.css
-css/fonts/fonts.css
-css/material.css
-css/override_mdl.css
-css/materialdesignicons.min.css
-css/materialdesignicons.min.css.map
-css/styles.css
-css/modal-dialog.css
-css/jquery.dataTables.min.css
+bundle-libraries.min.js
+css/bundle-css.min.css
 css/fonts/mdi-regular.woff2
 css/fonts/Roboto-Thin.ttf
 css/fonts/Roboto-Light.ttf
@@ -26,7 +15,7 @@ css/fonts/Roboto-Black.ttf
 css/fonts/Roboto-Italic.ttf
 css/fonts/Roboto-BoldItalic.ttf
 css/fonts/materialdesignicons-webfont.eot
-css/fonts/materialdesignicons-webfont.svg
+#css/fonts/materialdesignicons-webfont.svg
 css/fonts/materialdesignicons-webfont.ttf
 css/fonts/materialdesignicons-webfont.woff
 css/fonts/materialdesignicons-webfont.woff2

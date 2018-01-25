@@ -71,17 +71,17 @@ class Coconut
                   alert(error)
                   options.error "Updating the application failed: #{JSON.stringify error}"
                 success: =>
-                  @createDatabaseForEachUser
-                    error: (error) ->
-                      console.error error
-                      options.error error
-                    success: =>
-                      @config.save()
-                      .then ->
-                        console.log "SAVED config"
-                        options.success()
-                      .catch (error) ->
-                        options.error "Error saving local config file"
+                  @createDatabaseForEachUser()
+                  .then =>
+                    @config.save()
+                    .then ->
+                      console.log "SAVED config"
+                      options.success()
+                    .catch (error) ->
+                      options.error "Error saving local config file"
+                  .catch (error) =>
+                    console.error error
+                    options.error error
     catch error
       console.error error
       console.error "Removing #{@databaseName} due to incomplete setup"
@@ -237,14 +237,11 @@ class Coconut
     .catch (error) ->
       console.error "Error while downloading user information: #{JSON.stringify error}"
     .then (result) =>
-
-      callSuccessWhenFinished = _.after result.rows.length, ->
-        options.success()
-
       totalUsers = result.rows.length
       $("#status").html "Setting up #{totalUsers} users. "
       indx = 0
-      _(result.rows).each (user) =>
+
+      Promise.all( result.rows.map (user) =>
         console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user.id}"
         userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
         userDatabase.crypto(user.doc.password or "").then =>
@@ -252,12 +249,15 @@ class Coconut
             "_id": "encryption key"
             "key": @encryptionKey
           .then =>
+            console.log "Created coconut-#{@config.get("cloud_database_name")}-#{user.id}"
             userDatabase.put
               "_id": "decryption check"
               "is the value of this clear text": "yes it is"
             .then ->
               $("div#percent").html "( #{++indx} of #{totalUsers} )"
-              callSuccessWhenFinished()
+              Promise.resolve()
+      )
+
 
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
