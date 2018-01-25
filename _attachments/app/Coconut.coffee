@@ -229,7 +229,7 @@ class Coconut
         .then ->
           options.success?()
 
-  createDatabaseForEachUser: (options) =>
+  createDatabaseForEachUser: =>
     @database.allDocs
       include_docs: true
       startkey: "user"
@@ -244,18 +244,23 @@ class Coconut
       Promise.all( result.rows.map (user) =>
         console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user.id}"
         userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
-        userDatabase.crypto(user.doc.password or "").then =>
-          userDatabase.put
-            "_id": "encryption key"
-            "key": @encryptionKey
-          .then =>
-            console.log "Created coconut-#{@config.get("cloud_database_name")}-#{user.id}"
+        userDatabase.destroy()
+        .then =>
+          userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
+          userDatabase.crypto(user.doc.password or "").then =>
             userDatabase.put
-              "_id": "decryption check"
-              "is the value of this clear text": "yes it is"
-            .then ->
-              $("div#percent").html "( #{++indx} of #{totalUsers} )"
-              Promise.resolve()
+              "_id": "encryption key"
+              "key": @encryptionKey
+            .then =>
+              console.log "Created coconut-#{@config.get("cloud_database_name")}-#{user.id}"
+              userDatabase.put
+                "_id": "decryption check"
+                "is the value of this clear text": "yes it is"
+              .then =>
+                $("div#percent").html "( #{++indx} of #{totalUsers} )"
+                console.log "resolving"
+                Promise.resolve()
+        .catch (error) -> console.error error
       )
 
 

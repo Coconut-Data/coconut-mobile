@@ -169,11 +169,13 @@ class Sync extends Backbone.Model
           .on 'change', (info) =>
             console.log info
           .on 'complete', (info) =>
-            console.log "COMPLETE"
             console.log info
-            Coconut.syncPlugins
-              success: -> options?.success?()
-              error: -> options?.error?()
+            Coconut.createDatabaseForEachUser()
+            .then =>
+              console.log "Application docs and user refresh complete"
+              Coconut.syncPlugins
+                success: -> options?.success?()
+                error: -> options?.error?()
         .catch (error) =>
           @log "Error while updating application documents: #{JSON.stringify error}"
           @syncAttempts = 1 unless @syncAttempts
