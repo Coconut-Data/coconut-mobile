@@ -70,6 +70,15 @@ class Router extends Backbone.Router
                     console.error error
                   callback.apply(this, args) if callback
             else
+
+              # Hack to catch erroneous missing application errors
+              if @fails then @fails +=1 else @fails = 0
+              if @fails < 1
+                _.delay =>
+                  @execute(callback, args, name)
+                , 1000
+                return
+
               Dialog.showDialog
                 title: "Missing Application",
                 text: "#{Coconut.databaseName} no longer exists on local device. Please reinstall or select a new application."
