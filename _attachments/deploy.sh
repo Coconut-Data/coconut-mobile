@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+echo "Adding git commit to displayed version"
+COMMIT=$(git rev-parse --short HEAD);sed -i "s/ - .*<\/div>/ - <a href='https:\/\/github.com\/ICTatRTI\/coconut-mobile\/commit\/$COMMIT'>$COMMIT<\/a><\/div>/" app/views/MenuView.coffee
 echo "Browserifying, uglifying and then making bundle.js"
 ./node_modules/browserify/bin/cmd.js --verbose -t coffeeify --extension='.coffee' app/start.coffee | ./node_modules/uglify-js/bin/uglifyjs > bundle.js
 echo "Minifying bundle-css.min.css"
