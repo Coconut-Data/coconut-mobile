@@ -22,7 +22,7 @@ class MenuView extends Backbone.View
         <div class='clear'>
           <div class='f-left m-l-10'><img src='images/cocoLogo.png' id='cslogo_sm'></div>
           <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
-          <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/c7e8d5f'>c7e8d5f</a></div>
+          <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/b6fce91'>b6fce91</a></div>
         </div>
         <div style='margin: 5px 0 0 25px'>
         Application: #{Coconut.databaseName}<br/>
