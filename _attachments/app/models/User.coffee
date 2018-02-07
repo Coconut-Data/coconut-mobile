@@ -57,7 +57,6 @@ User.login = (options) ->
   user.fetch
     success: =>
       Coconut.currentUser = user
-      Cookie('stinky_sue', "peeyou")
       Cookie('current_user', user.username())
       Cookie('current_password', options.password)
       options.success()

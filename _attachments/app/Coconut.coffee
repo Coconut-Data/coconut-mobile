@@ -46,11 +46,15 @@ class Coconut
 
       # retrieve selective general application settings from cloud and merge with local settings
       cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
-      cloudDB.get "coconut.config",
-        (error,result) =>
-          @config.attributes.mobile_background_sync = result.mobile_background_sync || false
-          @config.attributes.mobile_background_sync_freq = result.mobile_background_sync_freq || 5
-          @config.attributes.date_format = result.date_format || "YYYY-MM-DD HH:mm:ss"
+      cloudDB.get "coconut.config"
+      .then (result) =>
+        @config.set("mobile_background_sync", result.mobile_background_sync || false)
+        @config.set("mobile_background_sync_freq", result.mobile_background_sync_freq || 5)
+        @config.set("date_format", result.date_format || "YYYY-MM-DD HH:mm:ss")
+      .catch (error) =>
+        @config.set("mobile_background_sync", false)
+        @config.set("mobile_background_sync_freq", 5)
+        @config.set("date_format", "YYYY-MM-DD HH:mm:ss")
 
       @downloadEncryptionKey
         error: (error) ->
@@ -160,14 +164,41 @@ class Coconut
     hashKey = (crypto.pbkdf2Sync options.password, salt, 1000, 256/8, 'sha256').toString('base64')
     userDatabase.crypto(hashKey).then =>
       userDatabase.get "decryption check"
-      .catch (error) ->
-        console.log "Error opening decryption check doc, probably invalid username"
-        console.log error
-        options.error()
+      .catch (error) =>
+        if error.reason is "missing"
+          alert "The database for #{options.username} is missing the encryption key, page will refresh. You may need to reinstall if #{options.username} is a valid user."
+          document.location.reload()
+          ###
+          @setConfig
+            "Cloud URL": "http://localhost:5984"
+            "Application Name": "keep"
+            "Cloud Username": "admin"
+            "Cloud Password": "password"
+          @downloadEncryptionKey()
+          .then =>
+            @createDatabaseForUser
+              id: "user.#{options.username}"
+              doc:
+                password: hashKey
+          .then =>
+            _.delay =>
+              console.log "Trying to login again."
+              @openDatabase(options)
+            , 1000
+          ###
+        else
+          console.log "Error opening decryption check doc, probably invalid username"
+          console.log error
+        
+        userDatabase.info().then (info) ->
+          #alert "Error opening decryption check doc, probably invalid username. username: #{options.username} password:#{options.password}, #{JSON.stringify error}, DB INFO: #{JSON.stringify info}"
+          return options.error()
       .then (result) =>
         @encryptionKey = result[""]
         if result["is the value of this clear text"] isnt "yes it is"
-          console.log "Decryption check has wrong value, probably invalid password"
+          #alert "Decryption check has wrong value, probably invalid password: #{JSON.stringify result}"
+          console.log "Decryption check has wrong value, probably invalid password: username: #{options.username} password:#{options.password}"
+
           options.error()
         else
           userDatabase.get "encryption key"
@@ -231,62 +262,85 @@ class Coconut
 
   createDatabaseForEachUser: =>
     @database.allDocs
-      include_docs: true
+      include_docs: false
       startkey: "user"
       endkey: "user\ufff0" #https://wiki.apache.org/couchdb/View_collation
     .catch (error) ->
       console.error "Error while downloading user information: #{JSON.stringify error}"
     .then (result) =>
-      totalUsers = result.rows.length
-      $("#status").html "Setting up #{totalUsers} users. "
-      indx = 0
+      Promise.resolve(_(result.rows).pluck("id"))
+    .then (allUserIds) =>
+      @database.get "_local/last_change_sequence_users"
+      .catch (error)  =>
+        Promise.resolve
+          _id: "_local/last_change_sequence_users"
+          sequence: null
+      .then (sequenceResult) =>
+        @database.info()
+        .then (currentDBInfo) =>
+          console.log currentDBInfo
 
-      Promise.all( result.rows.map (user) =>
-        console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user.id}"
-        userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
-        userDatabase.destroy()
-        .then =>
-          userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user.id}"
-          userDatabase.crypto(user.doc.password or "").then =>
-            userDatabase.put
-              "_id": "encryption key"
-              "key": @encryptionKey
-            .then =>
-              console.log "Created coconut-#{@config.get("cloud_database_name")}-#{user.id}"
-              userDatabase.put
-                "_id": "decryption check"
-                "is the value of this clear text": "yes it is"
-              .then =>
-                $("div#percent").html "( #{++indx} of #{totalUsers} )"
-                console.log "resolving"
+          @database.changes
+            since: sequenceResult.sequence
+            doc_ids: allUserIds
+            include_docs: true
+          .then (result) =>
+            changedUsers = _(result.results).pluck "doc"
+
+            $("#status").html "Updating #{changedUsers.length} users. " if changedUsers.length > 0
+            indx = 0
+
+            Promise.all( changedUsers.map (user) =>
+              @createDatabaseForUser(user).then =>
+                $("div#percent").html "( #{++indx} of #{changedUsers.length} )"
                 Promise.resolve()
-        .catch (error) -> console.error error
-      )
+            ).catch (error) -> console.error error
 
+            sequenceResult.sequence = currentDBInfo.update_seq
+            @database.put sequenceResult
+    .catch (error) => console.error error
+
+  createDatabaseForUser: (user) =>
+    console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+    userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+    userDatabase.destroy()
+    .then =>
+      userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+      userDatabase.crypto(user.password or "")
+      .then =>
+        userDatabase.put
+          "_id": "encryption key"
+          "key": @encryptionKey
+      .then =>
+        console.log "Created coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+        userDatabase.put
+          "_id": "decryption check"
+          "is the value of this clear text": "yes it is"
 
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
     @cloudDB.get "client encryption key"
-      .catch (error) =>
-        console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
-        console.error error
-        switch error.status
-          when 0
-            error_msg = "Cannot connect to the Cloud URL. Please check the URL."
-          when 404
-            error_msg = "Cannot find database. Make sure your Application Name is correct."
-          when 400
-            error_msg = error.reason
-          when 401
-            error_msg = "Cloud Username or Cloud Password is incorrect."
-          else
-            error_msg = error.message
+    .catch (error) =>
+      console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
+      console.error error
+      switch error.status
+        when 0
+          error_msg = "Cannot connect to the Cloud URL. Please check the URL."
+        when 404
+          error_msg = "Cannot find database. Make sure your Application Name is correct."
+        when 400
+          error_msg = error.reason
+        when 401
+          error_msg = "Cloud Username or Cloud Password is incorrect."
+        else
+          error_msg = error.message
 
-        options.error "Failed to get client encryption key. <br /> #{error_msg}"
+      options.error "Failed to get client encryption key. <br /> #{error_msg}"
 
-      .then (result) =>
-        @encryptionKey = result.key
-        options.success()
+    .then (result) =>
+      @encryptionKey = result.key
+      options.success()
+      Promise.resolve()
 
   setConfig: (options) =>
     @config = new Config
