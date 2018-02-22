@@ -5,7 +5,7 @@ radix64 = require('radix-64')()
 Config = require './models/Config'
 global.Router = require './Router'
 global.Sync = require './models/Sync'
-User = require './models/User'
+global.User = require './models/User'
 
 window.PouchDB = require 'pouchdb'
 require 'crypto-pouch'
