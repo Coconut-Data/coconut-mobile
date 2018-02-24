@@ -59,36 +59,15 @@ class Router extends Backbone.Router
       if Coconut.databaseName
         # SL - hack to reverse strange value in Coconut.databaseName that came out of the blue
         Coconut.databaseName = Coconut.database.name.replace(/coconut-/,"") if Coconut.databaseName is 'not-complete-panel'
-        @dbExist
-          dbname: Coconut.databaseName
-          success: (dbFound)=>
-            if dbFound
-              @userLoggedIn
-                success: =>
-                  try
-                    Coconut.headerView.render()
-                    Coconut.menuView.render()
-                    Coconut.syncView.update()
-                  catch error
-                    console.error error
-                  callback.apply(this, args) if callback
-            else
-
-              # Hack to catch erroneous missing application errors
-              if @fails then @fails +=1 else @fails = 0
-              if @fails < 1
-                _.delay =>
-                  @execute(callback, args, name)
-                , 1000
-                return
-
-              Dialog.showDialog
-                title: "Missing Application",
-                text: "#{Coconut.databaseName} no longer exists on local device. Please reinstall or select a new application."
-                neutral:
-                  title: "Close"
-              Coconut.router.navigate("#selectapp",true)
-
+        @userLoggedIn
+          success: =>
+            try
+              Coconut.headerView.render()
+              Coconut.menuView.render()
+              Coconut.syncView.update()
+            catch error
+              console.error error
+            callback.apply(this, args) if callback
           error: (err) =>
             console.error err
       else
@@ -136,7 +115,7 @@ class Router extends Backbone.Router
       @routeFails = true
       @targetURL = Backbone.history.getFragment()
       # Strange hack needed because plugins load routes
-      @.navigate "##{Coconut.databaseName}/nowhere", {trigger: true}
+      @.navigate "##{Coconut.databaseName}", {trigger: true}
       _.delay =>
         console.log @targetURL
         @.navigate @targetURL, {trigger: true}
@@ -185,17 +164,6 @@ class Router extends Backbone.Router
         cloudUsername: configuration.options[3]
         cloudPassword: configuration.options[4]
       setupView.install()
-
-  dbExist: (options) =>
-    PouchDB.allDbs()
-    .then (dbs) =>
-      if dbs.indexOf("coconut-#{options.dbname}") isnt -1
-        options.success(true)
-      else
-        options.success(false)
-    .catch (err) ->
-      console.log("Error checking Pouchdb.allDbs")
-      options.error(err)
 
   userLoggedIn: (options) ->
     User.isAuthenticated
