@@ -41,6 +41,10 @@ titleize = require "underscore.string/titleize"
 underscored = require("underscore.string/underscored")
 
 class Router extends Backbone.Router
+
+  initialize: (appView) ->
+    @appView = appView
+
   # This gets called before a route is applied
   execute: (callback, args, name) ->
     if name.match(/^(setup|selectApplication|presetInstall)/)
@@ -49,7 +53,6 @@ class Router extends Backbone.Router
       # turn off residual spinner from other views that did not complete.
       Coconut.toggleSpinner(false)
       Coconut.databaseName = args.shift()
-
       document.title = _(document.location.hash.split("/")).map (fragment) ->
         titleize(fragment.replace('#',""))
       .join(": ")
@@ -209,7 +212,9 @@ class Router extends Backbone.Router
       Coconut.helpView.helpDocument = helpDocument
     else
       Coconut.helpView.helpDocument = null
-    Coconut.helpView.render()
+    # Coconut.helpView.render()
+    @appView.showView(Coconut.helpView)
+
 
   login: ->
     Coconut.loginView = new LoginView()
@@ -293,14 +298,16 @@ class Router extends Backbone.Router
       # result-questionName-millisecondtimestamp-instanceId
       _id: "result-#{underscored(question_id)}-#{radix64.encodeInt(moment().format('x'))}-#{Coconut.instanceId}"
     Coconut.questionView.model = new Question {id: unescape(question_id)}
+    vw = @appView
     Coconut.questionView.model.fetch
       success: ->
-        Coconut.questionView.render()
+        # Coconut.questionView.render()
+        vw.showView(Coconut.questionView)
 
 
   showResult: (result_id) ->
     Coconut.questionView.readonly = true
-
+    vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
     Coconut.questionView.result.fetch
@@ -310,11 +317,12 @@ class Router extends Backbone.Router
           id: question
         Coconut.questionView.model.fetch
           success: ->
-            Coconut.questionView.render()
+            # Coconut.questionView.render()
+            vw.showView(Coconut.questionView)
 
   editResult: (result_id) ->
     Coconut.questionView.readonly = false
-
+    vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
     Coconut.questionView.result.fetch
@@ -325,7 +333,8 @@ class Router extends Backbone.Router
             id: question
           Coconut.questionView.model.fetch
             success: ->
-              Coconut.questionView.render()
+              # Coconut.questionView.render()
+              vw.showView(Coconut.questionView)
         else # Reach here for USSD Notifications
           $("#content").html "
             <button id='delete' type='button'>Delete</button>
@@ -344,7 +353,7 @@ class Router extends Backbone.Router
 
   deleteResult: (result_id, confirmed) ->
     Coconut.questionView.readonly = true
-
+    vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
     Coconut.questionView.result.fetch
@@ -360,7 +369,8 @@ class Router extends Backbone.Router
               id: question
             Coconut.questionView.model.fetch
               success: ->
-                Coconut.questionView.render()
+                # Coconut.questionView.render()
+                vw.showView(Coconut.questionView)
                 $('#askConfirm').html "
                   <h4>Are you sure you want to delete this record?</h4>
                   <div id='confirm'>
@@ -382,9 +392,11 @@ class Router extends Backbone.Router
     Coconut.resultsView.question = new Question
       id: unescape(question_id)
     Coconut.toggleSpinner(true)
+    vw = @appView
     Coconut.resultsView.question.fetch
       success: ->
-        Coconut.resultsView.render()
+        # Coconut.resultsView.render()
+        vw.showView(Coconut.resultsView)
 
   resetDatabase: () ->
     if confirm "Are you sure you want to reset #{Coconut.databaseName}? All data that has not yet been sent to the cloud will be lost."
@@ -403,7 +415,8 @@ class Router extends Backbone.Router
 
   manage: ->
     Coconut.manageView ?= new ManageView( el: $("#content") )
-    Coconut.manageView.render()
+    # Coconut.manageView.render()
+    @appView.showView(Coconut.manageView)
 
   dumpDatabase: (options) =>
     dumpedString = ''
@@ -482,7 +495,8 @@ class Router extends Backbone.Router
 
   settings: ->
     Coconut.settingsView ?= new SettingsView()
-    Coconut.settingsView.render()
+    # Coconut.settingsView.render()
+    @appView.showView(Coconut.settingsView)
 
   startApp: (options) ->
 
@@ -496,6 +510,7 @@ class Router extends Backbone.Router
       Coconut.syncView = new SyncView()
       Coconut.syncView.sync.setMinMinsBetweenSync()
       Coconut.syncView.update()
+      #Coconut.headerView.newUpdate()
       options.success()
 
     QuestionCollection.load
