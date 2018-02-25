@@ -155,14 +155,16 @@ class Coconut
               console.error error
             finished()
 
-  openDatabase: (options) =>
-    userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
+  hashKeyForPassword: (password) =>
     #salt = (new Config()).get('salt')
     # No point in reusing same salt and no simple way to store salt per user, since only have username/password
     # Could change when/if we switch to use _users database
     salt = ""
-    hashKey = (crypto.pbkdf2Sync options.password, salt, 1000, 256/8, 'sha256').toString('base64')
-    userDatabase.crypto(hashKey).then =>
+    hashKey = (crypto.pbkdf2Sync password, salt, 1000, 256/8, 'sha256').toString('base64')
+
+  openDatabase: (options) =>
+    userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
+    userDatabase.crypto(@hashKeyForPassword(options.password)).then =>
       userDatabase.get "decryption check"
       .catch (error) =>
         if error.reason is "missing"
@@ -187,11 +189,14 @@ class Coconut
             , 1000
           ###
         else
-          console.log "Error opening decryption check doc, probably invalid username"
-          console.log error
         
+        console.log error
         userDatabase.info().then (info) ->
           #alert "Error opening decryption check doc, probably invalid username. username: #{options.username} password:#{options.password}, #{JSON.stringify error}, DB INFO: #{JSON.stringify info}"
+          if info.doc_count is 0
+            console.log "Error opening decryption check doc, username does not exist"
+          else
+            console.log "Error opening decryption check doc, password did not successfully decrypt the database"
           return options.error()
       .then (result) =>
         @encryptionKey = result[""]
@@ -259,6 +264,7 @@ class Coconut
         )
         .then ->
           options.success?()
+          Promise.resolve()
 
   createDatabaseForEachUser: =>
     @database.allDocs
