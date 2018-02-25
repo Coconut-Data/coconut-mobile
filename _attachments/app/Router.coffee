@@ -170,7 +170,7 @@ class Router extends Backbone.Router
 
   presetInstall: (installName) =>
     (new PouchDB("https://installer:***REMOVED***@cococloud.co/install-configuration")).get "install-#{installName}"
-    .catch (error) ->
+    .catch (error) =>
       console.error error
       @setup()
     .then (configuration) =>
