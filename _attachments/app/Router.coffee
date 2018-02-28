@@ -108,8 +108,8 @@ class Router extends Backbone.Router
 
   noMatch: =>
     if @routeFails
-      console.error "Invalid URL, no matching route"
-      $("#content").html "Page not found."
+      console.error "Invalid URL #{Backbone.history.getFragment()}, no matching route"
+      $("#content").html "Loading. Please wait...."
     else
       console.log "ROUTE FAILS"
       @routeFails = true
@@ -117,7 +117,6 @@ class Router extends Backbone.Router
       # Strange hack needed because plugins load routes
       @.navigate "##{Coconut.databaseName}", {trigger: true}
       _.delay =>
-        console.log @targetURL
         @.navigate @targetURL, {trigger: true}
       , 100
 
