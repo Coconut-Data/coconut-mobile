@@ -41,6 +41,10 @@ titleize = require "underscore.string/titleize"
 underscored = require("underscore.string/underscored")
 
 class Router extends Backbone.Router
+
+  initialize: (appView) ->
+    @appView = appView
+
   # This gets called before a route is applied
   execute: (callback, args, name) ->
     if name.match(/^(setup|selectApplication|presetInstall)/)
@@ -49,43 +53,21 @@ class Router extends Backbone.Router
       # turn off residual spinner from other views that did not complete.
       Coconut.toggleSpinner(false)
       Coconut.databaseName = args.shift()
-
       document.title = _(document.location.hash.split("/")).map (fragment) ->
         titleize(fragment.replace('#',""))
       .join(": ")
       if Coconut.databaseName
         # SL - hack to reverse strange value in Coconut.databaseName that came out of the blue
         Coconut.databaseName = Coconut.database.name.replace(/coconut-/,"") if Coconut.databaseName is 'not-complete-panel'
-        @dbExist
-          dbname: Coconut.databaseName
-          success: (dbFound)=>
-            if dbFound
-              @userLoggedIn
-                success: =>
-                  try
-                    Coconut.headerView.render()
-                    Coconut.menuView.render()
-                    Coconut.syncView.update()
-                  catch error
-                    console.error error
-                  callback.apply(this, args) if callback
-            else
-
-              # Hack to catch erroneous missing application errors
-              if @fails then @fails +=1 else @fails = 0
-              if @fails < 1
-                _.delay =>
-                  @execute(callback, args, name)
-                , 1000
-                return
-
-              Dialog.showDialog
-                title: "Missing Application",
-                text: "#{Coconut.databaseName} no longer exists on local device. Please reinstall or select a new application."
-                neutral:
-                  title: "Close"
-              Coconut.router.navigate("#selectapp",true)
-
+        @userLoggedIn
+          success: =>
+            try
+              Coconut.headerView.render()
+              Coconut.menuView.render()
+              Coconut.syncView.update()
+            catch error
+              console.error error
+            callback.apply(this, args) if callback
           error: (err) =>
             console.error err
       else
@@ -126,16 +108,15 @@ class Router extends Backbone.Router
 
   noMatch: =>
     if @routeFails
-      console.error "Invalid URL, no matching route"
-      $("#content").html "Page not found."
+      console.error "Invalid URL #{Backbone.history.getFragment()}, no matching route"
+      $("#content").html "Loading. Please wait...."
     else
       console.log "ROUTE FAILS"
       @routeFails = true
       @targetURL = Backbone.history.getFragment()
       # Strange hack needed because plugins load routes
-      @.navigate "##{Coconut.databaseName}/nowhere", {trigger: true}
+      @.navigate "##{Coconut.databaseName}", {trigger: true}
       _.delay =>
-        console.log @targetURL
         @.navigate @targetURL, {trigger: true}
       , 100
 
@@ -183,17 +164,6 @@ class Router extends Backbone.Router
         cloudPassword: configuration.options[4]
       setupView.install()
 
-  dbExist: (options) =>
-    PouchDB.allDbs()
-    .then (dbs) =>
-      if dbs.indexOf("coconut-#{options.dbname}") isnt -1
-        options.success(true)
-      else
-        options.success(false)
-    .catch (err) ->
-      console.log("Error checking Pouchdb.allDbs")
-      options.error(err)
-
   userLoggedIn: (options) ->
     User.isAuthenticated
       success: (user) ->
@@ -209,7 +179,9 @@ class Router extends Backbone.Router
       Coconut.helpView.helpDocument = helpDocument
     else
       Coconut.helpView.helpDocument = null
-    Coconut.helpView.render()
+    # Coconut.helpView.render()
+    @appView.showView(Coconut.helpView)
+
 
   login: ->
     Coconut.loginView = new LoginView()
@@ -293,14 +265,16 @@ class Router extends Backbone.Router
       # result-questionName-millisecondtimestamp-instanceId
       _id: "result-#{underscored(question_id)}-#{radix64.encodeInt(moment().format('x'))}-#{Coconut.instanceId}"
     Coconut.questionView.model = new Question {id: unescape(question_id)}
+    vw = @appView
     Coconut.questionView.model.fetch
       success: ->
-        Coconut.questionView.render()
+        # Coconut.questionView.render()
+        vw.showView(Coconut.questionView)
 
 
   showResult: (result_id) ->
     Coconut.questionView.readonly = true
-
+    vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
     Coconut.questionView.result.fetch
@@ -310,11 +284,12 @@ class Router extends Backbone.Router
           id: question
         Coconut.questionView.model.fetch
           success: ->
-            Coconut.questionView.render()
+            # Coconut.questionView.render()
+            vw.showView(Coconut.questionView)
 
   editResult: (result_id) ->
     Coconut.questionView.readonly = false
-
+    vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
     Coconut.questionView.result.fetch
@@ -325,7 +300,8 @@ class Router extends Backbone.Router
             id: question
           Coconut.questionView.model.fetch
             success: ->
-              Coconut.questionView.render()
+              # Coconut.questionView.render()
+              vw.showView(Coconut.questionView)
         else # Reach here for USSD Notifications
           $("#content").html "
             <button id='delete' type='button'>Delete</button>
@@ -344,7 +320,7 @@ class Router extends Backbone.Router
 
   deleteResult: (result_id, confirmed) ->
     Coconut.questionView.readonly = true
-
+    vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
     Coconut.questionView.result.fetch
@@ -360,7 +336,8 @@ class Router extends Backbone.Router
               id: question
             Coconut.questionView.model.fetch
               success: ->
-                Coconut.questionView.render()
+                # Coconut.questionView.render()
+                vw.showView(Coconut.questionView)
                 $('#askConfirm').html "
                   <h4>Are you sure you want to delete this record?</h4>
                   <div id='confirm'>
@@ -382,9 +359,11 @@ class Router extends Backbone.Router
     Coconut.resultsView.question = new Question
       id: unescape(question_id)
     Coconut.toggleSpinner(true)
+    vw = @appView
     Coconut.resultsView.question.fetch
       success: ->
-        Coconut.resultsView.render()
+        # Coconut.resultsView.render()
+        vw.showView(Coconut.resultsView)
 
   resetDatabase: () ->
     if confirm "Are you sure you want to reset #{Coconut.databaseName}? All data that has not yet been sent to the cloud will be lost."
@@ -403,7 +382,8 @@ class Router extends Backbone.Router
 
   manage: ->
     Coconut.manageView ?= new ManageView( el: $("#content") )
-    Coconut.manageView.render()
+    # Coconut.manageView.render()
+    @appView.showView(Coconut.manageView)
 
   dumpDatabase: (options) =>
     dumpedString = ''
@@ -482,7 +462,8 @@ class Router extends Backbone.Router
 
   settings: ->
     Coconut.settingsView ?= new SettingsView()
-    Coconut.settingsView.render()
+    # Coconut.settingsView.render()
+    @appView.showView(Coconut.settingsView)
 
   startApp: (options) ->
 
@@ -496,6 +477,7 @@ class Router extends Backbone.Router
       Coconut.syncView = new SyncView()
       Coconut.syncView.sync.setMinMinsBetweenSync()
       Coconut.syncView.update()
+      #Coconut.headerView.newUpdate()
       options.success()
 
     QuestionCollection.load
