@@ -7,10 +7,11 @@ global.moment = require 'moment'
 Backbone.$  = $
 
 Coconut = require './Coconut'
-
 global.Router = require './Router'
+AppView = require './AppView'
 
+appView = new AppView()
 window.Coconut = new Coconut()
 
-window.Coconut.router = new Router()
+window.Coconut.router = new Router(appView)
 Backbone.history.start()
