@@ -76,7 +76,7 @@ class HeaderView extends Backbone.View
 
     if Coconut.currentUser?
       @questionTabs()
-      @update()
+#      @update()
     componentHandler.upgradeDom()
 
   toggleSyncIcon: (sync_on) ->
