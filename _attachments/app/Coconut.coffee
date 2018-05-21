@@ -111,7 +111,7 @@ class Coconut
     .then (result) =>
       pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins")
       pluginIds = _(result.rows).pluck "id"
-      $("#status").html "Loading #{@databaseName} plugins: #{pluginIds}"
+      $("#status").html "Loading #{@databaseName} plugins"
       @cloudDB.replicate.to pluginDatabase,
         doc_ids: pluginIds
         timeout: 60000
@@ -327,7 +327,7 @@ class Coconut
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
     @cloudDB.get "client encryption key"
     .catch (error) =>
-      console.error "Failed to get client encyrption key from #{@config.cloud_url_with_credentials()}"
+      console.error "Failed to get client encryption key from #{@config.cloud_url_with_credentials()}"
       console.error error
       switch error.status
         when 0
@@ -373,17 +373,14 @@ class Coconut
       $("#pls_wait").hide()
 
   checkForInternet: (options) =>
-    cloudUrl = @config.cloud_url_no_http()
     console.log "Checking for internet to #{cloudUrl}. Please wait..."
-    $.ajax
-      url: @config.cloud_url_with_credentials()
-      xhrFields: {withCredentials: true}
-      error: (error) =>
-        console.log "WARNING! #{cloudUrl} is not reachable. Error encountered:  #{JSON.stringify(error)}"
-        options.error("No Internet connection")
-      success: =>
-          console.log "#{cloudUrl} is reachable, so internet is available."
-          options.success()
+    cloudUrl = @config.cloud_url_no_http()
+    Coconut.cloudDB.info().then =>
+      console.log "#{cloudUrl} is reachable."
+      options.success()
+    .catch (error) =>
+      console.log "WARNING! #{cloudUrl} is not reachable. Error encountered:  #{JSON.stringify(error)}"
+      options.error("No Internet connection")
 
   noInternet: =>
     Dialog.showDialog

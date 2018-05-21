@@ -30,8 +30,10 @@ class SyncView extends Backbone.View
         Coconut.sync_get_status = if @sync.was_last_get_successful() then @sync.last_get_time() else "#{@sync.last_get_time()} - last attempt FAILED"
         Coconut.menuView.render()
       error: =>
-        console.log "synclog doesn't exist yet, create it and re-render"
+        console.log "Synclog doesn't exist yet, create it and re-render after 2 seconds."
         @sync.save()
-        _.delay(@update,1000)
+        _.delay =>
+          @update
+        ,2000
 
 module.exports = SyncView

@@ -6,7 +6,7 @@
     "watch": "./node_modules/watchify/bin/cmd.js --ignore-watch='**/node_modules/**' -v -t coffeeify --debug --extension='.coffee' app/start.coffee -o bundle.js",
     "livereload": "./node_modules/livereloadify/cli.js ./",
     "watchAndTest": "./node_modules/chokidar-cli/index.js bundle.js -c mocha --compilers mocha --compilers coffee:coffee-script/register test/*.coffee",
-    "static": "./node_modules/node-static/bin/cli.js --port 8089 ./"
+    "static": "./node_modules/node-static/bin/cli.js --host-address 0.0.0.0 --port 8089 ./"
   },
   "dependencies": {
     "Base64": "^0.3.0",
