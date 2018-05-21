@@ -373,9 +373,9 @@ class Coconut
       $("#pls_wait").hide()
 
   checkForInternet: (options) =>
-    console.log "Checking for internet to #{cloudUrl}. Please wait..."
     cloudUrl = @config.cloud_url_no_http()
-    Coconut.cloudDB.info().then =>
+    console.log "Checking for internet to #{cloudUrl}. Please wait..."
+    @cloudDB.info().then =>
       console.log "#{cloudUrl} is reachable."
       options.success()
     .catch (error) =>
