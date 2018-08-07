@@ -168,8 +168,11 @@ class Coconut
       userDatabase.get "decryption check"
       .catch (error) =>
         if error.reason is "missing"
-          alert "The database for #{options.username} is missing the encryption key, page will refresh. You may need to reinstall if #{options.username} is a valid user."
-          document.location.reload()
+          if confirm "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
+            @updateLocalUserDatabases()
+            throw "Login aborted"
+          else
+            document.location.reload()
           ###
           @setConfig
             "Cloud URL": "http://localhost:5984"
@@ -203,6 +206,8 @@ class Coconut
         if result["is the value of this clear text"] isnt "yes it is"
           #alert "Decryption check has wrong value, probably invalid password: #{JSON.stringify result}"
           console.log "Decryption check has wrong value, probably invalid password: username: #{options.username} password:#{options.password}"
+          if confirm "Password is not valid. Do you want to update your username database from the cloud (internet connection required)?"
+            @updateLocalUserDatabases()
 
           options.error()
         else
@@ -266,7 +271,25 @@ class Coconut
           options.success?()
           Promise.resolve()
 
+  updateLocalUserDatabases: =>
+    cloudDBDetails = prompt("Enter Cloud DB Details")
+    cloudDB = new PouchDB(cloudDBDetails)
+    cloudDB.get("client encryption key").then (keyDoc) =>
+      @databaseName = document.location.hash.replace(/\/.*/,"")
+      @database = new PouchDB("coconut-#{@databaseName}")
+      @database.crypto(keyDoc.key).then =>
+        @database.replicate.from(cloudDB)
+        .on "complete", =>
+          alert("Databases updated")
+          @createDatabaseForEachUser().then =>
+            document.location.reload()
+        .on "change", (change) =>
+          console.log change
+        .on "error",  (error) =>
+          alert("error: #{JSON.stringify(error)}")
+
   createDatabaseForEachUser: =>
+    console.log "Creating a database for each user"
     @database.allDocs
       include_docs: false
       startkey: "user"
@@ -276,6 +299,7 @@ class Coconut
     .then (result) =>
       Promise.resolve(_(result.rows).pluck("id"))
     .then (allUserIds) =>
+      console.log "Users: #{allUserIds.join(",")}"
       @database.get "_local/last_change_sequence_users"
       .catch (error)  =>
         Promise.resolve
@@ -307,18 +331,18 @@ class Coconut
     .catch (error) => console.error error
 
   createDatabaseForUser: (user) =>
-    console.log "Creating PouchDB: coconut-#{@config.get("cloud_database_name")}-#{user._id}"
-    userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+    console.log "Creating PouchDB: coconut-#{@databaseName}-#{user._id}"
+    userDatabase = new PouchDB "coconut-#{@databaseName}-#{user._id}"
     userDatabase.destroy()
     .then =>
-      userDatabase = new PouchDB "coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+      userDatabase = new PouchDB "coconut-#{@databaseName}-#{user._id}"
       userDatabase.crypto(user.password or "")
       .then =>
         userDatabase.put
           "_id": "encryption key"
           "key": @encryptionKey
       .then =>
-        console.log "Created coconut-#{@config.get("cloud_database_name")}-#{user._id}"
+        console.log "Created coconut-#{@databaseName}-#{user._id}"
         userDatabase.put
           "_id": "decryption check"
           "is the value of this clear text": "yes it is"
