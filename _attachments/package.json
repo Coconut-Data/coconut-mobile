@@ -37,7 +37,7 @@
     "mochify": "^2.13.0",
     "moment": "^2.10.3",
     "node-static": "^0.7.7",
-    "pouchdb": "^6.1.2",
+    "pouchdb": "^7.0.0",
     "pouchdb-all-dbs": "^1.0.2",
     "pouchdb-replication-stream": "^1.2.6",
     "radix-64": "^1.0.4",
