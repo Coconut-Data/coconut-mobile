@@ -4,6 +4,12 @@ global.Backbone = require 'backbone'
 global._ = require 'underscore'
 global.moment = require 'moment'
 
+try
+  localStorage.setItem("test", "value")
+catch error
+  console.log "Disk quota exceeded"
+  console.error error
+
 Backbone.$  = $
 
 Coconut = require './Coconut'

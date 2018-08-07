@@ -59,6 +59,16 @@ class Router extends Backbone.Router
       if Coconut.databaseName
         # SL - hack to reverse strange value in Coconut.databaseName that came out of the blue
         Coconut.databaseName = Coconut.database.name.replace(/coconut-/,"") if Coconut.databaseName is 'not-complete-panel'
+
+        # Check the the db exists before trying to login
+        db = new PouchDB("coconut-#{Coconut.databaseName}")
+        db.info()
+        .then (info) =>
+          if (info.doc_count is 0)
+            alert("#{Coconut.databaseName} is empty - is the application installed?")
+        .catch (error) =>
+          alert("Error finding database: #{Coconut.databaseName}")
+
         @userLoggedIn
           success: =>
             try
