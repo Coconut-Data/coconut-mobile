@@ -10,6 +10,8 @@ catch error
   console.log "Disk quota exceeded"
   console.error error
 
+isCordovaApp = document.URL.indexOf('http://') is -1 and document.URL.indexOf('https://') is -1
+
 Backbone.$  = $
 
 Coconut = require './Coconut'

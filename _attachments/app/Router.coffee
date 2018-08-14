@@ -5,6 +5,10 @@ Backbone.$  = $
 radix64 = require('radix-64')()
 
 window.PouchDB = require 'pouchdb'
+pouchDBOptions = {}
+if isCordovaApp
+  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
+  pouchDBOptions['adapter'] = 'cordova-sqlite'
 require('pouchdb-all-dbs')(window.PouchDB)
 
 replicationStream = require('pouchdb-replication-stream')
@@ -61,7 +65,7 @@ class Router extends Backbone.Router
         Coconut.databaseName = Coconut.database.name.replace(/coconut-/,"") if Coconut.databaseName is 'not-complete-panel'
 
         # Check the the db exists before trying to login
-        db = new PouchDB("coconut-#{Coconut.databaseName}")
+        db = new PouchDB("coconut-#{Coconut.databaseName}", pouchDBOptions)
         db.info()
         .then (info) =>
           if (info.doc_count is 0)
