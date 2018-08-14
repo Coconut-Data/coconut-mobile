@@ -38,6 +38,7 @@
     "moment": "^2.10.3",
     "node-static": "^0.7.7",
     "pouchdb": "^7.0.0",
+    "pouchdb-adapter-cordova-sqlite": "^2.0.5",
     "pouchdb-all-dbs": "^1.0.2",
     "pouchdb-replication-stream": "^1.2.6",
     "radix-64": "^1.0.4",
