@@ -8,6 +8,11 @@ global.Sync = require './models/Sync'
 global.User = require './models/User'
 
 window.PouchDB = require 'pouchdb'
+pouchDBOptions = {}
+if isCordovaApp
+  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
+  pouchDBOptions['adapter'] = 'cordova-sqlite'
+  
 require 'crypto-pouch'
 crypto = require('crypto')
 
@@ -61,7 +66,7 @@ class Coconut
           options.error(error)
         success:  =>
           $("#status").html "Creating #{@databaseName} database"
-          @database = new PouchDB("coconut-#{options.params["Application Name"]}")
+          @database = new PouchDB("coconut-#{options.params["Application Name"]}", pouchDBOptions)
           @database.crypto(@encryptionKey).then =>
             @database.put
               "_id": "decryption check"
@@ -109,7 +114,7 @@ class Coconut
       console.error "Error while downloading list of plugin ids:"
       console.error error
     .then (result) =>
-      pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins")
+      pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins", pouchDBOptions)
       pluginIds = _(result.rows).pluck "id"
       $("#status").html "Loading #{@databaseName} plugins"
       @cloudDB.replicate.to pluginDatabase,
@@ -133,7 +138,7 @@ class Coconut
           throw "Failed to sync plugins after #{@syncPluginAttempts} attempts"
 
   startPlugins: (options) =>
-    pluginDatabase = new PouchDB "coconut-#{@databaseName}-plugins"
+    pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins", pouchDBOptions)
     pluginDatabase.allDocs()
     .catch (error) -> console.error error
     .then (result) ->
@@ -163,7 +168,7 @@ class Coconut
     hashKey = (crypto.pbkdf2Sync password, salt, 1000, 256/8, 'sha256').toString('base64')
 
   openDatabase: (options) =>
-    userDatabase = new PouchDB "coconut-#{@databaseName}-user.#{options.username}"
+    userDatabase = new PouchDB("coconut-#{@databaseName}-user.#{options.username}", pouchDBOptions)
     userDatabase.crypto(@hashKeyForPassword(options.password)).then =>
       userDatabase.get "decryption check"
       .catch (error) =>
@@ -215,7 +220,7 @@ class Coconut
           .catch (error) -> console.error error
           .then (result) =>
             @encryptionKey = result["key"]
-            @database = new PouchDB("coconut-#{@databaseName}")
+            @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
             @database.crypto(@encryptionKey).then =>
               @database.get "decryption check"
               .catch (error) -> console.error error
@@ -265,7 +270,7 @@ class Coconut
           dbName.match "^coconut-"+options.applicationName
 
         Promise.all(dbsToDestroy.map (db) ->
-          (new PouchDB(db)).destroy()
+          (new PouchDB(db, pouchDBOptions)).destroy()
         )
         .then ->
           options.success?()
@@ -276,7 +281,7 @@ class Coconut
     cloudDB = new PouchDB(cloudDBDetails)
     cloudDB.get("client encryption key").then (keyDoc) =>
       @databaseName = document.location.hash.replace(/\/.*/,"")
-      @database = new PouchDB("coconut-#{@databaseName}")
+      @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
       @database.crypto(keyDoc.key).then =>
         @database.replicate.from(cloudDB)
         .on "complete", =>
@@ -332,10 +337,10 @@ class Coconut
 
   createDatabaseForUser: (user) =>
     console.log "Creating PouchDB: coconut-#{@databaseName}-#{user._id}"
-    userDatabase = new PouchDB "coconut-#{@databaseName}-#{user._id}"
+    userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
     userDatabase.destroy()
     .then =>
-      userDatabase = new PouchDB "coconut-#{@databaseName}-#{user._id}"
+      userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
       userDatabase.crypto(user.password or "")
       .then =>
         userDatabase.put
