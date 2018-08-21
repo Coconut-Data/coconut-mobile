@@ -10,7 +10,7 @@ catch error
   console.log "Disk quota exceeded"
   console.error error
 
-isCordovaApp = document.URL.indexOf('http://') is -1 and document.URL.indexOf('https://') is -1
+window.isCordovaApp = document.URL.indexOf('http://') is -1 and document.URL.indexOf('https://') is -1
 
 Backbone.$  = $
 
@@ -21,5 +21,10 @@ AppView = require './AppView'
 appView = new AppView()
 window.Coconut = new Coconut()
 
-window.Coconut.router = new Router(appView)
-Backbone.history.start()
+if isCordovaApp
+  document.addEventListener 'deviceready', =>
+    window.Coconut.router = new Router(appView)
+    Backbone.history.start()
+else
+  window.Coconut.router = new Router(appView)
+  Backbone.history.start()

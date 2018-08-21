@@ -8,9 +8,10 @@ global.Sync = require './models/Sync'
 global.User = require './models/User'
 
 window.PouchDB = require 'pouchdb'
-pouchDBOptions = {}
+window.pouchDBOptions = {}
+
+PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
 if isCordovaApp
-  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
   pouchDBOptions['adapter'] = 'cordova-sqlite'
   
 require 'crypto-pouch'
