@@ -20,6 +20,8 @@
     "chokidar-cli": "^1.1.0",
     "coffee-script": "^1.9.3",
     "coffeeify": "^1.1.0",
+    "cordova-plugin-qrscanner": "^2.6.0",
+    "cordova-plugin-sqlite-2": "^1.0.5",
     "crypto-pouch": "^1.1.2",
     "cssnano": "^3.10.0",
     "datatables": "^1.10.7",
