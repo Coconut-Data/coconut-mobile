@@ -4,7 +4,6 @@ s = require 'underscore.string'
 Backbone = require 'backbone'
 Backbone.$  = $
 Dialog = require '../../js-libraries/modal-dialog'
-QRScanner = require 'cordova-plugin-qrscanner'
 
 class SetupView extends Backbone.View
 
@@ -23,9 +22,14 @@ class SetupView extends Backbone.View
     @$el.html "
       <h3 style='text-align: center; font-size: 1.7em'>Install Coconut Project</h3>
       <div id='message'></div>
-      <!-- qr code icon -->
-      <img id='qr_code' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAZlBMVEX///8AAABUVFR3d3cjIyP7+/sQEBBfX1/+/v4vLy/BwcFHR0c7OzsZGRm1tbVpaWmbm5vNzc2FhYWoqKhLS0twcHA4ODjw8PCQkJB/f3/j4+MoKCgICAiWlpbV1dXJycmmpqZjY2POZArnAAAB2klEQVQ4jXWT63KrMAyEJQO+Y3MNmBDSvv9LVrLTJnDm7A8Ydj5sa2UB/kkAySMGAPF2AW9VkRTQjeDbKnUg5Mu8EVDphgW1ADOB940zIGrIpq4YaGopZWRgWWAJclwYiGTWTQEkbaUYYFmMXwwoMuUV0JoBNP8FnAJoNv8PEJVSHQNp7jaAcsiOzFgAKOIzBLS/QBEDsi6ioCZxTCID+DIlgvjTCvMA/j4aA+vbhYsoaqriU2Zt/KBdgmmmGs3Y4Xqwn5yGxXR0pK6RU5AK1AD24Y7DPQH6EGahjxEVdQ5eOfBq7rUsdZP+jbmb/qGf1trV+8RAjDArOKydvR9CAQC2DEQrlFUFeILa/bj4FvOKa95ixD4HxVtQ1K0uQTlSFWTrnEFv8DZDiiB2N9gXYEhUJr/MLs1uejX133dMh4amry6ZuHwnexwPRNpiwQFOUYdVPBIDN8dAN6ERp2ZxNy12AVtqU6tTbta13ZbTGeFdxfXCWJwTeqVqPsO3uVw5sW2htUe7Y7vnQ8r2fGkpW69JotaqVKFPwDDhPMJjoHLifY8xrhTa5+B4KQNNjYfliTsPzlbJ0+jRy3t65nbTx7YPzWl416pKX9CtDExkzegr+Bx/g7/X/u3+APpMGxyIXUofAAAAAElFTkSuQmCC' />
-      <video id='preview'></video>
+      #{
+        if isCordovaApp
+          "
+            <!-- qr code icon -->
+            <img id='qr_code' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAZlBMVEX///8AAABUVFR3d3cjIyP7+/sQEBBfX1/+/v4vLy/BwcFHR0c7OzsZGRm1tbVpaWmbm5vNzc2FhYWoqKhLS0twcHA4ODjw8PCQkJB/f3/j4+MoKCgICAiWlpbV1dXJycmmpqZjY2POZArnAAAB2klEQVQ4jXWT63KrMAyEJQO+Y3MNmBDSvv9LVrLTJnDm7A8Ydj5sa2UB/kkAySMGAPF2AW9VkRTQjeDbKnUg5Mu8EVDphgW1ADOB940zIGrIpq4YaGopZWRgWWAJclwYiGTWTQEkbaUYYFmMXwwoMuUV0JoBNP8FnAJoNv8PEJVSHQNp7jaAcsiOzFgAKOIzBLS/QBEDsi6ioCZxTCID+DIlgvjTCvMA/j4aA+vbhYsoaqriU2Zt/KBdgmmmGs3Y4Xqwn5yGxXR0pK6RU5AK1AD24Y7DPQH6EGahjxEVdQ5eOfBq7rUsdZP+jbmb/qGf1trV+8RAjDArOKydvR9CAQC2DEQrlFUFeILa/bj4FvOKa95ixD4HxVtQ1K0uQTlSFWTrnEFv8DZDiiB2N9gXYEhUJr/MLs1uejX133dMh4amry6ZuHwnexwPRNpiwQFOUYdVPBIDN8dAN6ERp2ZxNy12AVtqU6tTbta13ZbTGeFdxfXCWJwTeqVqPsO3uVw5sW2htUe7Y7vnQ8r2fGkpW69JotaqVKFPwDDhPMJjoHLifY8xrhTa5+B4KQNNjYfliTsPzlbJ0+jRy3t65nbTx7YPzWl416pKX9CtDExkzegr+Bx/g7/X/u3+APpMGxyIXUofAAAAAElFTkSuQmCC' />
+          "
+        else ""
+      }
 
       <div id='form'>
         <div class='mdl-card mdl-shadow--8dp coconut-mdl-card' style='font-size: 200%; width:330px; margin: 0px auto; padding:15px'>
@@ -62,12 +66,8 @@ class SetupView extends Backbone.View
     "click #qr_code": "qrCode"
 
   qrCode: =>
-    QRScanner.useCamera(1)
-    QRScanner.scan (err,result) =>
-      if err
-        console.error err
-      else
-        QRScanner.destroy()
+    cordova.plugins.barcodeScanner.scan(
+      (result) =>
         try
           # Example result
           #
@@ -80,7 +80,7 @@ class SetupView extends Backbone.View
           #       "password"
           #   ]
           #}
-          configuration = JSON.parse(result.result)
+          configuration = JSON.parse(result.text)
           @prefill configuration.options[0],
             cloudUrl: configuration.options[1]
             applicationName: configuration.options[2]
@@ -89,7 +89,11 @@ class SetupView extends Backbone.View
           @install()
         catch
           alert "Invalid install image"
-    QRScanner.show()
+      (error) =>
+        console.error error
+    )
+
+
 
   cancel_deleteDB: ->
     $("#message").hide()
