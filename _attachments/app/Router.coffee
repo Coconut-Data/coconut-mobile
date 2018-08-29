@@ -268,8 +268,9 @@ class Router extends Backbone.Router
         Coconut.debug "Error sending data to cloud, proceeding to get updates from cloud."
         console.error error
         if error isnt 'No Internet connection'
-          Coconut.syncView.sync.getFromCloud()
-
+          Coconut.syncView.sync.getFromCloud
+            success: -> document.location.reload()
+            error: -> document.location.reload()
 
   newResult: (question_id) ->
     Coconut.questionView.readonly = false
