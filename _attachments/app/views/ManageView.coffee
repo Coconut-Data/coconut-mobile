@@ -3,8 +3,8 @@ global._ = _
 $ = require 'jquery'
 Backbone = require 'backbone'
 Router = require '../Router'
-JSZip = require 'jszip'
-MemoryStream = require 'memorystream'
+global.JSZip = require 'jszip'
+global.MemoryStream = require 'memorystream'
 Dialog = require '../../js-libraries/modal-dialog'
 
 class ManageView extends Backbone.View
