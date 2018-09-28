@@ -270,12 +270,14 @@ class Coconut
         dbsToDestroy = _(dbs).filter (dbName) ->
           dbName.match "^coconut-"+options.applicationName
 
-        Promise.all(dbsToDestroy.map (db) ->
-          (new PouchDB(db, pouchDBOptions)).destroy()
-        )
-        .then ->
-          options.success?()
-          Promise.resolve()
+        destroyUntilAllDestroyed = (options) ->
+          if dbsToDestroy.length is 0
+            options.success?()
+            Promise.resolve()
+          else
+            (new PouchDB(dbsToDestroy.pop(), pouchDBOptions)).destroy()
+
+        destroyUntilAllDestroyed()
 
   updateLocalUserDatabases: =>
     cloudDBDetails = prompt("Enter Cloud DB Details")

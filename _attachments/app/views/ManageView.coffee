@@ -9,9 +9,13 @@ Dialog = require '../../js-libraries/modal-dialog'
 
 class ManageView extends Backbone.View
   events:
+    "click #updatePlugin": "updatePlugin"
     "click #cloudResults": "getCloudResults"
     "click #sendBackup": "sendBackup"
     "click #saveBackup": "saveBackup"
+
+  updatePlugin: ->
+    Coconut.syncPlugins()
 
   getCloudResults: ->
     Coconut.cloudDatabase.query "resultsByUserAndDate",
@@ -110,6 +114,7 @@ class ManageView extends Backbone.View
   render: ->
 
     links = [
+      "Update Plugin, sync, updatePlugin"
       "Get previously sent results from cloud, archive, cloudResults"
       "Send Backup, cloud-upload, sendBackup"
       "Save Backup, briefcase-download, saveBackup"
