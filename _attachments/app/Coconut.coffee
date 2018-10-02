@@ -275,9 +275,10 @@ class Coconut
             options.success?()
             Promise.resolve()
           else
-            (new PouchDB(dbsToDestroy.pop(), pouchDBOptions)).destroy()
+            (new PouchDB(dbsToDestroy.pop(), pouchDBOptions)).destroy().then ->
+              destroyUntilAllDestroyed(options)
 
-        destroyUntilAllDestroyed()
+        destroyUntilAllDestroyed(options)
 
   updateLocalUserDatabases: =>
     cloudDBDetails = prompt("Enter Cloud DB Details")
