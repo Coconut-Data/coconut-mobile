@@ -15,7 +15,9 @@ class ManageView extends Backbone.View
     "click #saveBackup": "saveBackup"
 
   updatePlugin: ->
-    Coconut.syncPlugins()
+    Coconut.syncPlugins().then =>
+      alert("Plugin Updated. Click ok to refresh the page")
+      document.location.reload()
 
   getCloudResults: ->
     Coconut.cloudDatabase.query "resultsByUserAndDate",
