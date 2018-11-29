@@ -27,6 +27,6 @@ class QuestionCollection extends Backbone.Collection
     Utils.addOrUpdateDesignDoc questionsDesignDoc,
       success: ->
         Coconut.questions.fetch
-          success: -> options.success()
+          success: -> Promise.resolve()
 
 module.exports = QuestionCollection

@@ -22,46 +22,42 @@ class User extends Backbone.Model
   nameOrUsername: ->
     @get("name") or @username()
 
-  #login: ->
-    #Coconut.currentUser = @
-    #Cookie('current_user', @username())
-    #Cookie('current_password', @get "password")
+User.isAuthenticated = ->
+  Coconut.validateDatabase()
+  .catch (error) ->
+    # See if we have cookies that can login
+    userCookie = Cookie('current_user')
+    passwordCookie = Cookie('current_password')
 
+    console.log "Trying to login with cookies"
 
-User.isAuthenticated = (options) ->
-  Coconut.isValidDatabase
-    error:  (error) ->
-      # See if we have cookies that can login
-      userCookie = Cookie('current_user')
-      passwordCookie = Cookie('current_password')
-
-      if userCookie and userCookie isnt "" and passwordCookie and passwordCookie isnt ""
-        Coconut.openDatabase
-          username: userCookie
-          password: passwordCookie
-          success: ->
-            options.success()
-          error: ->
-            options.error()
-      else
-        options.error()
-    success: ->
-      if Coconut.currentUser?
-        options.success()
-      else
-        options.error()
+    if userCookie and userCookie isnt "" and passwordCookie and passwordCookie isnt ""
+      Coconut.openDatabase
+        username: userCookie
+        password: passwordCookie
+      .then -> 
+        console.log "LOgged in"
+        Promise.resolve()
+    else
+      throw "No saved user, must login"
+  .then =>
+    if Coconut.currentUser?
+      Promise.resolve()
+    else
+      throw "No current user"
 
 User.login = (options) ->
   user = new User
     _id: "user.#{options.username}"
   user.fetch
     success: =>
+      console.log "FOUND USER"
       Coconut.currentUser = user
       Cookie('current_user', user.username())
       Cookie('current_password', options.password)
-      options.success()
+      Promise.resolve()
     error: (error) =>
-      options.error(error)
+      throw error
 
 User.logout = ->
   Cookie('current_user',"")

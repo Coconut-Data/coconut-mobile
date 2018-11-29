@@ -203,7 +203,13 @@ class SetupView extends Backbone.View
             $("#message").show().html "<h4 style='text-align: center;'>#{applicationName} Installed</h4>"
             @$el.find("h4").fadeOut 3000
             _.delay ->
-              Coconut.router.navigate "##{applicationName}", trigger: true
+
+              console.log "Reloading to allow for new databases and views to be available"
+              Coconut.router.navigate "##{applicationName}"
+              window.location.reload()
+
+
+              #Coconut.router.navigate "##{applicationName}", trigger: true
               ## hack to reload page so that all_Dbs database is reloaded. See issue# 141
               #window.location.reload()
               ## Line above commented out.For some reason issue no longer exist, and reload was causing other problems.

@@ -8,10 +8,10 @@ class Config extends Backbone.Model
       _id: "_local/mobile.config"
 
   fetch: (options) =>
-    Coconut.database.get "_local/mobile.config",
-      (error,result) =>
-        @set(result)
-        options.success?()
+    Coconut.database.get "_local/mobile.config"
+    .then (result) =>
+      @set(result)
+      Promise.resolve()
 
   title: -> @get("title") || "Coconut"
 

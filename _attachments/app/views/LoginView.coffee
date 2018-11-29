@@ -56,19 +56,22 @@ class LoginView extends Backbone.View
     # Useful for reusing the login screen - like for database encryption
     if $("#username").val() is "" or $("#password").val() is ""
       return @displayErr("Please enter a username and a password")
-    loginData = Form2js.form2js('login_form')
-    loginData.username = loginData.username.toLowerCase()
+    username = @$("#username").val().toLowerCase()
     Coconut.toggleSpinner(true)
     Coconut.openDatabase
-      username: loginData.username
-      password: loginData.password
-      success: =>
-        Coconut.toggleSpinner(false)
-        $('#login_wrapper').hide()
-        @callback()
-      error: =>
-        Coconut.toggleSpinner(false)
-        @displayErr("Invalid username/password")
+      username: username
+      password: @$("#password").val()
+    .then =>
+      Coconut.toggleSpinner(false)
+      $('#login_wrapper').hide()
+      @callback()
+    .catch (error) =>
+      Coconut.toggleSpinner(false)
+      if error is "invalid user"
+        @displayErr "#{username} is not a valid user. If #{username} has been added since your last sync, then you need to login with a user already loaded on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.updateLocalUserDatabases()' href='#'>update the database</a>."
+      else if error is "failed decryption check"
+        @displayErr "#{username} is a valid user, but the password is incorrect. If the password has been changed since your last sync, then you need to login with a different user on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.updateLocalUserDatabases()' href='#'>update the database</a>."
+      else @displayErr error
 
   displayErr: (msg) =>
     $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='mdi mdi-information-outline mdi-36px'></i> #{msg}"

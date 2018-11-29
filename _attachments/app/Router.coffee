@@ -69,21 +69,30 @@ class Router extends Backbone.Router
         db.info()
         .then (info) =>
           if (info.doc_count is 0)
-            alert("#{Coconut.databaseName} is empty - is the application installed?")
+            # By opening an empty database we create it
+            db.destroy().then =>
+              alert("#{Coconut.databaseName} is empty - is the application installed?")
         .catch (error) =>
           alert("Error finding database: #{Coconut.databaseName}")
 
-        @userLoggedIn
-          success: =>
-            try
-              Coconut.headerView.render()
-              Coconut.menuView.render()
-              Coconut.syncView.update()
-            catch error
-              console.error error
-            callback.apply(this, args) if callback
-          error: (err) =>
-            console.error err
+        User.isAuthenticated()
+        .catch (error) =>
+          console.info error
+          Coconut.loginView = new LoginView()
+          Coconut.loginView.callback = =>
+            # This reload will force the page to reload and use cookies to login
+            # It's a hack but it keeps things simple
+            document.location.reload()
+          Coconut.loginView.render()
+          throw "Waiting for login to proceed"
+        .then =>
+          Coconut.headerView.render()
+          Coconut.menuView.render()
+          Coconut.syncView.update()
+          callback.apply(this, args) if callback
+        .catch (error) =>
+          console.error error
+
       else
         # forced user logout. User should not be logged in at this point.
         User.logout()
@@ -142,8 +151,8 @@ class Router extends Backbone.Router
     if defaultQuestion.length is 0
       defaultQuestion = Coconut.questions.first()
 
-    Coconut.router.navigate "#{Coconut.databaseName}/#{Backbone.history.getFragment()}", trigger:true
-#    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
+    Coconut.router.navigate "#{Backbone.history.getFragment()}", trigger:true
+    #Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.get "id"}", trigger:true
 
   setup: (httpType, cloudUrl, applicationName, cloudUsername, cloudPassword) ->
     setupView = new SetupView()
@@ -178,14 +187,13 @@ class Router extends Backbone.Router
         cloudPassword: configuration.options[4]
       setupView.install()
 
-  userLoggedIn: (options) ->
-    User.isAuthenticated
-      success: (user) ->
-        options.success(user)
-      error: ->
-        Coconut.loginView = new LoginView()
-        Coconut.loginView.callback = options.success
-        Coconut.loginView.render()
+  userLoggedIn: ->
+    User.isAuthenticated()
+    .catch (error) =>
+      console.info error
+      Coconut.loginView = new LoginView()
+      Coconut.loginView.callback = options.success
+      Coconut.loginView.render()
 
   help: (helpDocument) ->
     Coconut.helpView ?= new HelpView()
@@ -444,7 +452,7 @@ class Router extends Backbone.Router
           FileSaver.saveAs(content, "coconut.pouchdb.zip")
 
   getCloudResults: =>
-    Coconut.cloudDatabase.query "resultsByUserAndDate",
+    Coconut.cloudDB.query "resultsByUserAndDate",
       startkey: [Coconut.currentUser.username(), moment().subtract(1,"month").format(Coconut.config.get "date_format")]
       endkey: [Coconut.currentUser.username(), moment().endOf("day").format(Coconut.config.get "date_format")]
     .catch (error) => console.error "ERROR, could not download list of results for user: #{Coconut.currentUser.username()}: #{JSON.stringify error}"
@@ -453,7 +461,7 @@ class Router extends Backbone.Router
 
       downloadResults = (docIds) ->
         Coconut.debug "Downloading #{docIds.length} results"
-        Coconut.database.replicate.from Coconut.cloudDatabase,
+        Coconut.database.replicate.from Coconut.cloudDB,
           doc_ids: docIds
         .on 'complete', (info) =>
           $("#log").html ""
@@ -481,31 +489,24 @@ class Router extends Backbone.Router
     @appView.showView(Coconut.settingsView)
 
   startApp: (options) ->
-
     # This makes sure all views are created and loads any classes that are necessary
-    classesToLoad = [UserCollection, ResultCollection]
-
-    startApplication = _.after classesToLoad.length, ->
-      Coconut.questionView = new QuestionView()
-      Coconut.menuView = new MenuView()
-      Coconut.headerView = new HeaderView() if !Coconut.headerView
-      Coconut.syncView = new SyncView()
-      Coconut.syncView.sync.setMinMinsBetweenSync()
-      Coconut.syncView.update()
-      #Coconut.headerView.newUpdate()
-      options.success()
-
-    QuestionCollection.load
-      error: (error) ->
-        alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
-      success: ->
-        _.each classesToLoad, (ClassToLoad) ->
-          ClassToLoad.load
-            success: ->
-              startApplication()
-            error: (error) ->
-              alert "Could not load #{ClassToLoad}: #{error}. Recommendation: Press get data again."
-              #start application even on error to enable syncing to fix problems
-              startApplication()
+    QuestionCollection.load()
+    .catch (error) =>
+      console.error "Could not load #{ClassToLoad}: #{error}."
+      alert "Could not load #{ClassToLoad}: #{JSON.stringify error}. Recommendation: Press get data again."
+    .then =>
+      classesToLoad = [UserCollection, ResultCollection]
+      Promise.all( _(classesToLoad).map (ClassToLoad) =>
+        ClassToLoad.load()
+        .catch (error) =>
+          alert "Please sync: #{JSON.stringify error}"
+      ).then => 
+        Coconut.questionView = new QuestionView()
+        Coconut.menuView = new MenuView()
+        Coconut.headerView = new HeaderView()
+        Coconut.syncView = new SyncView()
+        Coconut.syncView.sync.setMinMinsBetweenSync()
+        Coconut.syncView.update()
+        Promise.resolve()
 
 module.exports = Router
