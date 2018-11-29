@@ -35,13 +35,13 @@ UserCollection.load = (options) ->
         emit doc.district, [doc.name, doc._id.substring(5)]
   }
 
-  finished = _.after _(designDocs).size(), ->
-    Coconut.users.fetch
-      success: -> options.success()
-  
-  _(designDocs).each (designDoc,name) ->
+  Promise.all( _(designDocs).map (designDoc,name) ->
     designDoc = Utils.createDesignDoc name, designDoc
     Utils.addOrUpdateDesignDoc designDoc,
-      success: -> finished()
+      success: -> 
+        Coconut.users.fetch
+          success: -> 
+            Promise.resolve()
+  )
 
 module.exports = UserCollection

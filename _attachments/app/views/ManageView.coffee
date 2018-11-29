@@ -20,7 +20,7 @@ class ManageView extends Backbone.View
       document.location.reload()
 
   getCloudResults: ->
-    Coconut.cloudDatabase.query "resultsByUserAndDate",
+    Coconut.cloudDB.query "resultsByUserAndDate",
       startkey: [Coconut.currentUser.username(), moment().subtract(1,"month").format(Coconut.config.get "date_format")]
       endkey: [Coconut.currentUser.username(), moment().endOf("day").format(Coconut.config.get "date_format")]
     .catch (error) => console.error "ERROR, could not download list of results for user: #{Coconut.currentUser.username()}: #{JSON.stringify error}"
@@ -29,7 +29,7 @@ class ManageView extends Backbone.View
 
       downloadResults = (docIds) ->
         Coconut.debug "Downloading #{docIds.length} results"
-        Coconut.database.replicate.from Coconut.cloudDatabase,
+        Coconut.database.replicate.from Coconut.cloudDB,
           doc_ids: docIds
         .on 'complete', (info) =>
           $("#log").html ""
