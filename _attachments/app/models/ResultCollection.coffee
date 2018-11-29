@@ -84,13 +84,10 @@ class ResultCollection
                 emit [document.question,field,document[field]], document[field]
         }
 
-        finished = _.after _(designDocs).size(), ->
-          options.success()
-        
-        _(designDocs).each (designDoc,name) ->
+        Promise.all( _(designDocs).map (designDoc,name) ->
           designDoc = Utils.createDesignDoc name, designDoc
           Utils.addOrUpdateDesignDoc designDoc,
-            success: -> finished()
-
+            success: -> Promise.resolve()
+        )
 
 module.exports = ResultCollection

@@ -31,7 +31,6 @@ class SyncView extends Backbone.View
         $('#sync_sent_status').html(Coconut.sync_status)
         $('#sync_get_status').html(Coconut.sync_get_status)
       error: =>
-        console.log "Synclog doesn't exist yet, create it and re-render after 2 seconds."
         @sync.save()
         _.delay =>
           @update
