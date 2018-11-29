@@ -499,7 +499,7 @@ class Router extends Backbone.Router
       Promise.all( _(classesToLoad).map (ClassToLoad) =>
         ClassToLoad.load()
         .catch (error) =>
-          alert "Please sync: #{JSON.stringify error}"
+          console.error error
       ).then => 
         Coconut.questionView = new QuestionView()
         Coconut.menuView = new MenuView()
