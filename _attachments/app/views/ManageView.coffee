@@ -6,13 +6,31 @@ Router = require '../Router'
 global.JSZip = require 'jszip'
 global.MemoryStream = require 'memorystream'
 Dialog = require '../../js-libraries/modal-dialog'
+FileReaderStream = require 'filereader-stream'
 
 class ManageView extends Backbone.View
   events:
+    "click #sendData": "sendData"
+    "click #getData": "getData"
+    "click #updateApplication": "updateApplication"
     "click #updatePlugin": "updatePlugin"
     "click #cloudResults": "getCloudResults"
     "click #sendBackup": "sendBackup"
     "click #saveBackup": "saveBackup"
+    "click #loadBackup": "showBackup"
+    "change #backupFile": "loadBackup"
+
+  sendData: ->
+    (new Sync()).sendToCloud().then =>
+      alert("Data Sent")
+
+  getData: ->
+    (new Sync()).getFromCloud().then =>
+      alert("Data Received")
+
+  updateApplication: ->
+    (new Sync()).replicateApplicationDocs().then =>
+      alert("Application Updated")
 
   updatePlugin: ->
     Coconut.syncPlugins().then =>
@@ -101,6 +119,15 @@ class ManageView extends Backbone.View
               title: "Close"
           $("#message").hide()
 
+  showBackup: =>
+    $("#backupFile").show()
+
+  loadBackup: =>
+    Coconut.database.load(FileReaderStream($("#backupFile")[0].files[0])).then =>
+      alert("Backup Loaded, reloading")
+      document.location.reload()
+
+
   dumpDatabase: (options) =>
     dumpedString = ''
     stream = new MemoryStream()
@@ -116,10 +143,14 @@ class ManageView extends Backbone.View
   render: ->
 
     links = [
+      "Send Data, sync, sendData"
+      "Get Data, sync, getData"
+      "Update Application, sync, updateApplication"
       "Update Plugin, sync, updatePlugin"
       "Get previously sent results from cloud, archive, cloudResults"
       "Send Backup, cloud-upload, sendBackup"
       "Save Backup, briefcase-download, saveBackup"
+      "Load Backup, briefcase-download, loadBackup"
     ]
 
     @$el.html "
@@ -137,5 +168,9 @@ class ManageView extends Backbone.View
         </button>
       "
     .join(""))
+    @$("#manageCard").append "
+      <input type='file' id='backupFile' style='display:none'>
+
+    "
 
 module.exports = ManageView

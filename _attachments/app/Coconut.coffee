@@ -126,6 +126,7 @@ class Coconut
       .on 'complete', (result) =>
         console.log "Completed replicating plugins: #{pluginIds.join(',')}"
         options?.success?()
+        Promise.resolve()
       .on 'error', (error) =>
         console.error "Error while replicating plugins:"
         console.error error
@@ -171,9 +172,13 @@ class Coconut
     userDatabase.crypto(@hashKeyForPassword(options.password)).then =>
       userDatabase.get "decryption check"
       .catch (error) =>
-        console.error error
-        console.error "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
-        throw "invalid user"
+        if error.message is "Unsupported state or unable to authenticate data"
+          console.log error
+          console.error error
+          throw "failed decryption check"
+        else
+          console.error "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
+          throw "invalid user"
       .then (result) =>
         @encryptionKey = result[""]
         if result["is the value of this clear text"] isnt "yes it is"
@@ -234,20 +239,19 @@ class Coconut
 
   updateLocalUserDatabases: =>
     cloudDBDetails = prompt("Enter Cloud DB Details")
-    cloudDB = new PouchDB(cloudDBDetails)
-    cloudDB.get("client encryption key").then (keyDoc) =>
+    @cloudDB = new PouchDB(cloudDBDetails)
+    @cloudDB.get("client encryption key").then (keyDoc) =>
       @databaseName = document.location.hash.replace(/\/.*/,"")
       @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
       @database.crypto(keyDoc.key).then =>
-        @database.replicate.from(cloudDB)
-        .on "complete", =>
-          alert("Databases updated")
-          @createDatabaseForEachUser().then =>
-            document.location.reload()
-        .on "change", (change) =>
-          console.log change
-        .on "error",  (error) =>
-          alert("error: #{JSON.stringify(error)}")
+        (new Sync()).replicateApplicationDocs
+          success: =>
+            @createDatabaseForEachUser().then (result) =>
+              console.log result
+              alert(result)
+              document.location.reload()
+            .catch (error) =>
+              alert("error: #{JSON.stringify(error)}")
 
   createDatabaseForEachUser: =>
     console.log "Creating a database for each user"
@@ -263,6 +267,7 @@ class Coconut
       console.log "Users: #{allUserIds.join(",")}"
       @database.get "_local/last_change_sequence_users"
       .catch (error)  =>
+        console.log "no recorded last_change_sequence_users"
         Promise.resolve
           _id: "_local/last_change_sequence_users"
           sequence: null
@@ -277,18 +282,26 @@ class Coconut
             include_docs: true
           .then (result) =>
             changedUsers = _(result.results).pluck "doc"
+            changedUserNames = _(changedUsers).map (user) => user._id.replace(/user\./,"")
+            console.log "Users requiring update: #{changedUserNames.join(", ")}"
+            console.log changedUsers.length
+            return Promise.resolve("No users needed an update") if changedUsers.length is 0
 
             $("#status").html "Updating #{changedUsers.length} users. " if changedUsers.length > 0
+            $("#loginErrMsg").html "Updating #{changedUsers.length} users. " if changedUsers.length > 0
             indx = 0
 
             Promise.all( changedUsers.map (user) =>
               @createDatabaseForUser(user).then =>
                 $("div#percent").html "( #{++indx} of #{changedUsers.length} )"
                 Promise.resolve()
-            ).catch (error) -> console.error error
-
-            sequenceResult.sequence = currentDBInfo.update_seq
-            @database.put sequenceResult
+            )
+            .catch (error) -> console.error error
+            .then =>
+              sequenceResult.sequence = currentDBInfo.update_seq
+              @database.put sequenceResult
+              .then =>
+                Promise.resolve("Updated: #{changedUserNames.join(',')}")
     .catch (error) => console.error error
 
   createDatabaseForUser: (user) =>
@@ -297,16 +310,16 @@ class Coconut
     userDatabase.destroy()
     .then =>
       userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
+      console.log "Encrypting with password: #{user.password or ""}"
       userDatabase.crypto(user.password or "")
-      .then =>
-        userDatabase.put
-          "_id": "encryption key"
-          "key": @encryptionKey
-      .then =>
-        console.log "Created coconut-#{@databaseName}-#{user._id}"
-        userDatabase.put
-          "_id": "decryption check"
-          "is the value of this clear text": "yes it is"
+      userDatabase.put
+        "_id": "encryption key"
+        "key": @encryptionKey
+    .then =>
+      console.log "Created coconut-#{@databaseName}-#{user._id}"
+      userDatabase.put
+        "_id": "decryption check"
+        "is the value of this clear text": "yes it is"
 
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
@@ -357,7 +370,7 @@ class Coconut
       $("#pls_wait").hide()
 
   checkForInternet: (options) =>
-    cloudUrl = @config.cloud_url_no_http()
+    cloudUrl = @cloudDB.name.replace(/\/\/.*@/,"//")
     console.log "Checking for internet to #{cloudUrl}. Please wait..."
     @cloudDB.info().then =>
       console.log "#{cloudUrl} is reachable."
