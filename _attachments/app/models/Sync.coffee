@@ -89,7 +89,7 @@ class Sync extends Backbone.Model
               (error,result) =>
                 if error
                   console.log "Could not retrieve list of results: #{JSON.stringify(error)}"
-                  options.error()
+                  options?.error?(error)
                   @save
                     last_send_error: true
                 else
@@ -113,7 +113,8 @@ class Sync extends Backbone.Model
                       last_send_result: result
                       last_send_error: false
                       last_send_time: new Date().getTime()
-                    options.success()
+                    options?.success?()
+                    Promise.resolve()
                   .on 'error', (error) ->
                     console.error error
                     options.error(error)
@@ -148,6 +149,7 @@ class Sync extends Backbone.Model
                       last_get_success: true
                       last_get_time: new Date().getTime()
                     options?.success?()
+                    Promise.resolve()
 
 
   replicateApplicationDocs: (options) =>
@@ -174,7 +176,9 @@ class Sync extends Backbone.Model
             .then =>
               console.log "Application docs and user refresh complete"
               Coconut.syncPlugins
-                success: -> options?.success?()
+                success: -> 
+                  options?.success?()
+                  Promise.resolve()
                 error: -> options?.error?()
         .catch (error) =>
           @log "Error while updating application documents: #{JSON.stringify error}"
