@@ -61,11 +61,8 @@ class LoginView extends Backbone.View
     Coconut.openDatabase
       username: username
       password: @$("#password").val()
-    .then =>
-      Coconut.toggleSpinner(false)
-      $('#login_wrapper').hide()
-      @callback()
     .catch (error) =>
+      console.error error
       Coconut.toggleSpinner(false)
       if error is "invalid user"
         @displayErr "#{username} is not a valid user. If #{username} has been added since your last sync, then you need to login with a user already loaded on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.updateLocalUserDatabases();return false' href='#'>update the database</a>."
@@ -81,6 +78,15 @@ class LoginView extends Backbone.View
         else
           console.error error
           @displayErr "An error occurred during login: #{JSON.stringify error}. Recommendation: try to login again"
+    .then =>
+      Coconut.toggleSpinner(false)
+      $('#login_wrapper').hide()
+      console.log @callback.toString()
+      @callback()
+    .catch (error) =>
+      console.log "ERROR"
+      console.error error
+
 
   displayErr: (msg) =>
     $('.coconut-mdl-card__title').html "<i style='padding-right:10px' class='mdi mdi-information-outline mdi-36px'></i> #{msg}"

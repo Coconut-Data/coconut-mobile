@@ -3,6 +3,7 @@ _ = require 'underscore'
 
 global.Utils = {}
 Utils.addOrUpdateDesignDoc = (designDoc,options) ->
+  console.info "addOrUpdateDesignDoc is deprecated, use upsert instead"
   name = designDoc._id.replace(/^_design\//,"")
 
   Coconut.database.get "_design/#{name}", (error,result) ->

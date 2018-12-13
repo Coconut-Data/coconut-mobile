@@ -20,13 +20,17 @@ class QuestionCollection extends Backbone.Collection
   QuestionCollection.load = (options) ->
     Coconut.questions = new QuestionCollection()
 
-    questionsDesignDoc = Utils.createDesignDoc "questions", (doc) ->
+    designDoc = Utils.createDesignDoc "questions", (doc) ->
       if doc.collection and doc.collection is "question"
         emit doc._id, doc.resultSummaryFields
 
-    Utils.addOrUpdateDesignDoc questionsDesignDoc,
-      success: ->
+    Coconut.database.upsert designDoc._id, (existingDoc) =>
+      return false if _(designDoc.views).isEqual(existingDoc?.views)
+      designDoc
+    .then =>
+      new Promise (resolve) =>
         Coconut.questions.fetch
-          success: -> Promise.resolve()
+          success: -> 
+            resolve()
 
 module.exports = QuestionCollection

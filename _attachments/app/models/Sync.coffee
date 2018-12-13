@@ -140,7 +140,7 @@ class Sync extends Backbone.Model
                 @replicateApplicationDocs
                   error: (error) =>
                     $.couch.logout()
-                    @log "ERROR updating application: #{JSON.stringify(error)}"
+                    console.error error
                     @save
                       last_get_success: false
                     options?.error?(error)
@@ -168,7 +168,9 @@ class Sync extends Backbone.Model
           Coconut.database.replicate.from Coconut.cloudDB,
             doc_ids: doc_ids
             timeout: 60000
-          .on 'change', (info) =>
+          .on 'error', (error) =>
+            console.error error
+          .on 'complete', (info) =>
             console.log info
           .on 'complete', (info) =>
             console.log info
