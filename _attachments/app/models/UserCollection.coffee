@@ -35,13 +35,15 @@ UserCollection.load = (options) ->
         emit doc.district, [doc.name, doc._id.substring(5)]
   }
 
-  Promise.all( _(designDocs).map (designDoc,name) ->
-    designDoc = Utils.createDesignDoc name, designDoc
-    Utils.addOrUpdateDesignDoc designDoc,
+  for name, designDocFunction of designDocs
+    designDoc = Utils.createDesignDoc name, designDocFunction
+    await Coconut.database.upsert designDoc._id, (existingDoc) =>
+      return false if _(designDoc.views).isEqual(existingDoc?.views)
+      designDoc
+
+  new Promise (resolve) =>
+    Coconut.users.fetch
       success: -> 
-        Coconut.users.fetch
-          success: -> 
-            Promise.resolve()
-  )
+        resolve()
 
 module.exports = UserCollection

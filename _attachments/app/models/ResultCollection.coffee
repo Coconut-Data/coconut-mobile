@@ -32,62 +32,66 @@ class ResultCollection
     _(@results).each arg
 
   ResultCollection.load = (options) ->
-    Coconut.questions.fetch
-      error: (error) -> console.log "Error loading Coconut.questions: #{JSON.stringify error}"
-      success: ->
-        options.success() if Coconut.questions.length is 0
+    new Promise (resolve) =>
+      Coconut.questions.fetch
+        error: (error) -> console.log "Error loading Coconut.questions: #{JSON.stringify error}"
+        success: ->
+          options.success() if Coconut.questions.length is 0
 
-        designDocs = {
-          results: """
-            (doc) ->
-              if doc.collection is "result" and doc.question and doc.createdAt
-                summaryFields = (#{
-                  if Coconut.questions.length is 0
-                    "[]"
+          designDocs = {
+            results: """
+              (doc) ->
+                if doc.collection is "result" and doc.question and doc.createdAt
+                  summaryFields = (#{
+                    if Coconut.questions.length is 0
+                      "[]"
+                    else
+                      Coconut.questions.map (question) ->
+                        "if doc.question is '#{question.id}' then #{JSON.stringify question.summaryFieldKeys()}"
+                      .join " else "
+                  })
+
+                  summaryResults = []
+                  for field in summaryFields
+                    summaryResults.push doc[field]
+
+                  emit([doc.question, doc.complete is true, doc.createdAt], summaryResults)
+            """
+            resultsByQuestionNotCompleteNotTransferredOut: (document) ->
+              if document.collection is "result"
+                if document.complete isnt "true"
+                  if document.transferred?
+                    emit document.question, document.transferred[document.transferred.length-1].to
                   else
-                    Coconut.questions.map (question) ->
-                      "if doc.question is '#{question.id}' then #{JSON.stringify question.summaryFieldKeys()}"
-                    .join " else "
-                })
+                    emit document.question, null
 
-                summaryResults = []
-                for field in summaryFields
-                  summaryResults.push doc[field]
+            rawNotificationsConvertedToCaseNotifications: (document) ->
+              if document.hf and document.hasCaseNotification
+                emit document.date, null
 
-                emit([doc.question, doc.complete is true, doc.createdAt], summaryResults)
-          """
-          resultsByQuestionNotCompleteNotTransferredOut: (document) ->
-            if document.collection is "result"
-              if document.complete isnt "true"
-                if document.transferred?
-                  emit document.question, document.transferred[document.transferred.length-1].to
-                else
-                  emit document.question, null
+            resultsByQuestionAndField: (document) ->
+              if document.collection is "result" and document.question
+                _(document).chain().keys().each (field) ->
+                  return if field.substring(0,1) is "_" unless field is "_id"
+                  return if _([
+                    "createdAt"
+                    "lastModifiedAt"
+                    "user"
+                    "question"
+                    "collection"
+                    "savedBy"
+                    "complete"
+                  ]).contains field
+                  emit [document.question,field,document[field]], document[field]
+          }
 
-          rawNotificationsConvertedToCaseNotifications: (document) ->
-            if document.hf and document.hasCaseNotification
-              emit document.date, null
+          for name, designDocFunction of designDocs
+            console.log "Setting up #{name}"
+            designDoc = Utils.createDesignDoc name, designDocFunction
+            await Coconut.database.upsert designDoc._id, (existingDoc) =>
+              return false if _(designDoc.views).isEqual(existingDoc?.views)
+              designDoc
 
-          resultsByQuestionAndField: (document) ->
-            if document.collection is "result" and document.question
-              _(document).chain().keys().each (field) ->
-                return if field.substring(0,1) is "_" unless field is "_id"
-                return if _([
-                  "createdAt"
-                  "lastModifiedAt"
-                  "user"
-                  "question"
-                  "collection"
-                  "savedBy"
-                  "complete"
-                ]).contains field
-                emit [document.question,field,document[field]], document[field]
-        }
-
-        Promise.all( _(designDocs).map (designDoc,name) ->
-          designDoc = Utils.createDesignDoc name, designDoc
-          Utils.addOrUpdateDesignDoc designDoc,
-            success: -> Promise.resolve()
-        )
+          resolve()
 
 module.exports = ResultCollection

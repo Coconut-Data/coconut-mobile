@@ -36,7 +36,6 @@ User.isAuthenticated = ->
         username: userCookie
         password: passwordCookie
       .then -> 
-        console.log "LOgged in"
         Promise.resolve()
     else
       throw "No saved user, must login"
@@ -51,7 +50,6 @@ User.login = (options) ->
     _id: "user.#{options.username}"
   user.fetch
     success: =>
-      console.log "FOUND USER"
       Coconut.currentUser = user
       Cookie('current_user', user.username())
       Cookie('current_password', options.password)

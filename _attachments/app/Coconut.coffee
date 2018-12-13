@@ -13,6 +13,8 @@ window.pouchDBOptions = {}
 PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
 if isCordovaApp
   pouchDBOptions['adapter'] = 'cordova-sqlite'
+
+PouchDB.plugin(require 'pouchdb-upsert')
   
 require 'crypto-pouch'
 crypto = require('crypto')
@@ -67,30 +69,30 @@ class Coconut
         success:  =>
           $("#status").html "Creating #{@databaseName} database"
           @database = new PouchDB("coconut-#{options.params["Application Name"]}", pouchDBOptions)
-          @database.crypto(@encryptionKey).then =>
-            @database.put
-              "_id": "decryption check"
-              "is the value of this clear text": "yes it is"
-            .then =>
-              $("#status").html "Downloading forms and other application documents"
-              sync = new Sync
-              sync.replicateApplicationDocs
-                error: (error) ->
-                  console.error "Updating application docs failed: #{JSON.stringify error}"
-                  alert(error)
-                  options.error "Updating the application failed: #{JSON.stringify error}"
-                success: =>
-                  @createDatabaseForEachUser()
-                  .then =>
-                    @config.save()
-                    .then ->
-                      console.log "SAVED config"
-                      options.success()
-                    .catch (error) ->
-                      options.error "Error saving local config file"
-                  .catch (error) =>
-                    console.error error
-                    options.error error
+          @database.crypto(@encryptionKey)
+          @database.put
+            "_id": "decryption check"
+            "is the value of this clear text": "yes it is"
+          .then =>
+            $("#status").html "Downloading forms and other application documents"
+            sync = new Sync
+            sync.replicateApplicationDocs
+              error: (error) ->
+                console.error "Updating application docs failed: #{JSON.stringify error}"
+                alert(error)
+                options.error "Updating the application failed: #{JSON.stringify error}"
+              success: =>
+                @createDatabaseForEachUser()
+                .then =>
+                  @config.save()
+                  .then ->
+                    console.log "SAVED config"
+                    options.success()
+                  .catch (error) ->
+                    options.error "Error saving local config file"
+                .catch (error) =>
+                  console.error error
+                  options.error error
     catch error
       console.error error
       console.error "Removing #{@databaseName} due to incomplete setup"
@@ -104,6 +106,7 @@ class Coconut
     Backbone.Model.prototype.idAttribute = '_id'
 
   syncPlugins: (options) =>
+    console.log "Checking for available plugins"
     $("#status").html "Checking for available plugins"
     @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
     @cloudDB.allDocs
@@ -114,9 +117,10 @@ class Coconut
       console.error "Error while downloading list of plugin ids:"
       console.error error
     .then (result) =>
-      pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins", pouchDBOptions)
       pluginIds = _(result.rows).pluck "id"
-      $("#status").html "Loading #{@databaseName} plugins"
+      pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins", pouchDBOptions)
+      console.log "Downloading #{@databaseName} plugins: #{pluginIds}"
+      $("#status").html "Downloading #{@databaseName} plugins"
       @cloudDB.replicate.to pluginDatabase,
         doc_ids: pluginIds
         timeout: 60000
@@ -169,57 +173,60 @@ class Coconut
 
   openDatabase: (options) =>
     userDatabase = new PouchDB("coconut-#{@databaseName}-user.#{options.username}", pouchDBOptions)
-    userDatabase.crypto(@hashKeyForPassword(options.password)).then =>
-      userDatabase.get "decryption check"
-      .catch (error) =>
-        if error.message is "Unsupported state or unable to authenticate data"
-          console.log error
+    userDatabase.crypto(@hashKeyForPassword(options.password))
+    userDatabase.get "decryption check"
+    .catch (error) =>
+      if error.message is "Unsupported state or unable to authenticate data"
+        console.error error
+        throw "failed decryption check"
+      else
+        console.error "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
+        throw "invalid user"
+    .then (result) =>
+      @encryptionKey = result[""]
+      if result["is the value of this clear text"] isnt "yes it is"
+        throw "username database failed decryption check"
+      else
+        userDatabase.get "encryption key"
+        .catch (error) -> 
           console.error error
-          throw "failed decryption check"
-        else
-          console.error "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
-          throw "invalid user"
-      .then (result) =>
-        @encryptionKey = result[""]
-        if result["is the value of this clear text"] isnt "yes it is"
-          throw "username database failed decryption check"
-        else
-          userDatabase.get "encryption key"
+          throw "could not find encryption key: #{JSON.stringify error}"
+        .then (result) =>
+          @encryptionKey = result["key"]
+          @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
+          @database.crypto(@encryptionKey)
+          @database.get "decryption check"
           .catch (error) -> 
             console.error error
-            throw "could not find encryption key: #{JSON.stringify error}"
+            throw "username database failed decryption check"
           .then (result) =>
-            @encryptionKey = result["key"]
-            @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
-            @database.crypto(@encryptionKey).then =>
-              @database.get "decryption check"
-              .catch (error) -> 
-                console.error error
-                throw "username database failed decryption check"
-              .then (result) =>
-                unless result["is the value of this clear text"] is "yes it is"
-                  console.error "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
-                  @database = null
-                  throw "Successfully opened user database, but main database did not decrypt."
-                else
-                  console.log "Main database decrypted"
-                  @config = new Config()
-                  @config.fetch()
-                  .then =>
-                    @config.attributes.mobile_background_sync = false
-                    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
-                    @setupBackbonePouch()
-                    @startPlugins().then =>
-                      @getOrAssignInstanceId().then (instanceId) =>
-                        @instanceId = instanceId
-                        @router.startApp().then =>
-                          # Look for a global StartPlugins array and then run all of the functions in it
-                          if StartPlugins?
-                            _(StartPlugins).each (startPlugin) -> startPlugin()
-                          # Will return a promise
-                          User.login
-                            username: options.username
-                            password: options.password
+
+            unless result["is the value of this clear text"] is "yes it is"
+              console.error "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
+              @database = null
+              throw "Successfully opened user database, but main database did not decrypt."
+            else
+              console.log "Main database decrypted"
+              @config = new Config()
+              @config.fetch()
+              .then =>
+                @config.attributes.mobile_background_sync = false
+                @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
+                @setupBackbonePouch()
+                @startPlugins().then =>
+                  @getOrAssignInstanceId().then (instanceId) =>
+                    @instanceId = instanceId
+                    @router.startApp().then =>
+                      # Look for a global StartPlugins array and then run all of the functions in it
+                      if StartPlugins?
+                        console.log "STARTING PLUGINS"
+                        for startPluginFunction in StartPlugins
+                          await startPluginFunction()
+                      # Will return a promise
+                      console.log "DONE STARTING PLUGINS"
+                      User.login
+                        username: options.username
+                        password: options.password
 
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs().then (dbs) =>
@@ -243,15 +250,15 @@ class Coconut
     @cloudDB.get("client encryption key").then (keyDoc) =>
       @databaseName = document.location.hash.replace(/\/.*/,"")
       @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
-      @database.crypto(keyDoc.key).then =>
-        (new Sync()).replicateApplicationDocs
-          success: =>
-            @createDatabaseForEachUser().then (result) =>
-              console.log result
-              alert(result)
-              document.location.reload()
-            .catch (error) =>
-              alert("error: #{JSON.stringify(error)}")
+      @database.crypto(keyDoc.key)
+      (new Sync()).replicateApplicationDocs
+        success: =>
+          @createDatabaseForEachUser().then (result) =>
+            console.log result
+            alert(result)
+            document.location.reload()
+          .catch (error) =>
+            alert("error: #{JSON.stringify(error)}")
 
   createDatabaseForEachUser: =>
     console.log "Creating a database for each user"
@@ -291,17 +298,16 @@ class Coconut
             $("#loginErrMsg").html "Updating #{changedUsers.length} users. " if changedUsers.length > 0
             indx = 0
 
-            Promise.all( changedUsers.map (user) =>
-              @createDatabaseForUser(user).then =>
+            for user in changedUsers
+              await @createDatabaseForUser(user).then =>
                 $("div#percent").html "( #{++indx} of #{changedUsers.length} )"
                 Promise.resolve()
-            )
-            .catch (error) -> console.error error
+
+            sequenceResult.sequence = currentDBInfo.update_seq
+            @database.put sequenceResult
             .then =>
-              sequenceResult.sequence = currentDBInfo.update_seq
-              @database.put sequenceResult
-              .then =>
-                Promise.resolve("Updated: #{changedUserNames.join(',')}")
+              Promise.resolve("Updated: #{changedUserNames.join(',')}")
+
     .catch (error) => console.error error
 
   createDatabaseForUser: (user) =>
@@ -310,8 +316,8 @@ class Coconut
     userDatabase.destroy()
     .then =>
       userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
-      console.log "Encrypting with password: #{user.password or ""}"
-      userDatabase.crypto(user.password or "")
+      console.log "Encrypting with password: #{user.password}"
+      userDatabase.crypto(user.password)
       userDatabase.put
         "_id": "encryption key"
         "key": @encryptionKey
@@ -372,12 +378,14 @@ class Coconut
   checkForInternet: (options) =>
     cloudUrl = @cloudDB.name.replace(/\/\/.*@/,"//")
     console.log "Checking for internet to #{cloudUrl}. Please wait..."
-    @cloudDB.info().then =>
+    @cloudDB.info()
+    .catch (error) =>
+      console.log "WARNING! #{cloudUrl} is not reachable."
+      console.error error
+      options.error("No Internet connection")
+    .then =>
       console.log "#{cloudUrl} is reachable."
       options.success()
-    .catch (error) =>
-      console.log "WARNING! #{cloudUrl} is not reachable. Error encountered:  #{JSON.stringify(error)}"
-      options.error("No Internet connection")
 
   noInternet: =>
     Dialog.showDialog

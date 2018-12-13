@@ -11,6 +11,9 @@ if isCordovaApp
   pouchDBOptions['adapter'] = 'cordova-sqlite'
 require('pouchdb-all-dbs')(window.PouchDB)
 
+PouchDB.plugin(require 'pouchdb-upsert')
+
+
 replicationStream = require('pouchdb-replication-stream')
 PouchDB.plugin(replicationStream.plugin)
 PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
@@ -490,23 +493,20 @@ class Router extends Backbone.Router
 
   startApp: (options) ->
     # This makes sure all views are created and loads any classes that are necessary
-    QuestionCollection.load()
-    .catch (error) =>
-      console.error "Could not load #{ClassToLoad}: #{error}."
-      alert "Could not load #{ClassToLoad}: #{JSON.stringify error}. Recommendation: Press get data again."
-    .then =>
-      classesToLoad = [UserCollection, ResultCollection]
-      Promise.all( _(classesToLoad).map (ClassToLoad) =>
-        ClassToLoad.load()
-        .catch (error) =>
-          console.error error
-      ).then => 
-        Coconut.questionView = new QuestionView()
-        Coconut.menuView = new MenuView()
-        Coconut.headerView = new HeaderView()
-        Coconut.syncView = new SyncView()
-        Coconut.syncView.sync.setMinMinsBetweenSync()
-        Coconut.syncView.update()
-        Promise.resolve()
+    for ClassToLoad in [QuestionCollection, UserCollection, ResultCollection]
+      console.log ClassToLoad.name
+      await ClassToLoad.load()
+      .catch (error) =>
+        console.error "Could not load #{ClassToLoad}:"
+        console.error error
+        alert "Could not load #{ClassToLoad}: #{JSON.stringify error}. Recommendation: Press get data again."
+    console.log "Done setting up classes"
+    Coconut.questionView = new QuestionView()
+    Coconut.menuView = new MenuView()
+    Coconut.headerView = new HeaderView()
+    Coconut.syncView = new SyncView()
+    Coconut.syncView.sync.setMinMinsBetweenSync()
+    Coconut.syncView.update()
+    Promise.resolve()
 
 module.exports = Router
