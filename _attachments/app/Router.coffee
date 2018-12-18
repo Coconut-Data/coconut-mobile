@@ -5,10 +5,14 @@ Backbone.$  = $
 radix64 = require('radix-64')()
 
 window.PouchDB = require 'pouchdb'
-pouchDBOptions = {}
+pouchDBOptions = {
+  auto_compaction: true
+}
+
 if isCordovaApp
   PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
   pouchDBOptions['adapter'] = 'cordova-sqlite'
+
 require('pouchdb-all-dbs')(window.PouchDB)
 
 PouchDB.plugin(require 'pouchdb-upsert')
@@ -85,7 +89,10 @@ class Router extends Backbone.Router
           Coconut.loginView.callback = =>
             # This reload will force the page to reload and use cookies to login
             # It's a hack but it keeps things simple
-            document.location.reload()
+            Coconut.headerView.render()
+            Coconut.menuView.render()
+            Coconut.syncView.update()
+            callback.apply(this, args) if callback
           Coconut.loginView.render()
           throw "Waiting for login to proceed"
         .then =>
