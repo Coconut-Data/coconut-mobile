@@ -46,16 +46,17 @@ User.isAuthenticated = ->
       throw "No current user"
 
 User.login = (options) ->
-  user = new User
-    _id: "user.#{options.username}"
-  user.fetch
-    success: =>
-      Coconut.currentUser = user
-      Cookie('current_user', user.username())
-      Cookie('current_password', options.password)
-      Promise.resolve()
-    error: (error) =>
-      throw error
+  new Promise (resolve) =>
+    user = new User
+      _id: "user.#{options.username}"
+    user.fetch
+      success: =>
+        Coconut.currentUser = user
+        Cookie('current_user', user.username())
+        Cookie('current_password', options.password)
+        resolve()
+      error: (error) =>
+        throw error
 
 User.logout = ->
   Cookie('current_user',"")

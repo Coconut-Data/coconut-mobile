@@ -169,6 +169,7 @@ class Sync extends Backbone.Model
             doc_ids: doc_ids
             timeout: 60000
           .on 'error', (error) =>
+            Sync.checkForQuotaErrorAndAlert(error)
             console.error error
           .on 'complete', (info) =>
             console.log info
@@ -200,5 +201,12 @@ class Sync extends Backbone.Model
     if Coconut.config.get('mobile_background_sync')
       _.delay @backgroundSync, minimumMinutesBetweenSync*60*1000
     return minimumMinutesBetweenSync
+
+Sync.checkForQuotaErrorAndAlert = (error) =>
+  if error.reason is "QuotaExceededError"
+    alert "You are out of disk space. Please free up disk space and try again. You may need to restart the device if the error persists after freeing up disk space. #{error.details or ""}"
+    return "You are out of disk space. Please free up disk space and try again. You may need to restart the device if the error persists after freeing up disk space."
+  return null
+    
 
 module.exports = Sync
