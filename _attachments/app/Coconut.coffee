@@ -69,7 +69,7 @@ class Coconut
         success:  =>
           $("#status").html "Creating #{@databaseName} database"
           @database = new PouchDB("coconut-#{options.params["Application Name"]}", pouchDBOptions)
-          @database.crypto(@encryptionKey)
+          @database.crypto(@encryptionKey, ignore: '_attachments')
           @database.put
             "_id": "decryption check"
             "is the value of this clear text": "yes it is"
@@ -132,6 +132,7 @@ class Coconut
         options?.success?()
         Promise.resolve()
       .on 'error', (error) =>
+        Sync.checkForQuotaErrorAndAlert(error)
         console.error "Error while replicating plugins:"
         console.error error
         @syncPluginAttempts = 0 unless @syncPluginAttempts
@@ -172,14 +173,23 @@ class Coconut
     hashKey = (crypto.pbkdf2Sync password, salt, 1000, 256/8, 'sha256').toString('base64')
 
   openDatabase: (options) =>
-    userDatabase = new PouchDB("coconut-#{@databaseName}-user.#{options.username}", pouchDBOptions)
-    userDatabase.crypto(@hashKeyForPassword(options.password))
-    userDatabase.get "decryption check"
+    @userDatabase = new PouchDB("coconut-#{@databaseName}-user.#{options.username}", pouchDBOptions)
+    @userDatabase.crypto(@hashKeyForPassword(options.password), ignore: '_attachments')
+    @userDatabase.get "decryption check"
     .catch (error) =>
       if error.message is "Unsupported state or unable to authenticate data"
         console.error error
         throw "failed decryption check"
       else
+        console.error error
+        console.error error.code
+        console.error error.message
+        console.error error.name
+        console.log options
+
+        if error.name is "OperationError"
+          throw "Invalid password"
+
         console.error "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
         throw "invalid user"
     .then (result) =>
@@ -187,14 +197,14 @@ class Coconut
       if result["is the value of this clear text"] isnt "yes it is"
         throw "username database failed decryption check"
       else
-        userDatabase.get "encryption key"
+        @userDatabase.get "encryption key"
         .catch (error) -> 
           console.error error
           throw "could not find encryption key: #{JSON.stringify error}"
         .then (result) =>
           @encryptionKey = result["key"]
           @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
-          @database.crypto(@encryptionKey)
+          @database.crypto(@encryptionKey, ignore: '_attachments')
           @database.get "decryption check"
           .catch (error) -> 
             console.error error
@@ -213,20 +223,21 @@ class Coconut
                 @config.attributes.mobile_background_sync = false
                 @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
                 @setupBackbonePouch()
-                @startPlugins().then =>
-                  @getOrAssignInstanceId().then (instanceId) =>
-                    @instanceId = instanceId
-                    @router.startApp().then =>
-                      # Look for a global StartPlugins array and then run all of the functions in it
-                      if StartPlugins?
-                        console.log "STARTING PLUGINS"
-                        for startPluginFunction in StartPlugins
-                          await startPluginFunction()
-                      # Will return a promise
-                      console.log "DONE STARTING PLUGINS"
-                      User.login
-                        username: options.username
-                        password: options.password
+                User.login
+                  username: options.username
+                  password: options.password
+                .then =>
+                  @startPlugins().then =>
+                    @getOrAssignInstanceId().then (instanceId) =>
+                      @instanceId = instanceId
+                      @router.startApp().then =>
+                        # Look for a global StartPlugins array and then run all of the functions in it
+                        if StartPlugins?
+                          console.log "STARTING PLUGINS"
+                          for startPluginFunction in StartPlugins
+                            await startPluginFunction()
+                        # Will return a promise
+                        console.log "DONE STARTING PLUGINS"
 
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs().then (dbs) =>
@@ -250,7 +261,7 @@ class Coconut
     @cloudDB.get("client encryption key").then (keyDoc) =>
       @databaseName = document.location.hash.replace(/\/.*/,"")
       @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
-      @database.crypto(keyDoc.key)
+      @database.crypto(keyDoc.key, ignore: '_attachments')
       (new Sync()).replicateApplicationDocs
         success: =>
           @createDatabaseForEachUser().then (result) =>
@@ -317,7 +328,7 @@ class Coconut
     .then =>
       userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
       console.log "Encrypting with password: #{user.password}"
-      userDatabase.crypto(user.password)
+      userDatabase.crypto(user.password, ignore: '_attachments')
       userDatabase.put
         "_id": "encryption key"
         "key": @encryptionKey
