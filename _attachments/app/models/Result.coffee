@@ -87,6 +87,7 @@ class Result extends Backbone.Model
   save: (key,value,options) ->
     @set
       user: Cookie('current_user')
+      savedBy: Cookie('current_user')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
     super(key,value,options)
 

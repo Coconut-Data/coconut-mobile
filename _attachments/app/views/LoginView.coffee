@@ -65,9 +65,9 @@ class LoginView extends Backbone.View
       Coconut.toggleSpinner(false)
       @render()
       if error is "invalid user"
-        @displayErr "#{username} is not a valid user. If #{username} has been added since your last sync, then you need to login with a user already loaded on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.updateLocalUserDatabases();return false' href='#'>update the database</a>."
+        @displayErr "#{username} is not a valid user. If #{username} has been added since your last sync, then you need to login with a user already loaded on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.promptToUpdate();return false' href='#'>update the database</a>."
       else if error is "failed decryption check"
-        @displayErr "#{username} is a valid user, but the password is incorrect. If the password has been changed since your last sync, then you need to login with a different user on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.updateLocalUserDatabases();return false' href='#'>update the database</a>."
+        @displayErr "#{username} is a valid user, but the password is incorrect. If the password has been changed since your last sync, then you need to login with a different user on this tablet and sync, then logout and try again. Alternatively you can <a onClick='Coconut.promptToUpdate();return false' href='#'>update the database</a>."
       else 
         if _(error).isEmpty() and not @hasRetried?
           _.delay =>
@@ -77,7 +77,7 @@ class LoginView extends Backbone.View
           ,500
         else
           console.error error
-          @displayErr "An error occurred during login: #{JSON.stringify error}. Recommendation: try to login again"
+          @displayErr "#{JSON.stringify error}. Recommendation: try to login again or <a onClick='Coconut.promptToUpdate();return false' href='#'>update the database</a>."
       throw "Need to login to proceed"
     .then =>
       Coconut.toggleSpinner(false)
