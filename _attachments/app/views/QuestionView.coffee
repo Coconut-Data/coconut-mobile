@@ -737,9 +737,6 @@ class QuestionView extends Backbone.View
   save: _.throttle( ->
     currentData = @currentData()
 
-    # Make sure lastModifiedAt is always updated on save
-    currentData.lastModifiedAt = moment(new Date()).format(Coconut.config.get "date_format")
-    currentData.savedBy = Cookie('current_user')
     @result.save currentData,
       success: (model) =>
         $("#messageText").slideDown().fadeOut()

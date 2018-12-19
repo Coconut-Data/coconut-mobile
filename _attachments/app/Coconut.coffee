@@ -182,10 +182,6 @@ class Coconut
         throw "failed decryption check"
       else
         console.error error
-        console.error error.code
-        console.error error.message
-        console.error error.name
-        console.log options
 
         if error.name is "OperationError"
           throw "Invalid password"
@@ -203,6 +199,7 @@ class Coconut
           throw "could not find encryption key: #{JSON.stringify error}"
         .then (result) =>
           @encryptionKey = result["key"]
+          console.log @encryptionKey
           @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
           @database.crypto(@encryptionKey, ignore: '_attachments')
           @database.get "decryption check"
@@ -255,24 +252,20 @@ class Coconut
 
         destroyUntilAllDestroyed(options)
 
-  updateLocalUserDatabases: =>
-    cloudDBDetails = prompt("Enter Cloud DB Details")
+  promptToUpdate: (cloudDBDetails = prompt("Enter Cloud DB Details") ) =>
+    @databaseName = document.location.hash.replace(/#/,'').replace(/\/.*/,"")
     @cloudDB = new PouchDB(cloudDBDetails)
     @cloudDB.get("client encryption key").then (keyDoc) =>
-      @databaseName = document.location.hash.replace(/\/.*/,"")
+      @encryptionKey = keyDoc.key
       @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
-      @database.crypto(keyDoc.key, ignore: '_attachments')
+      @database.crypto(@encryptionKey, ignore: '_attachments')
       (new Sync()).replicateApplicationDocs
         success: =>
-          @createDatabaseForEachUser().then (result) =>
-            console.log result
-            alert(result)
-            document.location.reload()
-          .catch (error) =>
-            alert("error: #{JSON.stringify(error)}")
+          alert("Update complete, please login")
+          document.location.reload()
 
   createDatabaseForEachUser: =>
-    console.log "Creating a database for each user"
+    console.log "Updating users if they have changed"
     @database.allDocs
       include_docs: false
       startkey: "user"
@@ -293,9 +286,8 @@ class Coconut
         @database.info()
         .then (currentDBInfo) =>
           console.log currentDBInfo
-
           @database.changes
-            since: sequenceResult.sequence
+            since: sequenceResult.sequence or ""
             doc_ids: allUserIds
             include_docs: true
           .then (result) =>

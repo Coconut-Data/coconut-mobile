@@ -9,6 +9,6 @@ echo "Minifying bundle-libraries.min.js"
 ./bundleJsLibraries.sh
 echo "Updating version number in manifest.appcache"
 perl -pe 's/^# VERSION ((\d+\.)*)(\d+)(.*)$/"# VERSION ".$1.($3+1).$4/e' -i manifest.appcache
-echo "Pushing to cloud"
+echo "Rsyncing to cloud"
 rsync --verbose  --recursive --exclude=node_modules ./ cococloud.co:/var/www/mobile/ | grep total
 #couchapp push --no-atomic cococloud

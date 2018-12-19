@@ -131,7 +131,6 @@ class Router extends Backbone.Router
     ":database/get/cloud/results": "getCloudResults"
     "setup": "setup"
     "setup/:httpType/:cloudUrl/:applicationName/:cloudUsername/:cloudPassword": "setup"
-    "sz": "setupZanzibar"
     "i/:installName": "presetInstall"
     "selectapp": "selectApplication"
     ":database": "default"
@@ -178,9 +177,6 @@ class Router extends Backbone.Router
     Coconut.headerView = (new HeaderView()).render()
     selectDatabaseView = new SelectApplicationView()
     selectDatabaseView.render()
-
-  setupZanzibar: =>
-    @setup("https", "zanzibar.cococloud.co", "zanzibar", "admin", "nuttycoco")
 
   presetInstall: (installName) =>
     (new PouchDB("https://installer:installfoo@cococloud.co/install-configuration")).get "install-#{installName}"
