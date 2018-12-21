@@ -99,6 +99,11 @@ class LoginView extends Backbone.View
         </button>
         <ul class='mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect' for='top-menu-lower-right'>
           <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400' onclick='window.location.reload()'><i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
+
+          <li class='mdl-menu__item'>
+            <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/f04cfa6'>f04cfa6</a></div>
+          <i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
+
         </ul>
       </div>
     ")
