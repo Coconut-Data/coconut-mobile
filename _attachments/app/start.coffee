@@ -12,6 +12,11 @@ catch error
 
 window.isCordovaApp = document.URL.indexOf('http://') is -1 and document.URL.indexOf('https://') is -1
 
+window.applicationCache.addEventListener 'updateready', =>
+  if confirm "A new version of the app is available, click Ok to load it"
+    document.location.reload()
+, false
+
 Backbone.$  = $
 
 Coconut = require './Coconut'
