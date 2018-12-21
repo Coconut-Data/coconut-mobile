@@ -8,7 +8,9 @@ global.Sync = require './models/Sync'
 global.User = require './models/User'
 
 window.PouchDB = require 'pouchdb'
-window.pouchDBOptions = {}
+window.pouchDBOptions = {
+  auto_compaction: true
+}
 
 PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
 if isCordovaApp
@@ -189,7 +191,6 @@ class Coconut
         console.error "The database for #{options.username} is missing the encryption key. If #{options.username} is a valid username, then you need to update your username database from the cloud (internet connection required)?"
         throw "invalid user"
     .then (result) =>
-      @encryptionKey = result[""]
       if result["is the value of this clear text"] isnt "yes it is"
         throw "username database failed decryption check"
       else
@@ -199,42 +200,41 @@ class Coconut
           throw "could not find encryption key: #{JSON.stringify error}"
         .then (result) =>
           @encryptionKey = result["key"]
-          console.log @encryptionKey
           @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
           @database.crypto(@encryptionKey, ignore: '_attachments')
-          @database.get "decryption check"
-          .catch (error) -> 
+          @database.allDocs
+            include_docs: true
+            limit: 1
+          .catch (error) =>
+            console.error "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Error:"
             console.error error
-            throw "username database failed decryption check"
-          .then (result) =>
-
-            unless result["is the value of this clear text"] is "yes it is"
-              console.error "Successfully opened user database, but main database did not decrypt. Did encryption key change? Database: #{@databaseName} was not unencrypted. Tried to use key: #{@encryptionKey}. Encryption check result was: #{JSON.stringify result}"
-              @database = null
-              throw "Successfully opened user database, but main database did not decrypt."
-            else
-              console.log "Main database decrypted"
-              @config = new Config()
-              @config.fetch()
+            @database = null
+            throw "Successfully opened user database, but main database did not decrypt."
+          .then =>
+            console.log "Main database decrypted"
+            @config = new Config()
+            @config.fetch()
+            .catch =>
+              alert "Error fetching config file - you probably need to reinstall"
+            .then =>
+              @config.attributes.mobile_background_sync = false
+              @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
+              @setupBackbonePouch()
+              User.login
+                username: options.username
+                password: options.password
               .then =>
-                @config.attributes.mobile_background_sync = false
-                @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
-                @setupBackbonePouch()
-                User.login
-                  username: options.username
-                  password: options.password
-                .then =>
-                  @startPlugins().then =>
-                    @getOrAssignInstanceId().then (instanceId) =>
-                      @instanceId = instanceId
-                      @router.startApp().then =>
-                        # Look for a global StartPlugins array and then run all of the functions in it
-                        if StartPlugins?
-                          console.log "STARTING PLUGINS"
-                          for startPluginFunction in StartPlugins
-                            await startPluginFunction()
-                        # Will return a promise
-                        console.log "DONE STARTING PLUGINS"
+                @startPlugins().then =>
+                  @getOrAssignInstanceId().then (instanceId) =>
+                    @instanceId = instanceId
+                    @router.startApp().then =>
+                      # Look for a global StartPlugins array and then run all of the functions in it
+                      if StartPlugins?
+                        console.log "STARTING PLUGINS"
+                        for startPluginFunction in StartPlugins
+                          await startPluginFunction()
+                      # Will return a promise
+                      console.log "DONE STARTING PLUGINS"
 
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs().then (dbs) =>
@@ -252,17 +252,33 @@ class Coconut
 
         destroyUntilAllDestroyed(options)
 
-  promptToUpdate: (cloudDBDetails = prompt("Enter Cloud DB Details") ) =>
+  promptToUpdate: (cloudDBDetails) =>
     @databaseName = document.location.hash.replace(/#/,'').replace(/\/.*/,"")
+    # TODO REMOVE THIS
+    if @databaseName is "zanzibar"
+      cloudDBDetails = "https://***REMOVED***@zanzibar.cococloud.co/zanzibar"
+    if @databaseName is "keep"
+      cloudDBDetails = "https://***REMOVED***@keep.cococloud.co/keep"
+    if cloudDBDetails is null
+      cloudDBDetails = prompt("Enter Cloud DB Details")
+    alert "Beginning update. It may take a few minutes to complete"
     @cloudDB = new PouchDB(cloudDBDetails)
     @cloudDB.get("client encryption key").then (keyDoc) =>
       @encryptionKey = keyDoc.key
       @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
+      console.log @encryptionKey
       @database.crypto(@encryptionKey, ignore: '_attachments')
-      (new Sync()).replicateApplicationDocs
-        success: =>
-          alert("Update complete, please login")
-          document.location.reload()
+
+      console.log "Resetting last_change_sequence_users to force all users to be re-created"
+      @database.get("_local/last_change_sequence_users").catch()
+      .then (sequenceDoc) =>
+        @database.remove(sequenceDoc)
+
+        .finally =>
+          (new Sync()).replicateApplicationDocs
+            success: =>
+              alert("Update complete, please login")
+              document.location.reload()
 
   createDatabaseForEachUser: =>
     console.log "Updating users if they have changed"
@@ -286,6 +302,7 @@ class Coconut
         @database.info()
         .then (currentDBInfo) =>
           console.log currentDBInfo
+          console.log sequenceResult
           @database.changes
             since: sequenceResult.sequence or ""
             doc_ids: allUserIds
@@ -444,6 +461,5 @@ class Coconut
         .catch (error) -> throw "Could not save _local/instance_id: #{JSON.stringify error}"
         .then -> Promise.resolve(assignedId)
       .catch (error) -> throw "Could not save new instance id to cloud: #{JSON.stringify error}"
-
 
 module.exports = Coconut
