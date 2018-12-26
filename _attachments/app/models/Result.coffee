@@ -3,26 +3,47 @@ _ = require 'underscore'
 $ = require 'jquery'
 Cookie = require 'js-cookie'
 
-Backbone = require 'backbone'
-Backbone.$  = $
+#Backbone = require 'backbone'
+#Backbone.$  = $
 moment = require 'moment'
 sha1 = require 'sha1'
 
 User = require './User'
 
-class Result extends Backbone.Model
-  initialize: ->
+class Result
+  constructor: (@data) ->
     @set
       collection: "result"
-    unless this.attributes.createdAt
+    unless @data.createdAt
       @set
         createdAt: moment(new Date()).format(Coconut.config.get "date_format")
-    unless this.attributes.lastModifiedAt
+    unless @data.lastModifiedAt
       @set
         lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
 
-  question: ->
-    return @get("question")
+  fetch: =>
+    throw "can't fetch result without an ID" unless @data._id
+    Coconut.database.get @data._id
+    .then (result) =>
+      @set(result)
+
+  set: (values) =>
+    _(@data).extend(values)
+
+  get: (property) =>
+
+    return null unless Coconut.currentUser?
+    original = @data[property]
+
+    return original if Coconut.currentUser.hasRole "cleaner"
+
+    if original? and Coconut.currentUser.hasRole "reports"
+      if _.contains(Coconut.identifyingAttributes, property)
+        return sha1(original)
+
+    return original
+
+  question: -> @get("question")
 
   tags: ->
     tags = @get("Tags")
@@ -62,20 +83,9 @@ class Result extends Backbone.Model
         returnVal = JSON.stringify(returnVal)
       returnVal
 
-  get: (attribute) ->
-    return null unless Coconut.currentUser?
-    original = super(attribute)
-
-    return original if Coconut.currentUser.hasRole "cleaner"
-
-    if original? and Coconut.currentUser.hasRole "reports"
-      if _.contains(Coconut.identifyingAttributes, attribute)
-        return sha1(original)
-
-    return original
 
   toJSON: ->
-    json = super()
+    json = _(@data).clone()
     return json if Coconut.currentUser.hasRole "admin"
     if Coconut.currentUser.hasRole "reports"
       _.each json, (value, key) =>
@@ -84,11 +94,25 @@ class Result extends Backbone.Model
 
     return json
 
+  # support: save(object), save(key, value), and save(). Catch if options is passed
   save: (key,value,options) ->
+    alert("callback deprecated") if options?
+    if _(key).isObject()
+      @set key
+    else if key? and value?
+      @set {"#{key}", value}
+
     @set
       user: Cookie('current_user')
       savedBy: Cookie('current_user')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
-    super(key,value,options)
+
+    unless @data._id
+      @set
+        _id: "result-#{Coconut.instanceId}-#{Date.now()}"
+
+
+    Coconut.database.upsert @data._id, (currentValue) =>
+      _(currentValue).extend @data
 
 module.exports = Result
