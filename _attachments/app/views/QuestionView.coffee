@@ -737,19 +737,19 @@ class QuestionView extends Backbone.View
   save: _.throttle( ->
     currentData = @currentData()
 
-    @result.save currentData,
-      success: (model) =>
-        $("#messageText").slideDown().fadeOut()
-        Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{model.id}",false)
-        if ($('[name=complete]').prop("checked"))
-          # Return to Summary page after completion
-          Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
-        # Update the menu
-        Coconut.headerView.update()
-      error: (error) ->
-        console.debug error
-        console.error error
-    , 1000)
+    @result.save(currentData)
+    .then =>
+      $("#messageText").slideDown().fadeOut()
+      Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{@result.id()}",false)
+      if ($('[name=complete]').prop("checked"))
+        # Return to Summary page after completion
+        Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}",true)
+      # Update the menu
+      Coconut.headerView.update()
+    .catch (error) =>
+      console.debug error
+      console.error error
+  , 1000)
 
   completeButton: ( value ) ->
     if $('[name=complete]').prop("checked") isnt value
