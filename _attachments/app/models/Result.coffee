@@ -11,7 +11,7 @@ sha1 = require 'sha1'
 User = require './User'
 
 class Result
-  constructor: (@data) ->
+  constructor: (@data = {}) ->
     @set
       collection: "result"
     unless @data.createdAt
@@ -26,6 +26,15 @@ class Result
     Coconut.database.get @data._id
     .then (result) =>
       @set(result)
+      Promise.resolve()
+
+  destroy: =>
+    throw "can't destroy result without an ID" unless @data._id
+    Coconut.database.upsert @data._id, (result) =>
+      result._deleted  = true
+      result
+
+  id: => @get "_id"
 
   set: (values) =>
     _(@data).extend(values)
@@ -43,7 +52,9 @@ class Result
 
     return original
 
-  question: -> @get("question")
+  question: -> Coconut.questions.get(@get "question")
+
+  questionName: -> @get("question")
 
   tags: ->
     tags = @get("Tags")

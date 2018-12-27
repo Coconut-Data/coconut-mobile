@@ -295,7 +295,7 @@ class Router extends Backbone.Router
       _id: "result-#{underscored(question_id)}-#{radix64.encodeInt(moment().format('x'))}-#{Coconut.instanceId}"
     Coconut.questionView.model = new Question {id: unescape(question_id)}
     vw = @appView
-    Coconut.questionView.model.fetch
+    Coconut.questionView.model.fetch()
       success: ->
         # Coconut.questionView.render()
         vw.showView(Coconut.questionView)
@@ -306,93 +306,84 @@ class Router extends Backbone.Router
     vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
-    Coconut.questionView.result.fetch
-      success: ->
-        question = Coconut.questionView.result.question()
-        Coconut.questionView.model = new Question
-          id: question
-        Coconut.questionView.model.fetch
-          success: ->
-            # Coconut.questionView.render()
-            vw.showView(Coconut.questionView)
+    Coconut.questionView.result.fetch()
+    .catch (error) => alert "Could not find result: #{result_id}"
+    .then =>
+      Coconut.questionView.model = Coconut.questionView.result.question()
+      # Coconut.questionView.render()
+      vw.showView(Coconut.questionView)
 
   editResult: (result_id) ->
     Coconut.questionView.readonly = false
     vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
-    Coconut.questionView.result.fetch
-      success: ->
-        question = Coconut.questionView.result.question()
-        if question?
-          Coconut.questionView.model = new Question
-            id: question
-          Coconut.questionView.model.fetch
-            success: ->
-              # Coconut.questionView.render()
-              vw.showView(Coconut.questionView)
-        else # Reach here for USSD Notifications
-          $("#content").html "
-            <button id='delete' type='button'>Delete</button>
-            <br/>
-            <pre>#{JSON.stringify Coconut.questionView.result,null,2}</pre>
+    Coconut.questionView.result.fetch()
+    .catch (error) => alert "Could not find result: #{result_id}"
+    .then =>
+      question = Coconut.questionView.result.question()
+      if question?
+        Coconut.questionView.model = Coconut.questionView.result.question()
+        vw.showView(Coconut.questionView)
+      else # Reach here for USSD Notifications
+        $("#content").html "
+          <button id='delete' type='button'>Delete</button>
+          <br/>
+          <pre>#{JSON.stringify Coconut.questionView.result,null,2}</pre>
 
-          "
-          $("button#delete").click ->
-            if confirm("Are you sure you want to delete this result?")
-              Coconut.questionView.result.destroy
-                success: ->
-                  $("#content").html "Result deleted, redirecting..."
-                  _.delay ->
-                    Coconut.router.navigate("/",true)
-                  , 2000
+        "
+        $("button#delete").click ->
+          if confirm("Are you sure you want to delete this result?")
+            Coconut.questionView.result.destroy
+              success: ->
+                $("#content").html "Result deleted, redirecting..."
+                _.delay ->
+                  Coconut.router.navigate("/",true)
+                , 2000
 
   deleteResult: (result_id, confirmed) ->
     Coconut.questionView.readonly = true
     vw = @appView
     Coconut.questionView.result = new Result
       _id: result_id
-    Coconut.questionView.result.fetch
-      success: ->
-        question = Coconut.questionView.result.question()
-        if question?
-          if confirmed is "confirmed"
-            Coconut.questionView.result.destroy
-              success: ->
-                Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}",true)
-          else
-            Coconut.questionView.model = new Question
-              id: question
-            Coconut.questionView.model.fetch
-              success: ->
-                # Coconut.questionView.render()
-                vw.showView(Coconut.questionView)
-                $('#askConfirm').html "
-                  <h4>Are you sure you want to delete this record?</h4>
-                  <div id='confirm'>
-                    <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'><button class='mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect'>Yes</button></a>
-                    <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.question())}'><button class='mdl-button mdl-js-button mdl-js-ripple-effect'>Cancel</button></a>
-                  </div>
-                "
-                $("#content form").css
-                  "background-color": "rgba(0,0,0,0.1)"
-                  "margin":"0px"
-                  "padding":"0px 15px 15px"
-                $("#content form label").css
-                  "color":"rgb(63,81,181)"
+    Coconut.questionView.result.fetch()
+    .catch (error) => alert "Could not find result: #{result_id}"
+    .then =>
+      question = Coconut.questionView.result.question()
+      if question?
+        if confirmed is "confirmed"
+          Coconut.questionView.result.destroy
+            success: ->
+              Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}",true)
         else
-          Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{result_id}",true)
+          Coconut.questionView.model = new Question
+            id: question
+          Coconut.questionView.model.fetch()
+            success: ->
+              # Coconut.questionView.render()
+              vw.showView(Coconut.questionView)
+              $('#askConfirm').html "
+                <h4>Are you sure you want to delete this record?</h4>
+                <div id='confirm'>
+                  <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'><button class='mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect'>Yes</button></a>
+                  <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}'><button class='mdl-button mdl-js-button mdl-js-ripple-effect'>Cancel</button></a>
+                </div>
+              "
+              $("#content form").css
+                "background-color": "rgba(0,0,0,0.1)"
+                "margin":"0px"
+                "padding":"0px 15px 15px"
+              $("#content form label").css
+                "color":"rgb(63,81,181)"
+      else
+        Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{result_id}",true)
 
   showResults:(question_id) ->
     Coconut.resultsView ?= new ResultsView()
-    Coconut.resultsView.question = new Question
-      id: unescape(question_id)
-    Coconut.toggleSpinner(true)
+    Coconut.resultsView.question = Coconut.questions.get question_id
     vw = @appView
-    Coconut.resultsView.question.fetch
-      success: ->
-        # Coconut.resultsView.render()
-        vw.showView(Coconut.resultsView)
+    # Coconut.resultsView.render()
+    vw.showView(Coconut.resultsView)
 
   resetDatabase: () ->
     if confirm "Are you sure you want to reset #{Coconut.databaseName}? All data that has not yet been sent to the cloud will be lost."
