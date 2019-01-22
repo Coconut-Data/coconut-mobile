@@ -237,20 +237,22 @@ class Coconut
                       console.log "DONE STARTING PLUGINS"
 
   destroyApplicationDatabases: (options) =>
-    PouchDB.allDbs().then (dbs) =>
-      if (dbs.length > 0)
-        dbsToDestroy = _(dbs).filter (dbName) ->
-          dbName.match "^coconut-"+options.applicationName
+    PouchDB.allDbs()
+    .catch (error) => 
+      console error "Error with allDBs:"
+      console.error error
+    .then (dbs) =>
+      dbsToDestroy = _(dbs).filter (dbName) ->
+        dbName.match "^coconut-"+options.applicationName
 
-        destroyUntilAllDestroyed = (options) ->
-          if dbsToDestroy.length is 0
-            options.success?()
-            Promise.resolve()
-          else
-            (new PouchDB(dbsToDestroy.pop(), pouchDBOptions)).destroy().then ->
-              destroyUntilAllDestroyed(options)
+      for db in dbsToDestroy
+        await (new PouchDB(db, pouchDBOptions)).destroy()
+        .catch (error) =>
+          console.error "Error destroying: #{db}"
+          console.error error
 
-        destroyUntilAllDestroyed(options)
+      options.success?()
+      Promise.resolve()
 
   promptToUpdate: (cloudDBDetails) =>
     @databaseName = document.location.hash.replace(/#/,'').replace(/\/.*/,"")

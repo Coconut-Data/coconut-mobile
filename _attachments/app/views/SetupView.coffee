@@ -127,10 +127,9 @@ class SetupView extends Backbone.View
     Coconut.destroyApplicationDatabases
       applicationName: applicationName
       success: =>
-        PouchDB.resetAllDbs().then =>
-          $("#message").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
-          $("#message h4").fadeOut 3000
-          @install()
+        $("#message").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
+        $("#message h4").fadeOut 3000
+        @install()
 
   getOptions: ->
     options = @options || {}
