@@ -3,6 +3,8 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 radix64 = require('radix-64')()
+Encryptor = require('simple-encryptor')
+encryptedInstallPaths = require './encryptedInstallPaths'
 
 window.PouchDB = require 'pouchdb'
 pouchDBOptions = {
@@ -50,6 +52,8 @@ MemoryStream = require 'memorystream'
 global.FileSaver = require 'file-saver'
 titleize = require "underscore.string/titleize"
 underscored = require("underscore.string/underscored")
+HtmlToImage = require('html-to-image')
+QRCode = require('qrcode')
 
 class Router extends Backbone.Router
 
@@ -135,8 +139,42 @@ class Router extends Backbone.Router
     "selectapp": "selectApplication"
     ":database": "default"
     "": "default"
+    ":database/test": "test"
     ":database/*noMatch": "noMatch"
     "*noMatch": "noMatch"
+
+  test: =>
+    text = "
+    P1-702-133-122
+    <br/>
+    <br/>
+    Mike McKay
+    <br/>
+    17 Aug 2018
+    <br/>
+    0716925547
+    "
+
+    $("#content").html "
+      <div style='width:600px; height:300px;border:solid' id='label'>
+        <canvas style='display:inline-block; vertical-align:top;' id='qrcode'></canvas>
+        <img style='display:inline-block; height:150px' src='./mike.jpg'/>
+        <div style='display:inline-block; line-height:1em; font-size:2em'>#{text}</span>
+      </div>
+    "
+
+    await QRCode.toCanvas(document.getElementById('qrcode'), text, {scale:3})
+    blob = await HtmlToImage.toBlob(document.getElementById('label'))
+
+    fd = new FormData()
+    fd.append('label', blob, 'label.png')
+    $.ajax
+      type: 'POST'
+      url: 'http://192.168.0.102:8042/'
+      data: fd
+      processData: false
+      contentType: false
+
 
   noMatch: =>
     if @routeFails
@@ -187,19 +225,19 @@ class Router extends Backbone.Router
     selectDatabaseView.render()
 
   presetInstall: (installName) =>
-    (new PouchDB("https://installer:installfoo@cococloud.co/install-configuration")).get "install-#{installName}"
-    .catch (error) =>
-      console.error error
-      @setup()
-    .then (configuration) =>
-      setupView = new SetupView()
-      setupView.render()
-      setupView.prefill configuration.options[0],
-        cloudUrl: configuration.options[1]
-        applicationName: configuration.options[2]
-        cloudUsername: configuration.options[3]
-        cloudPassword: configuration.options[4]
-      setupView.install()
+    setupView = new SetupView()
+    setupView.render()
+    data = encryptedInstallPaths[installName].data
+    unless _(data).isArray()
+      password = prompt("Enter the install password:")
+      data = Encryptor(password+password+password).decrypt(data)
+
+    setupView.prefill data[0],
+      cloudUrl: data[1]
+      applicationName: data[2]
+      cloudUsername: data[3]
+      cloudPassword: data[4]
+    setupView.install()
 
   userLoggedIn: ->
     User.isAuthenticated()
