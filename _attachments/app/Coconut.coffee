@@ -7,6 +7,9 @@ global.Router = require './Router'
 global.Sync = require './models/Sync'
 global.User = require './models/User'
 
+Encryptor = require('simple-encryptor')
+encryptedInstallPaths = require './encryptedInstallPaths'
+
 window.PouchDB = require 'pouchdb'
 window.pouchDBOptions = {
   auto_compaction: true
@@ -402,9 +405,39 @@ class Coconut
     console.log "Checking for internet to #{cloudUrl}. Please wait..."
     @cloudDB.info()
     .catch (error) =>
-      console.log "WARNING! #{cloudUrl} is not reachable."
-      console.error error
-      options.error("No Internet connection")
+
+      # In case the remote password has changed, allow the user to update it
+      local_mobile_config = await @database.get "_local/mobile.config"
+      if error.error is "unauthorized" and local_mobile_config
+        password = prompt("Enter the update password (contact your supervisor if you are not sure):")
+        installName = switch @config.cloud_database_name()
+          when "zanzibar" then "z"
+          when "keep" then "k"
+          else
+            alert "Unknown database name"
+            null
+
+        encryptedData = encryptedInstallPaths[installName]?.data
+        data = Encryptor(password+password+password).decrypt(encryptedData)
+        cloud_credentials = 
+          if data?[3]? and data[4]?
+            "#{data[3]}:#{data[4]}"
+          else
+            prompt "Enter the new credentials"
+        
+        if cloud_credentials and cloud_credentials isnt ""
+          local_mobile_config.cloud_credentials = cloud_credentials
+          await @database.put(local_mobile_config)
+          await @config.fetch()
+          @checkForInternet(options)
+        else
+          console.log "No valid credentials for cloud server"
+          options.error "No valid credentials for cloud server"
+
+      else
+        console.log "WARNING! #{cloudUrl} is not reachable."
+        console.error error
+        options.error("No Internet connection")
     .then =>
       console.log "#{cloudUrl} is reachable."
       options.success()
