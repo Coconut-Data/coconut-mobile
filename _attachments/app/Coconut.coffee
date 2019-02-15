@@ -259,11 +259,6 @@ class Coconut
 
   promptToUpdate: (cloudDBDetails) =>
     @databaseName = document.location.hash.replace(/#/,'').replace(/\/.*/,"")
-    # TODO REMOVE THIS
-    if @databaseName is "zanzibar"
-      cloudDBDetails = "https://install:installinstallinstall@zanzibar.cococloud.co/zanzibar"
-    if @databaseName is "keep"
-      cloudDBDetails = "https://install:installinstallinstall@keep.cococloud.co/keep"
     if cloudDBDetails is null
       cloudDBDetails = prompt("Enter Cloud DB Details")
     alert "Beginning update. It may take a few minutes to complete"
