@@ -74,7 +74,7 @@ class Coconut
         success:  =>
           $("#status").html "Creating #{@databaseName} database"
           @database = new PouchDB("coconut-#{options.params["Application Name"]}", pouchDBOptions)
-          @database.crypto(@encryptionKey, ignore: '_attachments')
+          @database.crypto(@encryptionKey, ignore: '_attachments') unless @encryptionKey is null
           @database.put
             "_id": "decryption check"
             "is the value of this clear text": "yes it is"
@@ -204,7 +204,7 @@ class Coconut
         .then (result) =>
           @encryptionKey = result["key"]
           @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
-          @database.crypto(@encryptionKey, ignore: '_attachments')
+          @database.crypto(@encryptionKey, ignore: '_attachments') unless @encryptionKey is null # null encryption key used to disable encryption
           @database.allDocs
             include_docs: true
             limit: 1
@@ -264,10 +264,14 @@ class Coconut
     alert "Beginning update. It may take a few minutes to complete"
     @cloudDB = new PouchDB(cloudDBDetails)
     @cloudDB.get("client encryption key").then (keyDoc) =>
-      @encryptionKey = keyDoc.key
+      if keyDoc.disabled
+        @encryptionKey = null
+      else
+        @encryptionKey = keyDoc.key
       @database = new PouchDB("coconut-#{@databaseName}", pouchDBOptions)
       console.log @encryptionKey
-      @database.crypto(@encryptionKey, ignore: '_attachments')
+
+      @database.crypto(@encryptionKey, ignore: '_attachments') unless @encryptionKey is null
 
       console.log "Resetting last_change_sequence_users to force all users to be re-created"
       @database.get("_local/last_change_sequence_users").catch()
@@ -368,7 +372,10 @@ class Coconut
       options.error "Failed to get client encryption key. <br /> #{error_msg}"
 
     .then (result) =>
-      @encryptionKey = result.key
+      if result.disabled
+        @encryptionKey = null
+      else
+        @encryptionKey = result.key
       options.success()
       Promise.resolve()
 

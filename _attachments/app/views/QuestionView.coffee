@@ -45,6 +45,7 @@ Module = require 'module'
 
 global.Form2js = require 'form2js'
 moment = require 'moment'
+jsQR = require 'jsqr'
 
 #typeahead = require 'typeahead.js'
 
@@ -438,6 +439,7 @@ class QuestionView extends Backbone.View
     "click .location button" : "getLocation"
     "click .next_error"   : "runValidate"
     "click .validate_one" : "onValidateOne"
+    "click .qr-scan" : "getQrCode"
 
   runValidate: -> @validateAll()
 
@@ -912,6 +914,22 @@ class QuestionView extends Backbone.View
                 "<input name='#{name}' id='#{question_id}' type='text' class='mdl-textfield__input' value='#{question.value()}'></input>"
               when "number"
                 "<input name='#{name}' id='#{question_id}' type='number' class='mdl-textfield__input' value='#{question.value()}'></input>"
+              when "qrcode"
+                "
+                  <button class='qr-scan' data-question-id='#{question_id}'>Scan</button>
+                  <input name='#{name}' id='#{question_id}' type='text' class='qr-outputData mdl-textfield__input' value='#{question.value()}'></input>
+                  <div style='display:none' class='qr'>
+                    <div class='qr-loadingMessage'>🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
+                    <canvas class='qr-canvas' hidden></canvas>
+                    <div class='qr-output' hidden>
+                      <div class='qr-outputMessage'>No QR code detected.</div>
+                      <div hidden>
+                        <b>Data:</b> 
+                        <span id='outputData'></span>
+                      </div>
+                    </div>
+                  </div>
+                "
               else
                 "<input name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}'></input>"
           }
@@ -1012,6 +1030,67 @@ class QuestionView extends Backbone.View
         desiredAccuracy: requiredAccuracy
         maxWait: maxWait
     )
+
+  getQrCode: (event) =>
+    qrButton = $(event.target)
+    qrDiv = qrButton.siblings(".qr")
+
+    qrButton.hide()
+    qrDiv.show()
+
+    video = document.createElement("video")
+    canvasElement = qrDiv.find(".qr-canvas")[0]
+    canvas = canvasElement.getContext("2d")
+    loadingMessage = qrDiv.find(".qr-loadingMessage")[0]
+    outputContainer = qrDiv.find(".qr-output")[0]
+    outputMessage = qrDiv.find(".qr-outputMessage")[0]
+    outputData = qrButton.siblings(".qr-outputData")[0]
+
+    drawLine = (begin, end, color) =>
+      canvas.beginPath()
+      canvas.moveTo(begin.x, begin.y)
+      canvas.lineTo(end.x, end.y)
+      canvas.lineWidth = 4
+      canvas.strokeStyle = color
+      canvas.stroke()
+
+    navigator.mediaDevices.getUserMedia
+      video:
+        facingMode: "environment"  # Use facingMode: environment to attemt to get the front camera on phones
+    .then (stream) =>
+      video.srcObject = stream
+      video.setAttribute("playsinline", true) # required to tell iOS safari we don't want fullscreen
+      video.play()
+      requestAnimationFrame(tick)
+
+    tick = =>
+      loadingMessage.innerText = "⌛ Loading video..."
+      if (video.readyState is video.HAVE_ENOUGH_DATA) 
+        loadingMessage.hidden = true
+        canvasElement.hidden = false
+        outputContainer.hidden = false
+
+        canvasElement.height = video.videoHeight
+        canvasElement.width = video.videoWidth
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height)
+        imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height)
+        code = jsQR(imageData.data, imageData.width, imageData.height, inversionAttempts: "dontInvert")
+        if (code)
+          drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58")
+          drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58")
+          drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58")
+          drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58")
+          outputMessage.hidden = true
+          outputData.parentElement.hidden = false
+          outputData.value = code.data
+          qrDiv.hide()
+          qrButton.show()
+          return
+        else
+          outputMessage.hidden = false
+          outputData.parentElement.hidden = true
+
+      requestAnimationFrame(tick)
 
 # jquery helpers
 
