@@ -158,7 +158,7 @@ class ResultsView extends Backbone.View
                   "<td><a href='##{Coconut.databaseName}/edit/result/#{result.id()}'>#{value}</a></td>"
                 ).join("")
               }
-              <td style='text-align: center'><a href='##{Coconut.databaseName}/delete/result/#{result.id}' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-button--accent'>
+              <td style='text-align: center'><a href='##{Coconut.databaseName}/delete/result/#{result.id()}' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-button--accent'>
                 <i class='mdi mdi-delete'></i>
               </a></td>
             </tr>

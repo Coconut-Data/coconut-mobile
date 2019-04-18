@@ -712,7 +712,7 @@ class QuestionView extends Backbone.View
         else
           name = ((/function (.{1,})\(/).exec(error.constructor.toString())[1])
           message = error.message
-          alert "Skip logic error in question #{$question.attr('data-question-id')}\n\n#{name}\n\n#{message}"
+          alert "Skip logic error in question #{$question.attr('data-question-name')}\n\n#{name}\n\n#{message}"
 
       if result
         $question[0].style.display = "none"
