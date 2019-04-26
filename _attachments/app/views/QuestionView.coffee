@@ -13,17 +13,20 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
     else
       question.removeClass disabledClass
 
+global.classify = require("underscore.string/classify")
+global.capitalize = require("underscore.string/capitalize")
 global.slugify = require("underscore.string/slugify")
+get = require "lodash/get"
 
 global.ResultOfQuestion = (name) ->
   window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or null
-#return window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or $("[name=#{slugify(name)}]").val() or null
+#return window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or @$("[name=#{slugify(name)}]").val() or null
 
 global.setValue = (targetLabel, value) ->
-  $("[name=#{slugify(targetLabel)}]").val(value)
+  @$("[name=#{slugify(targetLabel)}]").val(value)
 
 global.setLabelText = (targetLabel, value) ->
-  $("[data-question-name=#{slugify(targetLabel)}] label").html(value)
+  @$("[data-question-name=#{slugify(targetLabel)}] label").html(value)
 
 # # # #
 
@@ -31,7 +34,6 @@ global.setLabelText = (targetLabel, value) ->
 
 _ = require 'underscore'
 global._ = _
-s = require 'underscore.string'
 $ = require 'jquery'
 global.$ = $ # required for validations that use jquery
 jQuery = require 'jquery'
@@ -50,6 +52,7 @@ jsQR = require 'jsqr'
 #typeahead = require 'typeahead.js'
 
 ResultCollection = require '../models/ResultCollection'
+RepeatableQuestionSetView = require './RepeatableQuestionSetView'
 
 #
 # This improves accuracy of GPS recording, see https://github.com/gwilson/getAccurateCurrentPosition
@@ -126,220 +129,8 @@ class QuestionView extends Backbone.View
     @accent2 = "rgb(194,24,91)"
 
     @$el.html "
-    <style>
-      div.question .mdl-textfield{
-        width: inherit;
-        display: block;
-      }
-      .mdl-textfield__input{
-        width: 98%;
-      }
+    <style>#{unless @isRepeatableQuestionSet then @css() else ""}</style>
 
-      label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
-        font-size: 1.1em;
-      }
-
-      input{
-        width: 98%;
-      }
-
-      .message
-      {
-        color: white;
-        font-weight: bold;
-        padding: 10px;
-        border: 1px #{@accent2} dotted;
-        background: #{@accent2};
-        display: none;
-      }
-
-      .message, label.radio{
-        max-width: 620px;
-      }
-
-      label.mdl-nontextfield__label{
-        display:block;
-        color: #{@accent1};
-        padding:20px 0px 20px;
-        font-size: 1.2em;
-      }
-
-      label.mdl-nontextfield__label.has-value{
-        color: #{@primary1};
-        font-size:100%;
-      }
-
-      .mdl-textfield--floating-label.is-focused .mdl-textfield__label, .mdl-textfield--floating-label.is-dirty .mdl-textfield__label{
-        font-size:100%;
-      }
-
-      label.mdl-textfield__label{
-        display:block;
-        color:#{@accent1};
-        padding:20px 0px 20px;
-        font-size: 1.3em;
-        /* font-size:125%; */
-      }
-
-      div.radio label.mdl-textfield__label{
-       font-size:150%;
-       color:#{@accent1};
-      }
-
-      .is-dirty label.mdl-textfield__label{
-       color:#{@primary1};
-      }
-
-      #question-view .mdl-textfield__label{
-        position: inherit;
-      }
-
-      .coconut-radio{
-        margin: 10px;
-      }
-
-      .mdl-radio__label{
-        line-height:normal;
-      }
-
-      label.radio-option,label.checkbox-option {
-        border-radius:20px;
-        display:inline-block;
-        padding:4px 11px;
-        border: 1px solid black;
-        cursor: pointer;
-        text-decoration: none;
-        width:250px;
-        line-height:100%;
-        vertical-align: top;
-      }
-      label.radio-option {
-        width: inherit;
-        font-size: 100%;
-      }
-
-      input[type='radio']:checked + label {
-        color: white;
-        background-color:#ddd;
-        background: #{@primary1};
-        background-image: -webkit-gradient(linear,left top,left bottom,from(#{@primary1}),to(#{@primary2}));
-        background-image: -webkit-linear-gradient(#{@primary1},#{@primary2});
-        background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
-        background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
-        background-image: -o-linear-gradient(#{@primary1},#{@primary2});
-      }
-
-      input[type='radio'],input[type='checkbox']{
-        height: 0px;
-        width: 0px;
-        margin: 0px;
-      }
-
-      input[type='checkbox']:checked + label {
-        color: white;
-        background-color:#ddd;
-        background: #{@primary1};
-        background-image: -webkit-gradient(linear,left top,left bottom,from(#{@primary1}),to(#{@primary2}));
-        background-image: -webkit-linear-gradient(#{@primary1},#{@primary2});
-        background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
-        background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
-        background-image: -o-linear-gradient(#{@primary1},#{@primary2});
-      }
-      input[type='checkbox']{
-        height: 0px;
-      }
-
-      #question-set-complete:checked + label {
-        color: #{@primary1};
-        background:none;
-      }
-
-      .question-set-complete-label{
-        color: #{@accent2};
-        font-size: 1.5em;
-      }
-      #question-set-complete{
-        /* Triple-sized Checkboxes */
-        -ms-transform: scale(3); /* IE */
-        -moz-transform: scale(3); /* FF */
-        -webkit-transform: scale(3); /* Safari and Chrome */
-        -o-transform: scale(3); /* Opera */
-        height:20px;
-        width: 15px;
-        margin: 10px 10px;
-      }
-
-      div.question.radio{
-        padding-top: 8px;
-        padding-bottom: 8px;
-      }
-      .tt-hint{
-        display:none
-      }
-      .tt-dropdown-menu{
-        width: 100%;
-        background-color: lightgray;
-      }
-      .tt-suggestion{
-        background-color: white;
-        border-radius:20px;
-        display:block;
-        padding:4px 11px;
-        border: 1px solid black;
-        cursor: pointer;
-        text-decoration: none;
-      }
-      .tt-suggestion .{
-      }
-
-      button.next_error.mdl-button{
-        bottom: 0px;
-        position: relative;
-      }
-
-      div.message {
-        font-size:20px;
-      }
-
-      .awesomplete ul{
-        background-color:white;
-        position:absolute;
-        z-index:10;
-        width: 95%;
-        list-style:none;
-        margin-top: 3px;
-        border-left: 2px inset;
-        border-bottom: 2px outset;
-        border-right: 1px outset;
-        border-top: 0px;
-        font-size: 10px;
-      }
-
-      .awesomplete li{
-        padding: 10px;
-        font-size: 200%;
-      }
-
-      .awesomplete mark{
-        background-color:white;
-        color: gray;
-      }
-
-      .location .mdl-button{
-        position:relative;
-        margin-bottom: 10px;
-      }
-
-      #{
-        @model.get("styles") or ""
-      }
-
-      span.visually-hidden{
-        display:none;
-      }
-
-
-    </style>
     <div class='question_container'>
       <div style='position:fixed; right:5px; color:white; padding:20px; z-index:5' id='messageText'>
       </div>
@@ -359,16 +150,32 @@ class QuestionView extends Backbone.View
     </div>
     "
 
+    for name, questionSet of @model.repeatableQuestionSets
+      questionSet.view = new RepeatableQuestionSetView
+          questionSet: questionSet
+          targetRepeatableField: @$("[name=#{slugify(name)}]")
+
     componentHandler.upgradeDom()
     # Hack since upgradeDom doesn't add is-dirty class to previously filled in fields
     _.delay =>
-      $('input[type=text]').filter( -> this.value isnt "").closest('div').addClass('is-dirty')
-      $('input[type=number]').filter( -> this.value isnt "").closest('div').addClass('is-dirty')
+      @$('input[type=text]').filter( -> this.value isnt "").closest('div').addClass('is-dirty')
+      @$('input[type=number]').filter( -> this.value isnt "").closest('div').addClass('is-dirty')
       @updateLabelClass()
     , 500
 
     #Load data into form
-    Form2js.js2form 'questions', @result.toJSON()
+    if @result
+      for repeatableQuestionSetName, repeatableQuestionSet of @model.repeatableQuestionSets
+        numberOfRepeatableSectionsInResult = @result.data[classify(repeatableQuestionSetName)]?.length
+        if numberOfRepeatableSectionsInResult > 0
+          _(numberOfRepeatableSectionsInResult).times =>
+            repeatableQuestionSet.view.addRepeatableItem()
+
+      console.log @result.toJSON()
+      Form2js.js2form 'questions', @result.toJSON()
+      # above doesn't seem to work for radio buttons
+      #
+      @applyResultsToRadioButtons()
 
     @updateCache()
 
@@ -394,21 +201,22 @@ class QuestionView extends Backbone.View
     @triggerChangeIn skipperList
 
     autocompleteElements = []
-    _.each $("input[type='autocomplete from list']"), (element) ->
+    _.each @$("input[type='autocomplete from list']"), (element) =>
       new Awesomplete element,
         list: $(element).attr("data-autocomplete-options").replace(/\n|\t/,"").split(/, */)
         minChars: 1
-        filter: Awesomplete.FILTER_STARTSWITH
+        maxItems: 15
+        #filter: Awesomplete.FILTER_STARTSWITH
 
       autocompleteElements.push element
 
-    _.each $("input[type='autocomplete from code']"), (element) ->
+    _.each @$("input[type='autocomplete from code']"), (element) ->
       new Awesomplete element,
         list: eval($(element).attr("data-autocomplete-options"))
         minChars: 1
         filter: Awesomplete.FILTER_STARTSWITH
 
-    _.each $("input[type='autocomplete from previous entries']"), (element) =>
+    _.each @$("input[type='autocomplete from previous entries']"), (element) =>
       Coconut.database.query "resultsByQuestionAndField",
         startkey: [@model.get("id"),$(element).attr("name")]
         endkey: [@model.get("id"),$(element).attr("name"), {}]
@@ -425,10 +233,38 @@ class QuestionView extends Backbone.View
     _.each autocompleteElements, (autocompeteElement) =>
       autocompeteElement.blur =>
         @autoscroll autocompeteElement
-    $('input, textarea').attr("readonly", "true") if @readonly
+    @$('input, textarea').attr("readonly", "true") if @readonly
 
     # Without this re-using the view results in staying at the old scroll position
-    $("main").scrollTop(0)
+    @$("main").scrollTop(0)
+
+  applyResultsToRadioButtons: =>
+    radioInputElements = @$("input[type=radio]")
+
+    # Get all of the radio elements, group them by name, with their values and element
+    elementsByName = _(radioInputElements).chain().map (element) =>
+      element = $(element)
+      {
+        name: element.attr("name")
+        value: element.val()
+        element: element
+      }
+    .groupBy (element) =>
+      element.name
+    .value()
+
+    # Loop through each displayed radio section and check if @result has data for it
+    for name, options of elementsByName
+      if name.match(/\[\d+\]/)
+        [firstPart, arrayIndex, lastPart] = name.match(/(.*)(\[\d+\]\.)(.*)/)[1..3]
+        name = "#{classify(firstPart)}#{arrayIndex}#{classify(lastPart)}"
+      else
+        name = classify(name)
+      if get(@result.data, name)
+        targetOption = _(options).find (option) => 
+          option.value is get(@result.data, name)
+
+        targetOption.element[0].parentNode.MaterialRadio.check()
 
   events:
     "change #question-view input"    : "onChange"
@@ -446,7 +282,7 @@ class QuestionView extends Backbone.View
   onChange: (event) =>
     @updateLabelClass()
 
-    prevCompletedState = $("#question-set-complete").prop("checked")
+    prevCompletedState = @$("#question-set-complete").prop("checked")
     $target = $(event.target)
 
     #
@@ -460,7 +296,7 @@ class QuestionView extends Backbone.View
     @oldStamp     = eventStamp
 
     targetName = $target.attr("name")
-    if targetName == "complete" || $("#question-set-complete").prop("checked")
+    if targetName == "complete" || @$("#question-set-complete").prop("checked")
       allQuestionsPassValidation = @validateAll()
 
       # Update the menu
@@ -477,11 +313,11 @@ class QuestionView extends Backbone.View
             CoffeeScript.eval onValidatedComplete
           ,1000
       else
-        $("#question-set-complete").prop("checked", false)
+        @$("#question-set-complete").prop("checked", false)
         if prevCompletedState
           Coconut.showNotification( "ALERT: This form is Incomplete")
     else
-      messageVisible = window.questionCache[targetName].find(".message").is(":visible")
+      messageVisible = window.questionCache[targetName]?.find(".message").is(":visible")
 # Hack by Mike to solve problem with autocomplete fields being validated before
       @actionOnChange(event)
       _.delay =>
@@ -522,7 +358,7 @@ class QuestionView extends Backbone.View
 
     @completeButton isValid
 
-    $("[name=complete]").parent().scrollTo() if isValid # parent because the actual object is display:none'd by jquery ui
+    @$("[name=complete]").parent().scrollTo() if isValid # parent because the actual object is display:none'd by jquery ui
 
     return isValid
 
@@ -535,6 +371,7 @@ class QuestionView extends Backbone.View
     leaveMessage = options.leaveMessage || false
 
     $question = window.questionCache[key]
+    return true unless $question # Needed for repeatableQuestionSets
     $message  = $question.find(".message")
 
     message = @isValid(key)
@@ -567,8 +404,8 @@ class QuestionView extends Backbone.View
       return false
 
   scrollToElement: _.debounce (element) ->
-    $('main').animate
-      scrollTop: $("main").scrollTop() + element.offset().top-$("header").height()
+    @$('main').animate
+      scrollTop: @$("main").scrollTop() + element.offset().top-@$("header").height()
   , 500, true
 
 
@@ -582,17 +419,17 @@ class QuestionView extends Backbone.View
     # early exit, don't validate labels
     return "" if questionWrapper.hasClass("label")
 
-    question        = $("[name=#{question_id}]", questionWrapper)
+    question        = @$("[name='#{question_id}']", questionWrapper)
 
     type            = $(questionWrapper.find("input").get(0)).attr("type")
     labelText       =
       if type is "radio" or "checkbox"
         # No idea what's going on here
-        #$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).text() || ""
+        #@$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).text() || ""
         if question.attr("id")
-          $("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0].nodeValue or ""
+          @$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0].nodeValue or ""
       else
-        $("label[for=#{question.attr("id")}]", questionWrapper)?.text()
+        @$("label[for=#{question.attr("id")}]", questionWrapper)?.text()
     required        = questionWrapper.attr("data-required") is "true"
     validation      = unescape(questionWrapper.attr("data-validation"))
     validation      = null if validation is "undefined"
@@ -680,7 +517,7 @@ class QuestionView extends Backbone.View
     return unless $target.is(":visible") or $target.attr("type") is "radio"
 
     name = $target.attr("name")
-    $divQuestion = $(".question [data-question-name=#{name}]")
+    $divQuestion = @$(".question [data-question-name='#{name}']")
     code = $divQuestion.attr("data-action_on_change")
     try
       value = ResultOfQuestion(name)
@@ -707,12 +544,14 @@ class QuestionView extends Backbone.View
       try
         result = eval(skipLogicCode)
       catch error
+        console.log skipLogicCode
+        console.error error
         if error == "invisible reference"
           result = true
         else
           name = ((/function (.{1,})\(/).exec(error.constructor.toString())[1])
           message = error.message
-          alert "Skip logic error in question #{$question.attr('data-question-name')}\n\n#{name}\n\n#{message}"
+          alert "Skip logic error in question #{$question.attr('data-question-name')}\n\n#{name}\n\n#{message}. \n Code: #{skipLogicCode}"
 
       if result
         $question[0].style.display = "none"
@@ -728,9 +567,9 @@ class QuestionView extends Backbone.View
       delete currentData.Complete
     # HACK Form2js doesn't work for checkboxes with multiple values
     # Check if any values are checkboxes, then overwrite with correct value
-    _(currentData).each (value,key) ->
-      if $(".checkbox[name=#{key}]").length > 0
-        currentData[key] = _($(".checkbox[name=#{key}]:checked")).map (element) ->
+    _(currentData).each (value,key) =>
+      if @$(".checkbox[name=#{key}]").length > 0
+        currentData[key] = _(@$(".checkbox[name=#{key}]:checked")).map (element) ->
           $(element).val()
 
     return currentData
@@ -738,12 +577,27 @@ class QuestionView extends Backbone.View
   # We throttle to limit how fast save can be repeatedly called
   save: _.throttle( ->
     currentData = @currentData()
+    @trigger "update", currentData
+
+    return unless @result
+    for repeatableQuestionSetName, repeatableQuestionSet of @model.repeatableQuestionSets
+      repeatableQuestionSetNameInResult = classify(repeatableQuestionSetName)
+
+      # repeatableQuestionSet results stored as an array
+      # Loop through and fix each property name
+      if currentData[repeatableQuestionSetNameInResult]?
+        currentData[repeatableQuestionSetNameInResult] = for repeatableQuestionSetResult in currentData[repeatableQuestionSetNameInResult]
+          returnVal = {}
+          for name, value of repeatableQuestionSetResult
+            returnVal[classify(name)] = value
+          returnVal
+        console.log currentData
 
     @result.save(currentData)
     .then =>
-      $("#messageText").slideDown().fadeOut()
+      @$("#messageText").slideDown().fadeOut()
       Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{@result.id()}",false)
-      if ($('[name=complete]').prop("checked"))
+      if (@$('[name=complete]').prop("checked"))
         # Return to Summary page after completion
         Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}",true)
       # Update the menu
@@ -754,8 +608,8 @@ class QuestionView extends Backbone.View
   , 1000)
 
   completeButton: ( value ) ->
-    if $('[name=complete]').prop("checked") isnt value
-      $('[name=complete]').click()
+    if @$('[name=complete]').prop("checked") isnt value
+      @$('[name=complete]').click()
 
   toHTMLForm: (questions = @model, groupId) =>
     window.skipLogicCache = {}
@@ -770,22 +624,32 @@ class QuestionView extends Backbone.View
         return "
           <div data-group-id='#{question_id}' class='question group'>
             #{@toHTMLForm(question.questions(), newGroupId)}
-
-            <div style='padding-top:30px'>
-              <input name='complete' id='question-set-complete' type='checkbox' value='true'></input>
-              <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
-            </div>
+            #{
+              # Automatically add the complete checkbox unless it's a repeatable item
+              unless @isRepeatableQuestionSet
+                "
+                <div style='padding-top:30px'>
+                  <input name='complete' id='question-set-complete' type='checkbox' value='true'></input>
+                  <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
+                </div>
+                "
+              else ""
+            }
           </div>
           #{repeatable}
         "
       else
-        name = question.safeLabel()
+        name = "#{if @namePrefix then @namePrefix else ""}#{question.safeLabel()}"
         # use field_value to determine whether to tick a radio button/checkbox during edit.
-        field_value = @result.get(name)
+        field_value = @result?.get(name) # I think this should be in the js2form section
         return if name is "complete" and question.type() is "checkbox" # Complete now added automatically
         window.skipLogicCache[name] = if question.skipLogic() isnt '' then CoffeeScript.compile(question.skipLogic(),bare:true) else ''
-        question_id = if @currentId then @currentId+=1 else @currentId = 1
+
+        question_id = "#{_(99999).random()}_#{if @currentId then @currentId+=1 else @currentId = 1}"
+
+        # Note that this repeatable stuff is deprecated
         if question.repeatable() == "true"
+          console.warn "Repeatable is deprecated use repeatableQuestionSets instead"
           name = name + "[0]"
           question_id = question_id + "-0"
         if groupId?
@@ -888,7 +752,7 @@ class QuestionView extends Backbone.View
                       _.map(["latitude", "longitude","accuracy"], (field) ->
                         "
                         <div>
-                        <label for='#{question_id}-#{field}'>#{s.capitalize(field)}</label>
+                        <label for='#{question_id}-#{field}'>#{capitalize(field)}</label>
                         <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
                         </div><p/>
                         "
@@ -905,7 +769,7 @@ class QuestionView extends Backbone.View
               when "image"
                 # Put images in the _attachments directory of the plugin
                 Coconut.database.getAttachment("_design/plugin-#{Coconut.config.cloud_database_name()}", question.get("image-path")).then (imageBlob) ->
-                  $("#img-#{question_id}").attr("src", URL.createObjectURL(imageBlob))
+                  @$("#img-#{question_id}").attr("src", URL.createObjectURL(imageBlob))
 
                 "<img id='img-#{question_id}' style='#{question.get "image-style"}' />"
               when "label"
@@ -914,6 +778,8 @@ class QuestionView extends Backbone.View
                 "<input name='#{name}' id='#{question_id}' type='text' class='mdl-textfield__input' value='#{question.value()}'></input>"
               when "number"
                 "<input name='#{name}' id='#{question_id}' type='number' class='mdl-textfield__input' value='#{question.value()}'></input>"
+              when "repeatableQuestionSet"
+                "<input name='#{name}' id='#{question_id}' type='text' class='mdl-textfield__input' value='#{question.value()}'></input>"
               when "qrcode"
                 "
                   <button class='qr-scan' data-question-id='#{question_id}'>Scan</button>
@@ -940,16 +806,16 @@ class QuestionView extends Backbone.View
 
   updateLabelClass: ->
 
-    _(["radio","checkbox"]).each (type) ->
-      if $("input[type=#{type}]").filter( -> @checked is true ).length > 0
-        $("input[type=#{type}]").siblings('label.mdl-nontextfield__label').addClass "has-value"
+    _(["radio","checkbox"]).each (type) =>
+      if @$("input[type=#{type}]").filter( -> @checked is true ).length > 0
+        @$("input[type=#{type}]").siblings('label.mdl-nontextfield__label').addClass "has-value"
       else
-        $("input[type=#{type}]").siblings('label.mdl-nontextfield__label').removeClass "has-value"
+        @$("input[type=#{type}]").siblings('label.mdl-nontextfield__label').removeClass "has-value"
 
-  updateCache: ->
+  updateCache: =>
     window.questionCache = {}
     window.getValueCache = {}
-    window.$questions = $(".question")
+    window.$questions = @$(".question")
 
     for question in window.$questions
       name = question.getAttribute("data-question-name")
@@ -960,22 +826,22 @@ class QuestionView extends Backbone.View
 
         # cache accessor function
         $qC = window.questionCache[name] # questionContext
-        selects = $("select[name=#{name}]", $qC)
+        selects = @$("select[name='#{name}']", $qC)
         if selects.length is 0
-          inputs  = $("input[name=#{name}]", $qC)
+          inputs  = @$("input[name='#{name}']", $qC)
           if inputs.length isnt 0
             type = inputs[0].getAttribute("type")
             if type is "radio"
-              do (name, $qC) -> accessorFunction = -> $("input:checked", $qC).safeVal()
+              do (name, $qC) => accessorFunction = => @$("input:checked", $qC).safeVal()
             else if type is "checkbox"
-              do (name, $qC) -> accessorFunction = -> $("input:checked", $qC).map( -> $(this).safeVal())
+              do (name, $qC) => accessorFunction = => @$("input:checked", $qC).map( => $(this).safeVal())
             else
-              do (inputs) -> accessorFunction = -> inputs.safeVal()
+              do (inputs) => accessorFunction = => inputs.safeVal()
           else # inputs is 0
-            do (name, $qC) -> accessorFunction = -> $(".textarea[name=#{name}]", $qC).safeVal()
+            do (name, $qC) => accessorFunction = => @$(".textarea[name=#{name}]", $qC).safeVal()
 
         else # selects isnt 0
-          do (selects) -> accessorFunction = -> selects.safeVal()
+          do (selects) => accessorFunction = => selects.safeVal()
 
         window.getValueCache[name] = accessorFunction
 
@@ -1003,27 +869,27 @@ class QuestionView extends Backbone.View
     # 3 minutes
     maxWait = 3*60*1000
     question_id = $(event.target).closest("[data-question-id]").attr("data-question-id")
-    $("##{question_id}-description").val "Retrieving position, please wait."
+    @$("##{question_id}-description").val "Retrieving position, please wait."
 
     updateFormWithCoordinates = (geoposition) ->
       _.each ["longitude","latitude","accuracy"], (measurementName) ->
-        $("##{question_id}-#{measurementName}").val(geoposition.coords[measurementName])
+        @$("##{question_id}-#{measurementName}").val(geoposition.coords[measurementName])
 
 
-      $("##{question_id}-timestamp").val(moment(geoposition.timestamp).format("YYYY-MM-DD HH:mm:ss"))
+      @$("##{question_id}-timestamp").val(moment(geoposition.timestamp).format("YYYY-MM-DD HH:mm:ss"))
       $.getJSON "https://secure.geonames.org/findNearbyPlaceNameJSON?lat=#{geoposition.coords.latitude}&lng=#{geoposition.coords.longitude}&username=mikeymckay&callback=?", null, (result) =>
-        $("##{question_id}-description").val parseFloat(result.geonames[0].distance).toFixed(1) + " km from center of " + result.geonames[0].name
+        @$("##{question_id}-description").val parseFloat(result.geonames[0].distance).toFixed(1) + " km from center of " + result.geonames[0].name
 
     onSuccess = (geoposition) =>
-      $("label[type=location]").html "Household Location"
+      @$("label[type=location]").html "Household Location"
       updateFormWithCoordinates(geoposition)
-      $("##{question_id}-description").val "Success"
+      @$("##{question_id}-description").val "Success"
       @save()
     onError = (error) ->
-      $("##{question_id}-description").val "Error: #{JSON.stringify error}"
+      @$("##{question_id}-description").val "Error: #{JSON.stringify error}"
     onProgress = (geoposition) =>
       updateFormWithCoordinates(geoposition)
-      $("label[type=location]").html "Household Location<div style='background-color:yellow'>Current accuracy is #{geoposition.coords.accuracy} meters - must be less than #{requiredAccuracy} meters. Make sure there are no trees or buildings blocking view to the sky.</div>" if geoposition.coords.accuracy > requiredAccuracy
+      @$("label[type=location]").html "Household Location<div style='background-color:yellow'>Current accuracy is #{geoposition.coords.accuracy} meters - must be less than #{requiredAccuracy} meters. Make sure there are no trees or buildings blocking view to the sky.</div>" if geoposition.coords.accuracy > requiredAccuracy
 
     navigator.geolocation.clearWatch(@watchID)
     navigator.geolocation.getAccurateCurrentPosition(onSuccess,onError,onProgress,
@@ -1091,6 +957,220 @@ class QuestionView extends Backbone.View
           outputData.parentElement.hidden = true
 
       requestAnimationFrame(tick)
+
+  css: => "
+    div.question .mdl-textfield{
+      width: inherit;
+      display: block;
+    }
+    .mdl-textfield__input{
+      width: 98%;
+    }
+
+    label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
+      font-size: 1.1em;
+    }
+
+    input{
+      width: 98%;
+    }
+
+    .message
+    {
+      color: white;
+      font-weight: bold;
+      padding: 10px;
+      border: 1px #{@accent2} dotted;
+      background: #{@accent2};
+      display: none;
+    }
+
+    .message, label.radio{
+      max-width: 620px;
+    }
+
+    label.mdl-nontextfield__label{
+      display:block;
+      color: #{@accent1};
+      padding:20px 0px 20px;
+      font-size: 1.2em;
+    }
+
+    label.mdl-nontextfield__label.has-value{
+      color: #{@primary1};
+      font-size:100%;
+    }
+
+    .mdl-textfield--floating-label.is-focused .mdl-textfield__label, .mdl-textfield--floating-label.is-dirty .mdl-textfield__label{
+      font-size:100%;
+    }
+
+    label.mdl-textfield__label{
+      display:block;
+      color:#{@accent1};
+      padding:20px 0px 20px;
+      font-size: 1.3em;
+      /* font-size:125%; */
+    }
+
+    div.radio label.mdl-textfield__label{
+     font-size:150%;
+     color:#{@accent1};
+    }
+
+    .is-dirty label.mdl-textfield__label{
+     color:#{@primary1};
+    }
+
+    #question-view .mdl-textfield__label{
+      position: inherit;
+    }
+
+    .coconut-radio{
+      margin: 10px;
+    }
+
+    .mdl-radio__label{
+      line-height:normal;
+    }
+
+    label.radio-option,label.checkbox-option {
+      border-radius:20px;
+      display:inline-block;
+      padding:4px 11px;
+      border: 1px solid black;
+      cursor: pointer;
+      text-decoration: none;
+      width:250px;
+      line-height:100%;
+      vertical-align: top;
+    }
+    label.radio-option {
+      width: inherit;
+      font-size: 100%;
+    }
+
+    input[type='radio']:checked + label {
+      color: white;
+      background-color:#ddd;
+      background: #{@primary1};
+      background-image: -webkit-gradient(linear,left top,left bottom,from(#{@primary1}),to(#{@primary2}));
+      background-image: -webkit-linear-gradient(#{@primary1},#{@primary2});
+      background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
+      background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
+      background-image: -o-linear-gradient(#{@primary1},#{@primary2});
+    }
+
+    input[type='radio'],input[type='checkbox']{
+      height: 0px;
+      width: 0px;
+      margin: 0px;
+    }
+
+    input[type='checkbox']:checked + label {
+      color: white;
+      background-color:#ddd;
+      background: #{@primary1};
+      background-image: -webkit-gradient(linear,left top,left bottom,from(#{@primary1}),to(#{@primary2}));
+      background-image: -webkit-linear-gradient(#{@primary1},#{@primary2});
+      background-image: -moz-linear-gradient(#{@primary1},#{@primary2});
+      background-image: -ms-linear-gradient(#{@primary1},#{@primary2});
+      background-image: -o-linear-gradient(#{@primary1},#{@primary2});
+    }
+    input[type='checkbox']{
+      height: 0px;
+    }
+
+    #question-set-complete:checked + label {
+      color: #{@primary1};
+      background:none;
+    }
+
+    .question-set-complete-label{
+      color: #{@accent2};
+      font-size: 1.5em;
+    }
+    #question-set-complete{
+      /* Triple-sized Checkboxes */
+      -ms-transform: scale(3); /* IE */
+      -moz-transform: scale(3); /* FF */
+      -webkit-transform: scale(3); /* Safari and Chrome */
+      -o-transform: scale(3); /* Opera */
+      height:20px;
+      width: 15px;
+      margin: 10px 10px;
+    }
+
+    div.question.radio{
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .tt-hint{
+      display:none
+    }
+    .tt-dropdown-menu{
+      width: 100%;
+      background-color: lightgray;
+    }
+    .tt-suggestion{
+      background-color: white;
+      border-radius:20px;
+      display:block;
+      padding:4px 11px;
+      border: 1px solid black;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .tt-suggestion .{
+    }
+
+    button.next_error.mdl-button{
+      bottom: 0px;
+      position: relative;
+    }
+
+    div.message {
+      font-size:20px;
+    }
+
+    .awesomplete ul{
+      background-color:white;
+      position:absolute;
+      z-index:10;
+      width: 95%;
+      list-style:none;
+      margin-top: 3px;
+      border-left: 2px inset;
+      border-bottom: 2px outset;
+      border-right: 1px outset;
+      border-top: 0px;
+      font-size: 10px;
+    }
+
+    .awesomplete li{
+      padding: 10px;
+      font-size: 200%;
+    }
+
+    .awesomplete mark{
+      background-color:white;
+      color: gray;
+    }
+
+    .location .mdl-button{
+      position:relative;
+      margin-bottom: 10px;
+    }
+
+    #{
+      @model.get("styles") or ""
+    }
+
+    span.visually-hidden{
+      display:none;
+    }
+  "
+
 
 # jquery helpers
 

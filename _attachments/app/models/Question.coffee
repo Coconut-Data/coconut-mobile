@@ -9,10 +9,33 @@ class Question extends Backbone.Model
     @set
       collection: "result"
 
+  fetch: (options) =>
+    new Promise (resolve, reject)  =>
+      super
+        success: =>
+          @fetchRepeatableQuestionSets()
+          .catch (error) => console.error error
+          .then =>
+            options?.success?()
+            resolve()
+
+  
+  fetchRepeatableQuestionSets: =>
+    @repeatableQuestionSets = {}
+    Promise.all(@questions().map (question) =>
+      if question.type() is "repeatableQuestionSet"
+        @repeatableQuestionSets[question.label()] = new Question(id: (question.get("repeatableQuestionSetName") or question.label()))
+        @repeatableQuestionSets[question.label()].fetch
+          success: => Promise.resolve()
+          error: (error) => console.error error
+    ).then =>
+      Promise.resolve()
+
+
   type: -> @get("type")
   label: => @get("label") or @get("id") or @get("_id")
   safeLabel: -> slugify(@label())
-  repeatable: -> @get("repeatable")
+  repeatable: -> @get("repeatable") # Note this doesn't really work
   questions: -> @get("questions")
   value: -> if @get("value")? then @get("value") else ""
   required: -> if @get("required")? then @get("required") else "true"

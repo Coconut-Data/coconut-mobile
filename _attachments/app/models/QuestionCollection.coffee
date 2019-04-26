@@ -31,6 +31,8 @@ class QuestionCollection extends Backbone.Collection
       new Promise (resolve) =>
         Coconut.questions.fetch
           success: -> 
+            Promise.all Coconut.questions.models.map (question) =>
+              question.fetch() # Coconut.questions.fetch doesn't seem to call fetch which is overloaded so call it again
             resolve()
 
 module.exports = QuestionCollection

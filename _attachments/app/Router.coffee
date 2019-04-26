@@ -145,21 +145,19 @@ class Router extends Backbone.Router
 
   test: =>
     text = "
-    P1-702-133-122
     <br/>
+    Marcus McKay
     <br/>
-    Mike McKay
+    4 Years Old
     <br/>
-    17 Aug 2018
-    <br/>
-    0716925547
+    Best Friends: Kanan, Aaron, Leo, Syon, Zidan
     "
 
     $("#content").html "
       <div style='width:600px; height:300px;border:solid' id='label'>
         <canvas style='display:inline-block; vertical-align:top;' id='qrcode'></canvas>
-        <img style='display:inline-block; height:150px' src='./mike.jpg'/>
-        <div style='display:inline-block; line-height:1em; font-size:2em'>#{text}</span>
+        <img style='display:inline-block; height:200px; vertical-align:top;' src='./marcus.jpg'/>
+        <div style='display:inline-block; line-height:1em; font-size:1.5em; width:200px'>#{text}</span>
       </div>
     "
 
@@ -170,7 +168,7 @@ class Router extends Backbone.Router
     fd.append('label', blob, 'label.png')
     $.ajax
       type: 'POST'
-      url: 'http://192.168.0.102:8042/'
+      url: 'http://192.168.0.109:8042/'
       data: fd
       processData: false
       contentType: false
