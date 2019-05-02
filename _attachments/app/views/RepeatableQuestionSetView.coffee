@@ -67,6 +67,7 @@ class RepeatableQuestionSetView extends Backbone.View
     #  console.log result
     #@questionViews[@prefix] = questionView
 
+    repeatableItem.find(".content_title").append(" ##{@repeatableItemNumber+1}")
     repeatableItem.append "
       <div style='margin-top:100px'>
         #{@addRepeatableQuestionSetButton()}

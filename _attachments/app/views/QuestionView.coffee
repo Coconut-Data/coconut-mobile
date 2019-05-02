@@ -16,6 +16,9 @@ global.SkipTheseWhen = ( argQuestions, result ) ->
 global.classify = require("underscore.string/classify")
 global.capitalize = require("underscore.string/capitalize")
 global.slugify = require("underscore.string/slugify")
+global.dasherize = require("underscore.string/dasherize")
+global.humanize = require("underscore.string/humanize")
+global.titleize = require("underscore.string/titleize")
 get = require "lodash/get"
 
 global.ResultOfQuestion = (name) ->
@@ -171,11 +174,10 @@ class QuestionView extends Backbone.View
           _(numberOfRepeatableSectionsInResult).times =>
             repeatableQuestionSet.view.addRepeatableItem()
 
-      console.log @result.toJSON()
       Form2js.js2form 'questions', @result.toJSON()
       # above doesn't seem to work for radio buttons
-      #
       @applyResultsToRadioButtons()
+      @applyResultsToRepeatableQuestionSets()
 
     @updateCache()
 
@@ -237,6 +239,15 @@ class QuestionView extends Backbone.View
 
     # Without this re-using the view results in staying at the old scroll position
     @$("main").scrollTop(0)
+
+  applyResultsToRepeatableQuestionSets: =>
+    for topLevelProperty,topLevelValue of @result.data
+      if _(topLevelValue).isArray()
+        for repeatableResult,index in topLevelValue
+          for property,value of repeatableResult
+            topLevelProperty = titleize(humanize(topLevelProperty))
+            property = dasherize(property)[1..]
+            @$("input[name='#{topLevelProperty}[#{index}].#{property}']").val(value)
 
   applyResultsToRadioButtons: =>
     radioInputElements = @$("input[type=radio]")
@@ -403,7 +414,7 @@ class QuestionView extends Backbone.View
 
       return false
 
-  scrollToElement: _.debounce (element) ->
+  scrollToElement: _.debounce (element) =>
     @$('main').animate
       scrollTop: @$("main").scrollTop() + element.offset().top-@$("header").height()
   , 500, true
@@ -535,7 +546,6 @@ class QuestionView extends Backbone.View
       alert "Action on change error in question #{$divQuestion.attr('data-question-id') || $divQuestion.attr("id")}\n\n#{name}\n\n#{message}"
 
   updateSkipLogic: ->
-
     for name, $question of window.questionCache
 
       skipLogicCode = window.skipLogicCache[name]
@@ -591,7 +601,6 @@ class QuestionView extends Backbone.View
           for name, value of repeatableQuestionSetResult
             returnVal[classify(name)] = value
           returnVal
-        console.log currentData
 
     @result.save(currentData)
     .then =>
@@ -612,7 +621,7 @@ class QuestionView extends Backbone.View
       @$('[name=complete]').click()
 
   toHTMLForm: (questions = @model, groupId) =>
-    window.skipLogicCache = {}
+    window.skipLogicCache = {} unless @isRepeatableQuestionSet
     # Need this because we have recursion later
     questions = [questions] unless questions.length?
     _.map(questions, (question) =>
@@ -832,7 +841,12 @@ class QuestionView extends Backbone.View
           if inputs.length isnt 0
             type = inputs[0].getAttribute("type")
             if type is "radio"
-              do (name, $qC) => accessorFunction = => @$("input:checked", $qC).safeVal()
+              do (name, $qC) => 
+                accessorFunction = => 
+                  console.log $qC
+                  console.log $("input:checked", $qC).safeVal()
+                  console.log $("input:checked", $qC)
+                  $("input:checked", $qC).safeVal()
             else if type is "checkbox"
               do (name, $qC) => accessorFunction = => @$("input:checked", $qC).map( => $(this).safeVal())
             else
@@ -864,15 +878,15 @@ class QuestionView extends Backbone.View
     button.after(newQuestion.add(button.clone()))
     button.remove()
 
-  getLocation: (event) ->
+  getLocation: (event) =>
     requiredAccuracy = 200
     # 3 minutes
     maxWait = 3*60*1000
     question_id = $(event.target).closest("[data-question-id]").attr("data-question-id")
     @$("##{question_id}-description").val "Retrieving position, please wait."
 
-    updateFormWithCoordinates = (geoposition) ->
-      _.each ["longitude","latitude","accuracy"], (measurementName) ->
+    updateFormWithCoordinates = (geoposition) =>
+      _.each ["longitude","latitude","accuracy"], (measurementName) =>
         @$("##{question_id}-#{measurementName}").val(geoposition.coords[measurementName])
 
 
