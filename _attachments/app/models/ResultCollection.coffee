@@ -36,8 +36,9 @@ class ResultCollection
       Coconut.questions.fetch
         error: (error) -> console.log "Error loading Coconut.questions: #{JSON.stringify error}"
         success: ->
-          options.success() if Coconut.questions.length is 0
-
+          if Coconut.questions.length is 0
+            options?.success()
+            resolve()
           designDocs = {
             results: """
               (doc) ->
