@@ -19,11 +19,17 @@ global.slugify = require("underscore.string/slugify")
 global.dasherize = require("underscore.string/dasherize")
 global.humanize = require("underscore.string/humanize")
 global.titleize = require("underscore.string/titleize")
+global.camelize = require("underscore.string/camelize")
 get = require "lodash/get"
+merge = require "lodash.merge"
 
 global.ResultOfQuestion = (name) ->
-  window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or null
-#return window.getValueCache[name]?() or window.getValueCache[slugify(name)]?() or @$("[name=#{slugify(name)}]").val() or null
+  if window.getValueCache[name]?
+    window.getValueCache[name]
+  else if window.getValueCache[slugify(name)]?
+    window.getValueCache[slugify(name)]
+  else
+    null
 
 global.setValue = (targetLabel, value) ->
   @$("[name=#{slugify(targetLabel)}]").val(value)
@@ -51,6 +57,8 @@ Module = require 'module'
 global.Form2js = require 'form2js'
 moment = require 'moment'
 jsQR = require 'jsqr'
+
+global.getFormData = require 'get-form-data'
 
 #typeahead = require 'typeahead.js'
 
@@ -123,8 +131,6 @@ class QuestionView extends Backbone.View
 
   render: =>
 
-
-
     @primary1 = "rgb(63,81,181)"
     @primary2 = "rgb(48,63,159)"
 
@@ -168,16 +174,9 @@ class QuestionView extends Backbone.View
 
     #Load data into form
     if @result
-      for repeatableQuestionSetName, repeatableQuestionSet of @model.repeatableQuestionSets
-        numberOfRepeatableSectionsInResult = @result.data[classify(repeatableQuestionSetName)]?.length
-        if numberOfRepeatableSectionsInResult > 0
-          _(numberOfRepeatableSectionsInResult).times =>
-            repeatableQuestionSet.view.addRepeatableItem()
 
-      Form2js.js2form 'questions', @result.toJSON()
-      # above doesn't seem to work for radio buttons
-      @applyResultsToRadioButtons()
-      @applyResultsToRepeatableQuestionSets()
+      @addRepeatableQuestionSets()
+      @loadResultsInForm()
 
     @updateCache()
 
@@ -240,14 +239,93 @@ class QuestionView extends Backbone.View
     # Without this re-using the view results in staying at the old scroll position
     @$("main").scrollTop(0)
 
-  applyResultsToRepeatableQuestionSets: =>
-    for topLevelProperty,topLevelValue of @result.data
-      if _(topLevelValue).isArray()
-        for repeatableResult,index in topLevelValue
-          for property,value of repeatableResult
-            topLevelProperty = titleize(humanize(topLevelProperty))
-            property = dasherize(property)[1..]
-            @$("input[name='#{topLevelProperty}[#{index}].#{property}']").val(value)
+  addRepeatableQuestionSets: =>
+    for repeatableQuestionSetName, repeatableQuestionSet of @model.repeatableQuestionSets
+      repeatableQuestionSetsInResult = _(@result.data).chain().keys().filter (key) =>
+        key.startsWith repeatableQuestionSetName
+      .map (key) =>
+        key.replace(/\].*/,"]")
+      .unique()
+      .value()
+
+      numberOfRepeatableSectionsInResult = repeatableQuestionSetsInResult.length
+      if numberOfRepeatableSectionsInResult > 0
+        _(numberOfRepeatableSectionsInResult).times =>
+          repeatableQuestionSet.view.addRepeatableItem()
+
+
+  loadResultsInForm: =>
+    @updateCache()
+
+    results = if Coconut.database.name is "coconut-zanzibar" or Coconut.database.name is "coconut-zanzibar-development"
+      results = {}
+      for property, value of @result.toJSON()
+        hasBrackets = property.match(/(.*)(\[\d+\])(.*)/)
+        if hasBrackets
+          property = "#{hasBrackets[1]}#{hasBrackets[2]}.#{slugify(dasherize(hasBrackets[3]))}"
+        else
+          property = slugify(dasherize(property))
+        property = "malaria-case-id" if property is "malaria-case-i-d"
+        results[property] = value
+      results
+    else
+      @result.toJSON()
+
+    for property,value of results
+      continue if _([
+        "id"
+        "rev"
+        "deleted"
+        "attachments"
+        "collection"
+        "created-at"
+        "last-modified-at"
+        "question"
+        "user"
+        "saved-by"
+      ]).contains(property)
+      question = questionCache[property]
+      if question
+        input = question.find("input")
+        if input
+          if _([
+            "text"
+            "date"
+            "datetime-local"
+            "number"
+          ]).contains(input[0].type)
+            input.val(value)
+          else if input[0].type is "radio"
+            found = false
+            for radioElement in input
+              if radioElement.value is value
+                found = true
+                radioElement.parentNode.MaterialRadio.check()
+            if found is false
+              console.error "Could not find radio element for: #{property}, #{value}"
+              console.error input
+
+          else if input[0].type is "checkbox"
+            if value is "true"
+              found = false
+              for checkBox in input
+                if checkBox.value is value
+                  found = true
+                  checkBox.checked = true
+              if found is false
+                console.error "Could not find checkbox element for: #{property}, #{value}"
+
+
+
+          else
+            console.error "Could not element to populate: #{property}, #{value}"
+            console.log "#{property} is of type: #{input[0].type}"
+        else
+          console.error "#{property} has no input field"
+      else
+        console.error "Can't find question for #{property}"
+
+
 
   applyResultsToRadioButtons: =>
     radioInputElements = @$("input[type=radio]")
@@ -291,6 +369,7 @@ class QuestionView extends Backbone.View
   runValidate: -> @validateAll()
 
   onChange: (event) =>
+    console.log "onChange"
     @updateLabelClass()
 
     prevCompletedState = @$("#question-set-complete").prop("checked")
@@ -307,6 +386,8 @@ class QuestionView extends Backbone.View
     @oldStamp     = eventStamp
 
     targetName = $target.attr("name")
+    console.log $target
+    console.log targetName
     if targetName == "complete" || @$("#question-set-complete").prop("checked")
       allQuestionsPassValidation = @validateAll()
 
@@ -319,6 +400,8 @@ class QuestionView extends Backbone.View
         if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
           CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
+        console.log "$$$$$"
+        console.log onValidatedComplete
         if onValidatedComplete
           _.delay ->
             CoffeeScript.eval onValidatedComplete
@@ -354,6 +437,7 @@ class QuestionView extends Backbone.View
       button : "<button type='button' data-name='#{name}' class='validate_one'>Validate</button>"
 
   validateAll: () ->
+    @updateCache()
 
     isValid = true
 
@@ -375,6 +459,7 @@ class QuestionView extends Backbone.View
 
 
   validateOne: ( options ) =>
+    @updateCache()
 
     key          = options.key          || ''
     autoscroll   = options.autoscroll   || false
@@ -421,6 +506,7 @@ class QuestionView extends Backbone.View
 
 
   isValid: ( question_id ) ->
+    @updateCache()
 
     return unless question_id
     result = []
@@ -438,14 +524,14 @@ class QuestionView extends Backbone.View
         # No idea what's going on here
         #@$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).text() || ""
         if question.attr("id")
-          @$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0].nodeValue or ""
+          @$("label[for=#{question.attr("id").split("-")[0]}]", questionWrapper).contents().filter( -> @nodeType is 3)[0]?.nodeValue or ""
       else
         @$("label[for=#{question.attr("id")}]", questionWrapper)?.text()
     required        = questionWrapper.attr("data-required") is "true"
     validation      = unescape(questionWrapper.attr("data-validation"))
     validation      = null if validation is "undefined"
 
-    value           = window.getValueCache[question_id]()
+    value           = window.getValueCache[question_id]
 
     #
     # Exit early conditions
@@ -457,7 +543,7 @@ class QuestionView extends Backbone.View
     # "" = true
     return "" if question.find("input").length != 0 and (type == "checkbox" or type == "radio")
 
-    result.push "'#{labelText}' is required." if required && (value is null or value.length is 0) unless question_id is "household-location"
+    result.push "'#{labelText}' is required." if required && (value is null or value?.length is 0) unless question_id is "household-location"
 
     # If not required, then don't validate when value is empty
     return "" if not required and (value is "")
@@ -546,12 +632,26 @@ class QuestionView extends Backbone.View
       alert "Action on change error in question #{$divQuestion.attr('data-question-id') || $divQuestion.attr("id")}\n\n#{name}\n\n#{message}"
 
   updateSkipLogic: ->
+    @updateCache()
+
+
     for name, $question of window.questionCache
 
       skipLogicCode = window.skipLogicCache[name]
       continue if skipLogicCode is "" or not skipLogicCode?
 
       try
+        return if name.match(/\[\d+\]/) and not @namePrefix? # Since we have multiple questionview instances, we need to make sure that the right one is being run
+        if name.match(/\[\d+\]/) and @namePrefix?
+          # Parse for ResultOfQuestion - dynamically fix it to have the right context
+          # So ResultOfQuestion("Name") in the "Travel" Repeatable question becomes ResultOfQuestion("Travel[0]Name") - or something close to this
+          # Complicated regex, have to use match all to do repeating matching groups
+          for match in Array.from(skipLogicCode.matchAll(/ResultOfQuestion\(['"](.*?)["']\)/g))
+            originalQuestionStringMatch = new RegExp("#{match[1]}")
+            potentialQuestionStringReplacement = "#{@namePrefix}#{slugify(match[1])}"
+            # If the target exists in the repeatable context, dynamically update the skip logic to use that, else let it stay as is and it will use the parent context
+            if getValueCache[potentialQuestionStringReplacement]
+              skipLogicCode = skipLogicCode.replace(originalQuestionStringMatch, potentialQuestionStringReplacement).replace(/\?/,"") # we can get trailing question marks
         result = eval(skipLogicCode)
       catch error
         console.log skipLogicCode
@@ -568,39 +668,35 @@ class QuestionView extends Backbone.View
       else
         $question[0].style.display = ""
 
-  currentData: ->
-    currentData = Form2js.form2js('questions', ".", false)
-    #Temporary hack by SL. form2js returns complete attribute named as Complete
-    # in the case doc, the attibute is not capitalize.
-    if currentData.Complete?
-      currentData.complete = currentData.Complete.valueOf()
-      delete currentData.Complete
-    # HACK Form2js doesn't work for checkboxes with multiple values
-    # Check if any values are checkboxes, then overwrite with correct value
-    _(currentData).each (value,key) =>
-      if @$(".checkbox[name=#{key}]").length > 0
-        currentData[key] = _(@$(".checkbox[name=#{key}]:checked")).map (element) ->
-          $(element).val()
+  currentData: =>
+    currentData = {}
+    for form in document.querySelectorAll("form") # gets data from repeatable forms
+      merge(currentData, getFormData.default(form))
+    currentData
 
-    return currentData
+  # Handling legacy formats
+  currentDataForZanzibar: =>
+    currentData = {}
+    for property, value of @currentData()
+      unless property.match(/\[\d+\]/) # Don't fixed repeatable questions
+        property = capitalize(camelize(property))
+      # These are both legacy things that I wish we didn't have
+      property = "MalariaCaseID" if property is "MalariaCaseId"
+      property = "complete" if property is "Complete"
+      currentData[property] = value
+    currentData["complete"] = false unless currentData["complete"]
+    currentData
 
   # We throttle to limit how fast save can be repeatedly called
   save: _.throttle( ->
-    currentData = @currentData()
+    currentData = if Coconut.database.name is "coconut-zanzibar" or Coconut.database.name is "coconut-zanzibar-development"
+      @currentDataForZanzibar()
+    else
+      @currentData()
+
     @trigger "update", currentData
 
     return unless @result
-    for repeatableQuestionSetName, repeatableQuestionSet of @model.repeatableQuestionSets
-      repeatableQuestionSetNameInResult = classify(repeatableQuestionSetName)
-
-      # repeatableQuestionSet results stored as an array
-      # Loop through and fix each property name
-      if currentData[repeatableQuestionSetNameInResult]?
-        currentData[repeatableQuestionSetNameInResult] = for repeatableQuestionSetResult in currentData[repeatableQuestionSetNameInResult]
-          returnVal = {}
-          for name, value of repeatableQuestionSetResult
-            returnVal[classify(name)] = value
-          returnVal
 
     @result.save(currentData)
     .then =>
@@ -625,8 +721,6 @@ class QuestionView extends Backbone.View
     # Need this because we have recursion later
     questions = [questions] unless questions.length?
     _.map(questions, (question) =>
-      repeatable = if question.repeatable() == "true" then "<button>+</button>" else ""
-
       unless question.type()? and question.label()? and question.label() != ""
         newGroupId = question_id
         newGroupId = newGroupId + "[0]" if question.repeatable()
@@ -637,7 +731,7 @@ class QuestionView extends Backbone.View
               # Automatically add the complete checkbox unless it's a repeatable item
               unless @isRepeatableQuestionSet
                 "
-                <div style='padding-top:30px'>
+                <div data-question-name='complete' class='question' style='padding-top:30px'>
                   <input name='complete' id='question-set-complete' type='checkbox' value='true'></input>
                   <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
                 </div>
@@ -645,7 +739,6 @@ class QuestionView extends Backbone.View
               else ""
             }
           </div>
-          #{repeatable}
         "
       else
         name = "#{if @namePrefix then @namePrefix else ""}#{question.safeLabel()}"
@@ -656,11 +749,6 @@ class QuestionView extends Backbone.View
 
         question_id = "#{_(99999).random()}_#{if @currentId then @currentId+=1 else @currentId = 1}"
 
-        # Note that this repeatable stuff is deprecated
-        if question.repeatable() == "true"
-          console.warn "Repeatable is deprecated use repeatableQuestionSets instead"
-          name = name + "[0]"
-          question_id = question_id + "-0"
         if groupId?
           name = "group.#{groupId}.#{name}"
         return "
@@ -680,7 +768,7 @@ class QuestionView extends Backbone.View
           >
           <div class='message'></div>
           #{
-          "<label class='#{question.type()} mdl-nontextfield__label' type='#{question.type()}' for='#{question_id}'>#{question.label()} #{if question.required() is 'true' then '*' else ''}</label>" unless ~question.type().indexOf('hidden')
+          "<label class='#{question.type()} mdl-nontextfield__label' type='#{question.type()}' for='#{question_id}'>#{question.label()} #{if question.required() is 'true' and question.type() isnt 'label' then '*' else ''}</label>" unless ~question.type().indexOf('hidden')
           }
           #{
             switch question.type()
@@ -745,7 +833,7 @@ class QuestionView extends Backbone.View
                   -> ,
                   -> ,
                   -> ,
-                  {desiredAccuracy:50,maxWait:60*5*1000}
+                  {desiredAccuracy:10,maxWait:60*5*1000}
                 )
 
                 "
@@ -809,7 +897,6 @@ class QuestionView extends Backbone.View
                 "<input name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}'></input>"
           }
           </div>
-          #{repeatable}
         "
     ).join("")
 
@@ -822,42 +909,20 @@ class QuestionView extends Backbone.View
         @$("input[type=#{type}]").siblings('label.mdl-nontextfield__label').removeClass "has-value"
 
   updateCache: =>
+
     window.questionCache = {}
     window.getValueCache = {}
-    window.$questions = @$(".question")
+    window.$questions = $(".question")
 
     for question in window.$questions
       name = question.getAttribute("data-question-name")
       if name? and name isnt ""
-        accessorFunction = {}
+        #accessorFunction = {}
         window.questionCache[name] = $(question)
 
-
-        # cache accessor function
-        $qC = window.questionCache[name] # questionContext
-        selects = @$("select[name='#{name}']", $qC)
-        if selects.length is 0
-          inputs  = @$("input[name='#{name}']", $qC)
-          if inputs.length isnt 0
-            type = inputs[0].getAttribute("type")
-            if type is "radio"
-              do (name, $qC) => 
-                accessorFunction = => 
-                  console.log $qC
-                  console.log $("input:checked", $qC).safeVal()
-                  console.log $("input:checked", $qC)
-                  $("input:checked", $qC).safeVal()
-            else if type is "checkbox"
-              do (name, $qC) => accessorFunction = => @$("input:checked", $qC).map( => $(this).safeVal())
-            else
-              do (inputs) => accessorFunction = => inputs.safeVal()
-          else # inputs is 0
-            do (name, $qC) => accessorFunction = => @$(".textarea[name=#{name}]", $qC).safeVal()
-
-        else # selects isnt 0
-          do (selects) => accessorFunction = => selects.safeVal()
-
-        window.getValueCache[name] = accessorFunction
+    window.getValueCache = {}
+    for property, value of @currentData()
+      window.getValueCache[property] = value
 
     window.keyCache = _.keys(questionCache)
 
@@ -879,7 +944,7 @@ class QuestionView extends Backbone.View
     button.remove()
 
   getLocation: (event) =>
-    requiredAccuracy = 200
+    requiredAccuracy = 20
     # 3 minutes
     maxWait = 3*60*1000
     question_id = $(event.target).closest("[data-question-id]").attr("data-question-id")
@@ -983,6 +1048,10 @@ class QuestionView extends Backbone.View
 
     label, label.coconut-radio.mdl-radio, input, input.mdl-textfield__input{
       font-size: 1.1em;
+    }
+
+    label.mdl-nontextfield__label.label{
+      color: #4285f4
     }
 
     input{
