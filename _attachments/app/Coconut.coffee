@@ -231,6 +231,7 @@ class Coconut
                   @getOrAssignInstanceId().then (instanceId) =>
                     @instanceId = instanceId
                     @router.startApp().then =>
+                      @fixCompletePropertyInResults()
                       # Look for a global StartPlugins array and then run all of the functions in it
                       if StartPlugins?
                         console.log "STARTING PLUGINS"
@@ -238,6 +239,19 @@ class Coconut
                           await startPluginFunction()
                       # Will return a promise
                       console.log "DONE STARTING PLUGINS"
+
+  fixCompletePropertyInResults: => # Bug generated some bad data for a few weeks - can remove after a few days
+    @database.query "results",
+      include_docs: true
+    .then (result) =>
+      for row in result.rows
+        if row.doc.complete is "true"
+          @database.upsert row.id, (doc) =>
+            doc.complete = true
+            doc
+    .catch (error) =>
+      console.error error
+
 
   destroyApplicationDatabases: (options) =>
     PouchDB.allDbs()

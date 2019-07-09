@@ -39,8 +39,6 @@ global.setLabelText = (targetLabel, value) ->
 
 # # # #
 
-
-
 _ = require 'underscore'
 global._ = _
 $ = require 'jquery'
@@ -684,7 +682,12 @@ class QuestionView extends Backbone.View
       property = "MalariaCaseID" if property is "MalariaCaseId"
       property = "complete" if property is "Complete"
       currentData[property] = value
-    currentData["complete"] = false unless currentData["complete"]
+    currentData["complete"] = 
+      if currentData["complete"]
+        true
+      else
+        false
+
     currentData
 
   # We throttle to limit how fast save can be repeatedly called
@@ -844,13 +847,13 @@ class QuestionView extends Backbone.View
                   </div>
                   <div>
                     <label for='#{question_id}-description'>Description</label>
-                    <input type='text' name='#{name}-description' id='#{question_id}-description'></input><p/>
+                    <input class='question' type='text' name='#{name}-description' id='#{question_id}-description'></input><p/>
                     #{
                       _.map(["latitude", "longitude","accuracy"], (field) ->
                         "
                         <div>
                         <label for='#{question_id}-#{field}'>#{capitalize(field)}</label>
-                        <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
+                        <input class='question' readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
                         </div><p/>
                         "
                       ).join("")
@@ -915,7 +918,7 @@ class QuestionView extends Backbone.View
     window.$questions = $(".question")
 
     for question in window.$questions
-      name = question.getAttribute("data-question-name")
+      name = question.getAttribute("data-question-name") or question.getAttribute("name")
       if name? and name isnt ""
         #accessorFunction = {}
         window.questionCache[name] = $(question)
