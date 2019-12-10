@@ -46,6 +46,7 @@ global.$ = $ # required for validations that use jquery
 jQuery = require 'jquery'
 Cookie = require 'js-cookie'
 Awesomplete = require 'awesomplete'
+global.awesompleteByName = {}
 
 Backbone = require 'backbone'
 Backbone.$  = $
@@ -201,7 +202,7 @@ class QuestionView extends Backbone.View
 
     autocompleteElements = []
     _.each @$("input[type='autocomplete from list']"), (element) =>
-      new Awesomplete element,
+      awesompleteByName[element.name] = new Awesomplete element,
         list: $(element).attr("data-autocomplete-options").replace(/\n|\t/,"").split(/, */)
         minChars: 1
         maxItems: 15
@@ -210,7 +211,7 @@ class QuestionView extends Backbone.View
       autocompleteElements.push element
 
     _.each @$("input[type='autocomplete from code']"), (element) ->
-      new Awesomplete element,
+      awesompleteByName[element.name] = new Awesomplete element,
         list: eval($(element).attr("data-autocomplete-options"))
         minChars: 1
         filter: Awesomplete.FILTER_STARTSWITH
@@ -224,7 +225,7 @@ class QuestionView extends Backbone.View
         console.log element
         console.log error
       .then (result) ->
-        new Awesomplete element,
+        awesompleteByName[element.name] = new Awesomplete element,
           list: _(result.rows).chain().pluck("value").unique().value()
           minChars: 1
           filter: Awesomplete.FILTER_STARTSWITH
@@ -263,7 +264,9 @@ class QuestionView extends Backbone.View
           property = "#{hasBrackets[1]}#{hasBrackets[2]}.#{slugify(dasherize(hasBrackets[3]))}"
         else
           property = slugify(dasherize(property))
+        property = property.replace(/([a-z])(\d)/,"$1-$2")
         property = "malaria-case-id" if property is "malaria-case-i-d"
+        property.replace(/\d/)
         results[property] = value
       results
     else
@@ -321,7 +324,10 @@ class QuestionView extends Backbone.View
         else
           console.error "#{property} has no input field"
       else
-        console.error "Can't find question for #{property}"
+        if $("[name=#{property}]").length > 0
+          $("[name=#{property}]").val(value)
+        else
+          console.error "Can't find question for #{property}"
 
 
 
@@ -847,13 +853,13 @@ class QuestionView extends Backbone.View
                   </div>
                   <div>
                     <label for='#{question_id}-description'>Description</label>
-                    <input class='question' type='text' name='#{name}-description' id='#{question_id}-description'></input><p/>
+                    <input type='text' name='#{name}-description' id='#{question_id}-description'></input><p/>
                     #{
                       _.map(["latitude", "longitude","accuracy"], (field) ->
                         "
                         <div>
                         <label for='#{question_id}-#{field}'>#{capitalize(field)}</label>
-                        <input class='question' readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
+                        <input readonly='readonly' type='number' name='#{name}-#{field}' id='#{question_id}-#{field}'></input>
                         </div><p/>
                         "
                       ).join("")

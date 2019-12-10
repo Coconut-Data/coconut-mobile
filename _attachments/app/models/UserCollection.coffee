@@ -22,6 +22,10 @@ class UserCollection extends Backbone.Collection
     userId = "user.#{userId}" unless userId.match(/^user\./)
     @get(userId).get("district")
 
+  name: (userId) ->
+    userId = "user.#{userId}" unless userId.match(/^user\./)
+    @get(userId).get("name")
+
 UserCollection.load = (options) ->
   Coconut.users = new UserCollection()
 
