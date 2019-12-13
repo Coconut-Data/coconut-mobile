@@ -121,7 +121,6 @@ class Router extends Backbone.Router
     ":database/show/result/:result_id": "showResult"
     ":database/edit/result/:result_id": "editResult"
     ":database/delete/result/:result_id": "deleteResult"
-    ":database/delete/result/:result_id/:confirmed": "deleteResult"
     ":database/reset/database": "resetDatabase"
     ":database/sync": "sendAndGet"
 #    "sync/send": "syncSend"
@@ -385,42 +384,18 @@ class Router extends Backbone.Router
                   Coconut.router.navigate("/",true)
                 , 2000
 
-  deleteResult: (result_id, confirmed) ->
-    Coconut.questionView.readonly = true
-    vw = @appView
-    Coconut.questionView.result = new Result
+  deleteResult: (result_id) =>
+    resultToDelete = new Result
       _id: result_id
-    Coconut.questionView.result.fetch()
-    .catch (error) => alert "Could not find result: #{result_id}"
-    .then =>
-      question = Coconut.questionView.result.question()
-      if question?
-        if confirmed is "confirmed"
-          Coconut.questionView.result.destroy
-            success: ->
-              Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}",true)
-        else
-          Coconut.questionView.model = new Question
-            id: question
-          Coconut.questionView.model.fetch()
-            success: ->
-              # Coconut.questionView.render()
-              vw.showView(Coconut.questionView)
-              $('#askConfirm').html "
-                <h4>Are you sure you want to delete this record?</h4>
-                <div id='confirm'>
-                  <a href='##{Coconut.databaseName}/delete/result/#{result_id}/confirmed'><button class='mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect'>Yes</button></a>
-                  <a href='##{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}'><button class='mdl-button mdl-js-button mdl-js-ripple-effect'>Cancel</button></a>
-                </div>
-              "
-              $("#content form").css
-                "background-color": "rgba(0,0,0,0.1)"
-                "margin":"0px"
-                "padding":"0px 15px 15px"
-              $("#content form label").css
-                "color":"rgb(63,81,181)"
-      else
-        Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{result_id}",true)
+    await resultToDelete.fetch()
+    question = resultToDelete.question().label()
+
+    if confirm "Are you sure you want to delete: #{JSON.stringify resultToDelete}?"
+      await resultToDelete.destroy()
+
+    _.delay =>
+      Coconut.router.navigate("##{Coconut.databaseName}/show/results/#{question}", trigger: true)
+    , 1000
 
   showResults:(question_id) ->
     Coconut.resultsView ?= new ResultsView()

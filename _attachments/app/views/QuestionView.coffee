@@ -633,6 +633,8 @@ class QuestionView extends Backbone.View
     catch error
       name = ((/function (.{1,})\(/).exec(error.constructor.toString())[1])
       message = error.message
+      console.error "Action on change error in question #{$divQuestion.attr('data-question-id') || $divQuestion.attr("id")}\n\n#{name}\n\n#{message}"
+      console.error code
       alert "Action on change error in question #{$divQuestion.attr('data-question-id') || $divQuestion.attr("id")}\n\n#{name}\n\n#{message}"
 
   updateSkipLogic: ->
