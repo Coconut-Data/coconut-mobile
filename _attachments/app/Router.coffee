@@ -6,24 +6,6 @@ radix64 = require('radix-64')()
 Encryptor = require('simple-encryptor')
 encryptedInstallPaths = require './encryptedInstallPaths'
 
-window.PouchDB = require 'pouchdb'
-pouchDBOptions = {
-  auto_compaction: true
-}
-
-if isCordovaApp
-  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
-  pouchDBOptions['adapter'] = 'cordova-sqlite'
-
-require('pouchdb-all-dbs')(window.PouchDB)
-
-PouchDB.plugin(require 'pouchdb-upsert')
-
-
-replicationStream = require('pouchdb-replication-stream')
-PouchDB.plugin(replicationStream.plugin)
-PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
-
 Dialog = require '../js-libraries/modal-dialog'
 Config = require './models/Config'
 HelpView = require './views/HelpView'

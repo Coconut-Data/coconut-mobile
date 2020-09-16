@@ -1,65 +1,40 @@
 <!doctype html>
 
-<html manifest="manifest.appcache" type="text/cache-manifest" lang="en">
+<html>
   <meta charset='utf-8'>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <!-- Disables magnifying glass -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1,user-scalable=no" />
-
-
   <head>
   	<title>Coconut</title>
     <link rel="icon" sizes="192x192" href="images/favicon.png">
-    <!-- all css moved to bundle-css.css -->
-    <!--
-    <link rel="stylesheet" type="text/css" href="css/style.min.css" />
-    <link href="css/fonts/fonts.css" rel="stylesheet">
-    -->
-    <!--
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    -->
-
-    <!--
-    <link href="css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="css/material.css">
-    <link rel="stylesheet" type="text/css" href="css/override_mdl.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/modal-dialog.css">
-    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
-    -->
-
     <link rel="stylesheet" href="css/bundle-css.min.css">
-
   </head>
-
   <body>
-
-  <div class="coconut-layout mdl-layout mdl-js-layout mdl-layout--fixed-header coconut-layer">
-    <header class="coconut-header mdl-layout__header">
-      <div class='mdl-layout-icon'></div>
-      <div class='mdl-layout__header-row'></div>
-    </header>
-    <div class="coconut-drawer mdl-layout__drawer"></div>
-    <main class="mdl-layout__content">
-      <div class='container'>
-        <div data-role='content' id="content"> </div>
-        <div id='log'></div>
+    <div class="coconut-layout mdl-layout mdl-js-layout mdl-layout--fixed-header coconut-layer">
+      <header class="coconut-header mdl-layout__header">
+        <div class='mdl-layout-icon'></div>
+        <div class='mdl-layout__header-row'></div>
+      </header>
+      <div class="coconut-drawer mdl-layout__drawer"></div>
+      <main class="mdl-layout__content">
+        <div class='container'>
+          <div data-role='content' id="content"> </div>
+          <div id='log'></div>
+        </div>
+      </main>
+      <div id='pls_wait' class='spin mdl-spinner mdl-js-spinner is-active'></div>
+      <div id='snackbar_toast' class='mdl-js-snackbar mdl-snackbar'>
+        <div class='mdl-snackbar__text'></div>
+        <button type="button" class="mdl-snackbar__action"></button>
       </div>
-    </main>
-    <div id='pls_wait' class='spin mdl-spinner mdl-js-spinner is-active'></div>
-    <div id='snackbar_toast' class='mdl-js-snackbar mdl-snackbar'>
-      <div class='mdl-snackbar__text'></div>
-      <button type="button" class="mdl-snackbar__action"></button>
     </div>
-  </div>
 
-  <!--
-  <script src="./js-libraries/material.min.js"></script>
-  <script src="./js-libraries/mdl-select.js"></script>
-  <script type="text/javascript" src="js-libraries/coffee-script.js"></script>
-  -->
-  <script type="text/javascript" src="./bundle-libraries.min.js"></script>
-  <script type="text/javascript" src="./bundle.js"></script>
+    <script type="text/javascript" src="./bundle-libraries.min.js"></script>
+
+
+    <script type="text/javascript" src="./vendor.min.js"></script>
+    <script type="text/javascript" src="./bundle.js"></script>
   </body>
 </html>

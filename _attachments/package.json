@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "scripts": {
     "start": "npm run watch & npm run livereload & npm run static & while sleep 2; do echo -n '.'; done",
-    "watch": "./node_modules/watchify/bin/cmd.js --ignore-watch='**/node_modules/**' -v -t coffeeify --debug --extension='.coffee' app/start.coffee -o bundle.js",
+    "watch": "./node_modules/watchify/bin/cmd.js --ignore-watch='**/node_modules/**' -v -t coffeeify --debug --extension='.coffee' app/start.coffee -x moment -x jquery -x backbone -x pouchdb-core -x pouchdb-adapter-http -x pouchdb-mapreduce -x pouchdb-upsert -x underscore -x tabulator-tables -o bundle.js",
     "livereload": "./node_modules/livereloadify/cli.js ./",
     "watchAndTest": "./node_modules/chokidar-cli/index.js bundle.js -c mocha --compilers mocha --compilers coffee:coffee-script/register test/*.coffee",
     "static": "./node_modules/node-static/bin/cli.js --host-address 0.0.0.0 --port 8089 ./"
@@ -46,7 +46,13 @@
     "moment": "^2.10.3",
     "pouchdb": "^7.0.0",
     "pouchdb-adapter-cordova-sqlite": "^2.0.5",
+    "pouchdb-adapter-http": "^7.2.2",
+    "pouchdb-adapter-idb": "^7.2.2",
+    "pouchdb-adapter-memory": "^7.2.1",
     "pouchdb-all-dbs": "^1.0.2",
+    "pouchdb-core": "^7.2.2",
+    "pouchdb-mapreduce": "^7.2.2",
+    "pouchdb-replication": "^7.2.2",
     "pouchdb-replication-stream": "^1.2.6",
     "pouchdb-upsert": "^2.2.0",
     "qrcode": "^1.3.3",

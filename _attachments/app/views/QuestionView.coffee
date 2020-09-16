@@ -975,8 +975,10 @@ class QuestionView extends Backbone.View
       updateFormWithCoordinates(geoposition)
       @$("##{question_id}-description").val "Success"
       @save()
-    onError = (error) ->
-      @$("##{question_id}-description").val "Error: #{JSON.stringify error}"
+    onError = (error) =>
+      console.error "Error getting location:"
+      console.error error
+      @$("##{question_id}-description").val "Error: #{error.message}. Did you provide location permission?"
     onProgress = (geoposition) =>
       updateFormWithCoordinates(geoposition)
       @$("label[type=location]").html "Household Location<div style='background-color:yellow'>Current accuracy is #{geoposition.coords.accuracy} meters - must be less than #{requiredAccuracy} meters. Make sure there are no trees or buildings blocking view to the sky.</div>" if geoposition.coords.accuracy > requiredAccuracy

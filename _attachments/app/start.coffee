@@ -12,10 +12,22 @@ catch error
 
 window.isCordovaApp = document.URL.indexOf('http://') is -1 and document.URL.indexOf('https://') is -1
 
-window.applicationCache.addEventListener 'updateready', =>
-  if confirm "A new version of the app is available, click Ok to load it"
-    document.location.reload()
-, false
+console.log "ZZZZ"
+
+console.log navigator.serviceWorker
+
+if navigator.serviceWorker?
+  console.log "Adding load event listener"
+  window.addEventListener 'load', =>
+    navigator.serviceWorker.register('/sw.js').then (registration) =>
+      console.log('ServiceWorker registration successful with scope: ', registration.scope)
+    , (err) =>
+      console.log('ServiceWorker registration failed: ', err)
+
+  #window.applicationCache.addEventListener 'updateready', =>
+  #if confirm "A new version of the app is available, click Ok to load it"
+  #  document.location.reload()
+  #, false
 
 Backbone.$  = $
 

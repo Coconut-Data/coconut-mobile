@@ -10,7 +10,24 @@ global.User = require './models/User'
 Encryptor = require('simple-encryptor')
 encryptedInstallPaths = require './encryptedInstallPaths'
 
-window.PouchDB = require 'pouchdb'
+window.PouchDB = require('pouchdb-core')
+PouchDB
+  .plugin(require 'pouchdb-adapter-idb')
+  .plugin(require 'pouchdb-adapter-http')
+  .plugin(require 'pouchdb-mapreduce')
+  .plugin(require 'pouchdb-replication')
+  .plugin(require 'pouchdb-upsert')
+
+if isCordovaApp
+  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
+  pouchDBOptions['adapter'] = 'cordova-sqlite'
+
+require('pouchdb-all-dbs')(window.PouchDB)
+
+replicationStream = require('pouchdb-replication-stream')
+PouchDB.plugin(replicationStream.plugin)
+PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
+
 window.pouchDBOptions = {
   auto_compaction: true
 }
