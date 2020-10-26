@@ -13,4 +13,5 @@ echo "Minifying bundle-libraries.min.js"
 workbox generateSW workbox-config.js
 echo "Rsyncing to cloud"
 rsync --verbose  --copy-links --recursive --exclude=node_modules ./ mobile.cococloud.co:/var/www/mobile.cococloud.co/ | grep total
-#couchapp push --no-atomic cococloud
+# No longer use couch for serving the app so this isn't required
+#couchapp push --no-atomic cococloud  

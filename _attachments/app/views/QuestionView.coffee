@@ -366,14 +366,11 @@ class QuestionView extends Backbone.View
     "click #question-view button:contains(+)" : "repeat"
     #"click #question-view a:contains(Get current location)" : "getLocation"
     "click .location button" : "getLocation"
-    "click .next_error"   : "runValidate"
+    "click .next_error"   : "validateAll"
     "click .validate_one" : "onValidateOne"
     "click .qr-scan" : "getQrCode"
 
-  runValidate: -> @validateAll()
-
   onChange: (event) =>
-    console.log "onChange"
     @updateLabelClass()
 
     prevCompletedState = @$("#question-set-complete").prop("checked")
@@ -393,7 +390,7 @@ class QuestionView extends Backbone.View
     console.log $target
     console.log targetName
     if targetName == "complete" || @$("#question-set-complete").prop("checked")
-      allQuestionsPassValidation = @validateAll()
+      allQuestionsPassValidation = await @validateAll()
 
       # Update the menu
       Coconut.headerView.update()
@@ -404,8 +401,6 @@ class QuestionView extends Backbone.View
         if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
           CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
-        console.log "$$$$$"
-        console.log onValidatedComplete
         if onValidatedComplete
           _.delay ->
             CoffeeScript.eval onValidatedComplete
@@ -420,7 +415,7 @@ class QuestionView extends Backbone.View
       @actionOnChange(event)
       _.delay =>
         unless messageVisible
-          wasValid = @validateOne
+          wasValid = await @validateOne
             key: targetName
             autoscroll: false
             button: "<button type='button' data-name='#{targetName}' class='validate_one'>Validate</button>"
@@ -447,7 +442,7 @@ class QuestionView extends Backbone.View
 
     for key in window.keyCache
 
-      questionIsntValid = not @validateOne
+      questionIsntValid = not await @validateOne
         key          : key
         autoscroll   : isValid
         leaveMessage : false
@@ -474,9 +469,8 @@ class QuestionView extends Backbone.View
     return true unless $question # Needed for repeatableQuestionSets
     $message  = $question.find(".message")
 
-    message = @isValid(key)
     try
-      message = @isValid(key)
+      message = await @isValid(key)
     catch e
       alert "isValid error in #{key}\n#{e}"
       message = ""
@@ -555,11 +549,14 @@ class QuestionView extends Backbone.View
     if validation? && validation isnt ""
 
       try
-        validationFunctionResult = (CoffeeScript.eval("(value) -> #{validation}", {bare:true}))(value)
+        console.log validation
+        console.log (CoffeeScript.compile("(value) -> #{validation}", {bare:true}))
+        validationFunctionResult = await ((CoffeeScript.eval("(value) -> #{validation}", {bare:true}))(value))
+        console.log "RESULT: #{validationFunctionResult}"
         result.push validationFunctionResult if validationFunctionResult?
       catch error
         return '' if error == 'invisible reference'
-        alert "Validation error for #{question_id} with value #{value}: #{error}. Validation logic is: #{validation}"
+        alert "Validation error for #{question_id} with value '#{value}':\n#{error}.\n Validation logic is:\n #{validation}"
 
     if result.length isnt 0
       return result.join("<br>") + "<br>"

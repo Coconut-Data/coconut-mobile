@@ -32,11 +32,8 @@ window.pouchDBOptions = {
   auto_compaction: true
 }
 
-PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
 if isCordovaApp
   pouchDBOptions['adapter'] = 'cordova-sqlite'
-
-PouchDB.plugin(require 'pouchdb-upsert')
   
 require 'crypto-pouch'
 crypto = require('crypto')

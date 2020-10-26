@@ -12,10 +12,6 @@ catch error
 
 window.isCordovaApp = document.URL.indexOf('http://') is -1 and document.URL.indexOf('https://') is -1
 
-console.log "ZZZZ"
-
-console.log navigator.serviceWorker
-
 if navigator.serviceWorker?
   console.log "Adding load event listener"
   window.addEventListener 'load', =>
