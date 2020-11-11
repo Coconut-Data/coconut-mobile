@@ -371,6 +371,7 @@ class QuestionView extends Backbone.View
     "click .qr-scan" : "getQrCode"
 
   onChange: (event) =>
+    console.log event.target
     @updateLabelClass()
 
     prevCompletedState = @$("#question-set-complete").prop("checked")
@@ -392,19 +393,29 @@ class QuestionView extends Backbone.View
     if targetName == "complete" || @$("#question-set-complete").prop("checked")
       allQuestionsPassValidation = await @validateAll()
 
+      console.log allQuestionsPassValidation
+
       # Update the menu
       Coconut.headerView.update()
       @actionOnChange(event)
-      @save()
+      await @save()
       @updateSkipLogic()
       if allQuestionsPassValidation
         if @model.get("action_on_questions_loaded")? and @model.get("action_on_questions_loaded") isnt ""
           CoffeeScript.eval @model.get "action_on_questions_loaded"
         onValidatedComplete = @model.get("onValidatedComplete")
         if onValidatedComplete
-          _.delay ->
-            CoffeeScript.eval onValidatedComplete
-          ,1000
+          await new Promise (resolve, reject) =>
+            _.delay ->
+              CoffeeScript.eval onValidatedComplete
+              resolve()
+            ,1000
+
+        @$("#messageText").slideDown().fadeOut()
+        await Coconut.headerView.update()
+        if @$('[name=complete]').prop("checked")
+          Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}",true)
+
       else
         @$("#question-set-complete").prop("checked", false)
         if prevCompletedState
@@ -425,11 +436,10 @@ class QuestionView extends Backbone.View
           @autoscroll(event) if wasValid
       , 500
 
-
   onValidateOne: (event) ->
     $target = $(event.target)
     name = $(event.target).attr('data-name')
-    @validateOne
+    await @validateOne
       key : name
       autoscroll: true
       leaveMessage : false
@@ -473,6 +483,11 @@ class QuestionView extends Backbone.View
       message = await @isValid(key)
     catch e
       alert "isValid error in #{key}\n#{e}"
+      message = ""
+
+    # Hack attempt to handle promise errors that appear here
+    if message?.toString() is "[object Promise]"
+      console.error "Promise error!"
       message = ""
 
     if $message.is(":visible") and leaveMessage
@@ -549,10 +564,7 @@ class QuestionView extends Backbone.View
     if validation? && validation isnt ""
 
       try
-        console.log validation
-        console.log (CoffeeScript.compile("(value) -> #{validation}", {bare:true}))
         validationFunctionResult = await ((CoffeeScript.eval("(value) -> #{validation}", {bare:true}))(value))
-        console.log "RESULT: #{validationFunctionResult}"
         result.push validationFunctionResult if validationFunctionResult?
       catch error
         return '' if error == 'invisible reference'
@@ -617,6 +629,7 @@ class QuestionView extends Backbone.View
     name = $target.attr("name")
     $divQuestion = @$(".question [data-question-name='#{name}']")
     code = $divQuestion.attr("data-action_on_change")
+    @updateCache()
     try
       value = ResultOfQuestion(name)
     catch error
@@ -696,7 +709,7 @@ class QuestionView extends Backbone.View
     currentData
 
   # We throttle to limit how fast save can be repeatedly called
-  save: _.throttle( ->
+  save:  =>
     currentData = if Coconut.database.name is "coconut-zanzibar" or Coconut.database.name is "coconut-zanzibar-development"
       @currentDataForZanzibar()
     else
@@ -706,19 +719,12 @@ class QuestionView extends Backbone.View
 
     return unless @result
 
-    @result.save(currentData)
-    .then =>
-      @$("#messageText").slideDown().fadeOut()
+    await @result.save(currentData)
+
+    if document.location.hash.match("new/result")
+      console.log document.location.hash
+      console.log "REDIRECT"
       Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{@result.id()}",false)
-      if (@$('[name=complete]').prop("checked"))
-        # Return to Summary page after completion
-        Coconut.router.navigate("#{Coconut.databaseName}/show/results/#{escape(Coconut.questionView.result.questionName())}",true)
-      # Update the menu
-      Coconut.headerView.update()
-    .catch (error) =>
-      console.debug error
-      console.error error
-  , 1000)
 
   completeButton: ( value ) ->
     if @$('[name=complete]').prop("checked") isnt value

@@ -16,7 +16,6 @@ class ResultsView extends Backbone.View
   el: '#content'
 
   render: =>
-
     @$el.html "
       <style>
         h3, h4{
