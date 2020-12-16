@@ -85,7 +85,10 @@ class Router extends Backbone.Router
           Coconut.headerView.render()
           Coconut.menuView.render()
           Coconut.syncView.update()
-          callback.apply(this, args) if callback
+          try
+            callback.apply(this, args) if callback
+          catch error
+            console.error "Error while trying to execute:\n#{callback.toString()}\nwith args: #{JSON.stringify args}"
         .catch (error) =>
           console.error error
 
@@ -175,12 +178,15 @@ class Router extends Backbone.Router
 
     if @defaultRouteRefreshCount > 50
 
+      if Coconut.questions.length is 0
+        alert "No questions"
+        return
+
       defaultQuestion = Coconut.questions.filter (question) ->
         question.get("default") is true
       if defaultQuestion.length is 0
         defaultQuestion = Coconut.questions.first()
       Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.id}", trigger:true
-
 
     @defaultRouteRefreshTimestamp = Date.now()
     @defaultRouteRefreshCount ?= 0
@@ -400,6 +406,8 @@ class Router extends Backbone.Router
           applicationName = Coconut.config.get("cloud_database_name")
           [username,password] = Coconut.config.get("cloud_credentials").split(":")
           Coconut.router.navigate("setup/#{cloudUrl}/#{applicationName}/#{username}/#{password}",true)
+          document.location.reload()
+
 
   manage: ->
     Coconut.manageView ?= new ManageView( el: $("#content") )

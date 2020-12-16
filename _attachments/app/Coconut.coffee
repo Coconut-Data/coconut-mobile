@@ -148,6 +148,27 @@ class Coconut
         $("#status").append "*"
       .on 'complete', (result) =>
         console.log "Completed replicating plugins: #{pluginIds.join(',')}"
+
+        for pluginId in pluginIds
+          pluginDoc = await pluginDatabase.get pluginId
+          if pluginDoc.source and pluginDoc.doc_ids
+            await new Promise (resolve) =>
+              ###
+              console.log pluginId
+              console.log await pluginDatabase.info()
+              console.log await pluginDoc.source
+              console.log pluginDoc.doc_ids
+              ###
+              pluginDatabase.replicate.from pluginDoc.source,
+                doc_ids: [pluginId].concat(pluginDoc.doc_ids)
+              .on 'complete', (info) =>
+                console.log "Replicated #{[pluginId].concat(pluginDoc.doc_ids)} from #{pluginDoc.source}"
+                console.log info
+                resolve()
+              .on 'error', (error) =>
+                alert("Error during plugin replication of #{pluginId}: #{JSON.stringify error}")
+                resolve()
+
         options?.success?()
         Promise.resolve()
       .on 'error', (error) =>
@@ -164,7 +185,9 @@ class Coconut
 
   startPlugins: () =>
       pluginDatabase = new PouchDB("coconut-#{@databaseName}-plugins", pouchDBOptions)
-      pluginDatabase.allDocs()
+      pluginDatabase.allDocs
+        startkey: "_design"
+        endkey: "_design\uf000"
       .then (result) ->
         # If the database is empty just call success
         Promise.resolve() if result.rows.length is 0
@@ -181,6 +204,9 @@ class Coconut
                 console.error "Error loading #{plugin}"
                 console.error error
               Promise.resolve()
+          .catch (error) ->
+            console.log "Error while loading plugin-bundle.js for #{plugin}:"
+            console.log error
         )
 
 
