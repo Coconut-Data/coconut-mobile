@@ -83,6 +83,13 @@ class Question extends Backbone.Model
         )
       return returnValue
 
+  summaryFieldsMappedToResultPropertyNames: =>
+    returnVal = {}
+    for field in Object.keys(@resultSummaryFields())
+      returnVal[field] = slugify(field)
+
+    returnVal
+
   summaryFieldNames: =>
     return _.keys @resultSummaryFields()
 

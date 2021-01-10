@@ -3,7 +3,7 @@ global._ = _
 $ = require 'jquery'
 Backbone = require 'backbone'
 Router = require '../Router'
-global.JSZip = require 'jszip'
+#global.JSZip = require 'jszip'
 global.MemoryStream = require 'memorystream'
 Dialog = require '../../js-libraries/modal-dialog'
 FileReaderStream = require 'filereader-stream'
@@ -105,19 +105,20 @@ class ManageView extends Backbone.View
       error: (error) -> console.error error
       success: (dumpedString) ->
         $("#message").show().html "Database backup created, beginning download. File will be available in Downloads folder on mobile device."
-        zip = new JSZip()
-        zip.file "backup.pouchdb", dumpedString
-        zip.generateAsync
-          type:"blob"
-          compression:"DEFLATE"
-        .then (content) ->
-          FileSaver.saveAs(content, "coconut.pouchdb.zip")
-          Dialog.showDialog
-            title: "S U C C E S S",
-            text: "<div>Database backup saved.</div><div>File will be available in Downloads folder on mobile device.</div>"
-            neutral:
-              title: "Close"
-          $("#message").hide()
+        # Illegal return statment coming from JSZip
+        #zip = new JSZip()
+        #zip.file "backup.pouchdb", dumpedString
+        #zip.generateAsync
+        #  type:"blob"
+        #  compression:"DEFLATE"
+        #.then (content) ->
+        FileSaver.saveAs(dumpedString, "coconut.pouchdb.zip")
+        Dialog.showDialog
+          title: "S U C C E S S",
+          text: "<div>Database backup saved.</div><div>File will be available in Downloads folder on mobile device.</div>"
+          neutral:
+            title: "Close"
+        $("#message").hide()
 
   showBackup: =>
     $("#backupFile").show()

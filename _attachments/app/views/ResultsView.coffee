@@ -3,8 +3,11 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 moment = require 'moment'
+formatDistance = require('date-fns/formatDistance')
+parse = require('date-fns/parse')
 
-$.DataTable = require('datatables')()
+#$.DataTable = require('datatables')()
+global.Tabulator = require 'tabulator-tables'
 
 Question = require '../models/Question'
 ResultCollection = require '../models/ResultCollection'
@@ -16,6 +19,7 @@ class ResultsView extends Backbone.View
   el: '#content'
 
   render: =>
+    metrics = await @getMetrics() 
     @$el.html "
       <style>
         h3, h4{
@@ -34,9 +38,12 @@ class ResultsView extends Backbone.View
         th.header { text-align: left; }
         td a { text-decoration: none; }
 
+        /*
+
         table.dataTable thead .sorting, table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc_disabled, table.dataTable thead .sorting_desc_disabled {
           background-position: center left;
         }
+
         table.results { margin: 10px auto; }
         table.center {
           margin: auto;
@@ -49,124 +56,105 @@ class ResultsView extends Backbone.View
           background: linear-gradient(to bottom, #fff 0%, #dcdcdc 100%);
 
         }
+        */
       </style>
-      <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored f-left coconut-btn' data-upgraded=',MaterialButton'><i class='mdi mdi-plus mdi-24px'></i></a>
-      <h4 class='content_title'>
-        #{@question.id}
-      </h4>
-
-      <div class='clearfix'></div>
-      <div class='stats-card-wide mdl-card mdl-shadow--2dp'>
-        <table id='results_metrics' class='center'></table>
-        #{
-          # Fill in the results_metrics table
-          metrics = {
-            "Total completed": 0
-            "Total completed this week": 0
-            "Total completed today": 0
-            "Most recently completed result": null
-            "Total not completed": 0
-          }
-
-          Coconut.database.query "results",
-            {
-              startkey: [@question.id],
-              endkey: [@question.id,{},{}]
-            },
-            (error,result) =>
-              _(result.rows).each (row) ->
-                if row.key[1] is false
-                  metrics["Total not completed"] += 1
-                else
-                  resultDate = moment(row.key[2])
-
-                  metrics["Total completed"] +=1
-                  metrics["Total completed this week"] +=1 if moment().isSame(resultDate, 'week')
-                  metrics["Total completed today"] +=1 if moment().isSame(resultDate, 'day')
-                  metrics["Most recently completed result"] = resultDate.fromNow()
-
-              $("#results_metrics").html _(metrics).map( (value, metric) ->
-                "
-                  <tr>
-                    <td style='width: 280px'>#{metric}</td>
-                    <td style='color:#{Coconut.colors.accent1}'>#{value}</td>
-                  </tr>
-                "
-              ).join("")
-              $("#total-completed").html metrics["Total completed"]
-              $("#total-not-completed").html metrics["Total not completed"]
-          ""
-        }
+      <div>
+        <a href='##{Coconut.databaseName}/new/result/#{@question.id}' class='mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored f-left coconut-btn' data-upgraded=',MaterialButton'>
+          <i class='mdi mdi-plus mdi-24px'></i>
+        </a>
+        <h4 class='content_title'>
+          #{@question.id}
+        </h4>
       </div>
-      <div class='mdl-tabs mdl-js-tabs mdl-js-ripple-effect'>
 
-        <div class='mdl-tabs__tab-bar' id='results-tabs'>
-          <a href='#complete-panel' class='mdl-tabs__tab'>Complete (<span id='total-completed'></span>)</a>
-          <a href='#not-complete-panel' class='mdl-tabs__tab is-active'>Not Complete (<span id='total-not-completed'></span>)</a>
-        </div>
-
-        <div class='mdl-tabs__panel complete' id='complete-panel'>
-          <br/>
-          <table class='results complete-true tablesorter hover'>
-            <thead><tr>
-              " + _.map(@question.summaryFieldNames(), (summaryField) ->
-                "<th class='header'>#{summaryField}</th>"
-              ).join("") + "
-              <th></th>
-            </tr></thead>
-            <tbody>
-            </tbody>
-          </table>
-        </div>
-
-        <div class='mdl-tabs__panel is-active not-complete' id='not-complete-panel'>
-          <br/>
-          <table class='results complete-false tablesorter hover'>
-            <thead><tr>
-              " + _.map(@question.summaryFieldNames(), (summaryField) ->
-                "<th class='header'>#{summaryField}</th>"
-              ).join("") + "
-              <th></th>
-            </tr></thead>
-            <tbody>
-            </tbody>
-          </table>
-        </div>
+      <div>
+        <b>#{metrics["Total completed"]}</b> #{@question.id} result#{if metrics["Total completed"].length is 1 then "" else "s"} have been completed (<b>#{metrics["Total completed today"]}</b> today, <b>#{metrics["Total completed this week"]}</b> this week). The most recent completion was <b>#{metrics["Most recently completed result"]}</b>. There #{if metrics["Total not completed"] is 1 then "is" else "are"} <b>#{metrics["Total not completed"]}</b> incomplete result#{if metrics["Total not completed"] is 1 then "" else "s"} 
 
       </div>
+
+      <div style='margin-top: 20px;display:inline-block'>
+        All #{@question.id} results for this device are shown below. Click on the row to edit or the plus icon above to create a new one.
+      </div>
+      <div id='results-table'></div>
     "
+    @loadResults()
 
-    @loadResults(false)
-    @loadResults(true)
+  getMetrics: =>
+    metrics = {
+      "Total completed": 0
+      "Total completed this week": 0
+      "Total completed today": 0
+      "Most recently completed result": "N/A"
+      "Total not completed": 0
+    }
 
-  loadResults: (complete) ->
-    Coconut.toggleSpinner(true)
-    results = new ResultCollection()
-    results.fetch
-      include_docs: "true"
-      question: @question.id
-      isComplete: complete
-      success: =>
-        $(".count-complete-#{complete}").html results.results.length
-        results.each (result) =>
+    Coconut.database.query "results",
+      startkey: [@question.id],
+      endkey: [@question.id,{},{}]
+    .then (result) =>
+      _(result.rows).each (row) ->
+        if row.key[1] is false
+          metrics["Total not completed"] += 1
+        else
+          resultDate = moment(row.key[2])
 
-          $("table.complete-#{complete} tbody").append "
-            <tr>
-              #{
-                _.map(result.summaryValues(@question), (value) ->
-                  "<td><a href='##{Coconut.databaseName}/edit/result/#{result.id()}'>#{value}</a></td>"
-                ).join("")
-              }
-              <td style='text-align: center'><a href='##{Coconut.databaseName}/delete/result/#{result.id()}' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-button--accent'>
-                <i class='mdi mdi-delete'></i>
-              </a></td>
-            </tr>
+          metrics["Total completed"] +=1
+          metrics["Total completed this week"] +=1 if moment().isSame(resultDate, 'week')
+          metrics["Total completed today"] +=1 if moment().isSame(resultDate, 'day')
+          metrics["Most recently completed result"] = resultDate.fromNow()
+      Promise.resolve(metrics)
+
+  loadResults: =>
+
+    Coconut.database.allDocs
+      startkey: "result"
+      endkey: "result\uf000"
+      include_docs: true
+    .then (result) =>
+      columns = for title,field of @question.summaryFieldsMappedToResultPropertyNames()
+        title: title
+        field: field
+
+      columns.unshift
+        title: "Time Modified"
+        field: "lastModifiedAt"
+        sorter: "date"
+        sorterParams:
+          format: "YYYY-MM-DD HH:mm:ss"
+        formatter: (cell) =>
+          "#{formatDistance(parse(cell.getValue(), "yyyy-MM-dd HH:mm:ss", new Date()), new Date(), {addSuffix: true})}"
+
+      columns.unshift
+        title: "Complete"
+        field: "complete"
+        formatter: "tickCross"
+        sorter: "boolean"
+
+      columns.push
+        title: ""
+        formatter: (cell) =>
+          "
+          <a href='##{Coconut.databaseName}/delete/result/#{cell.getData()._id}' class='mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-button--accent'>
+            <i class='mdi mdi-delete'></i>
+          </a>
           "
 
-        $("table.complete-#{complete}").dataTable({
-          "retrieve": true,
-          "columnDefs": [{"orderable": false, "targets": 2}]
-        })
-        Coconut.toggleSpinner(false)
+      data = _(result.rows)
+        .chain()
+        .filter (row) =>
+          row.doc.question is @question.id
+        .pluck "doc"
+        .value()
+
+      @tabulator = new Tabulator "#results-table",
+        maxHeight: "100%"
+        data: data
+        columns: columns
+        initialSort: [
+          {column: "complete"}
+          {column: "lastModifiedAt"}
+        ]
+        rowClick: (e,row) =>
+          Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{row.getData()._id}", {trigger:true})
 
 module.exports = ResultsView

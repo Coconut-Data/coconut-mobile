@@ -126,7 +126,7 @@ class QuestionView extends Backbone.View
       elements.push window.questionCache[name].find("input, select, textarea, img")
       $(elements).each (index, element) =>
         event = target : element
-        @actionOnChange event
+        await @actionOnChange event
 
   render: =>
 
@@ -397,7 +397,7 @@ class QuestionView extends Backbone.View
 
       # Update the menu
       Coconut.headerView.update()
-      @actionOnChange(event)
+      await @actionOnChange(event)
       await @save()
       @updateSkipLogic()
       if allQuestionsPassValidation
@@ -423,7 +423,7 @@ class QuestionView extends Backbone.View
     else
       messageVisible = window.questionCache[targetName]?.find(".message").is(":visible")
 # Hack by Mike to solve problem with autocomplete fields being validated before
-      @actionOnChange(event)
+      await @actionOnChange(event)
       _.delay =>
         unless messageVisible
           wasValid = await @validateOne
@@ -541,8 +541,8 @@ class QuestionView extends Backbone.View
       else
         @$("label[for=#{question.attr("id")}]", questionWrapper)?.text()
     required        = questionWrapper.attr("data-required") is "true"
-    validation      = unescape(questionWrapper.attr("data-validation"))
-    validation      = null if validation is "undefined"
+    validationCode      = unescape(questionWrapper.attr("data-validation"))
+    validationCode      = null if validationCode is "undefined"
 
     value           = window.getValueCache[question_id]
 
@@ -561,14 +561,16 @@ class QuestionView extends Backbone.View
     # If not required, then don't validate when value is empty
     return "" if not required and (value is "")
 
-    if validation? && validation isnt ""
+    if validationCode? && validationCode isnt ""
+
+      validationCode = validationCode.replace(/\n/g,"\n  ").replace(/^/g,"\n  ")
 
       try
-        validationFunctionResult = await ((CoffeeScript.eval("(value) -> #{validation}", {bare:true}))(value))
+        validationFunctionResult = await ((CoffeeScript.eval("(value) -> #{validationCode}", {bare:true}))(value))
         result.push validationFunctionResult if validationFunctionResult?
       catch error
         return '' if error == 'invisible reference'
-        alert "Validation error for #{question_id} with value '#{value}':\n#{error}.\n Validation logic is:\n #{validation}"
+        alert "Validation error for #{question_id} with value '#{value}':\n#{error}.\n Validation logic is:\n #{validationCode}"
 
     if result.length isnt 0
       return result.join("<br>") + "<br>"
@@ -628,23 +630,23 @@ class QuestionView extends Backbone.View
 
     name = $target.attr("name")
     $divQuestion = @$(".question [data-question-name='#{name}']")
-    code = $divQuestion.attr("data-action_on_change")
+    actionOnChangeCode = $divQuestion.attr("data-action_on_change")
     @updateCache()
     try
       value = ResultOfQuestion(name)
     catch error
       return if error == "invisible reference"
 
-    return if code == "" or not code?
-    code = "(value) -> #{code}"
+    return if actionOnChangeCode == "" or not actionOnChangeCode?
+    # Add new lines and indents to enable coffeescript appropriate formatting
+    actionOnChangeCode = actionOnChangeCode.replace(/\n/g,"\n  ").replace(/^/g,"\n  ")
     try
-      newFunction = CoffeeScript.eval.apply(@, [code])
-      newFunction(value)
+      await ((CoffeeScript.eval("(value) -> #{actionOnChangeCode}", {bare:true}))(value))
     catch error
       name = ((/function (.{1,})\(/).exec(error.constructor.toString())[1])
       message = error.message
       console.error "Action on change error in question #{$divQuestion.attr('data-question-id') || $divQuestion.attr("id")}\n\n#{name}\n\n#{message}"
-      console.error code
+      console.error actionOnChangeCode
       alert "Action on change error in question #{$divQuestion.attr('data-question-id') || $divQuestion.attr("id")}\n\n#{name}\n\n#{message}"
 
   updateSkipLogic: ->

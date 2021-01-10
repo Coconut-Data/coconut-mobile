@@ -15,7 +15,7 @@ global.ManageView = require './views/ManageView'
 global.MenuView = require './views/MenuView'
 global.HeaderView = require './views/HeaderView'
 global.Question = require './models/Question'
-QuestionCollection = require './models/QuestionCollection'
+global.QuestionCollection = require './models/QuestionCollection'
 global.QuestionView = require './views/QuestionView'
 # Make this global so that plugins can create new results
 global.Result = require './models/Result'
