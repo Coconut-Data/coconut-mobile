@@ -212,7 +212,7 @@ class QuestionView extends Backbone.View
 
     _.each @$("input[type='autocomplete from code']"), (element) ->
       awesompleteByName[element.name] = new Awesomplete element,
-        list: eval($(element).attr("data-autocomplete-options"))
+        list: await eval($(element).attr("data-autocomplete-options"))
         minChars: 1
         filter: Awesomplete.FILTER_STARTSWITH
 
