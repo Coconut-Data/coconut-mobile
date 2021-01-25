@@ -307,10 +307,10 @@ class QuestionView extends Backbone.View
               console.error input
 
           else if input[0].type is "checkbox"
-            if value is "true"
+            if value is "true" or value is true
               found = false
               for checkBox in input
-                if checkBox.value is value
+                if checkBox.value is "true"
                   found = true
                   checkBox.checked = true
               if found is false
