@@ -14,13 +14,14 @@ window.PouchDB = require('pouchdb-core')
 PouchDB
   .plugin(require 'pouchdb-adapter-idb')
   .plugin(require 'pouchdb-adapter-http')
+  .plugin(require 'pouchdb-find')
   .plugin(require 'pouchdb-mapreduce')
   .plugin(require 'pouchdb-replication')
   .plugin(require 'pouchdb-upsert')
 
-if isCordovaApp
-  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
-  pouchDBOptions['adapter'] = 'cordova-sqlite'
+#if isCordovaApp
+#  PouchDB.plugin(require "pouchdb-adapter-cordova-sqlite")
+#  pouchDBOptions['adapter'] = 'cordova-sqlite'
 
 require('pouchdb-all-dbs')(window.PouchDB)
 

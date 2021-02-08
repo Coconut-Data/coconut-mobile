@@ -2,6 +2,8 @@ _ = require 'underscore'
 
 $ = require 'jquery'
 Cookie = require 'js-cookie'
+underscored = require("underscore.string/underscored")
+radix64 = require('radix-64')()
 
 #Backbone = require 'backbone'
 #Backbone.$  = $
@@ -120,7 +122,7 @@ class Result
 
     unless @data._id
       @set
-        _id: "result-#{Coconut.instanceId}-#{Date.now()}"
+        _id: "result-#{underscored(@questionName())}-#{radix64.encodeInt(moment().format('x'))}-#{Coconut.instanceId}"
 
 
     Coconut.database.upsert @data._id, (currentValue) =>

@@ -14,20 +14,23 @@ class Question extends Backbone.Model
       super
         success: =>
           @fetchRepeatableQuestionSets()
-          .catch (error) => console.error error
           .then =>
             options?.success?()
             resolve()
+        error: (error) =>
+          console.error "Error fetching question: #{@.id}"
+          console.error error
+          reject "Error fetching question: #{@.id}"
 
-  
   fetchRepeatableQuestionSets: =>
     @repeatableQuestionSets = {}
     Promise.all(@questions().map (question) =>
       if question.type() is "repeatableQuestionSet"
         @repeatableQuestionSets[question.label()] = new Question(id: (question.get("repeatableQuestionSetName") or question.label()))
-        @repeatableQuestionSets[question.label()].fetch
-          success: => Promise.resolve()
-          error: (error) => console.error error
+        @repeatableQuestionSets[question.label()].fetch()
+        .catch (error) =>
+          throw "Error fetching repeatableQuestionSet: #{question.label()}"
+
     ).then =>
       Promise.resolve()
 

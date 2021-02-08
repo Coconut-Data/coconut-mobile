@@ -326,10 +326,11 @@ class Router extends Backbone.Router
       _id: "result-#{underscored(question_id)}-#{radix64.encodeInt(moment().format('x'))}-#{Coconut.instanceId}"
     Coconut.questionView.model = new Question {id: unescape(question_id)}
     vw = @appView
-    Coconut.questionView.model.fetch
-      success: ->
-        # Coconut.questionView.render()
-        vw.showView(Coconut.questionView)
+    await Coconut.questionView.model.fetch()
+    .catch (error) =>
+      console.log error
+    # Coconut.questionView.render()
+    vw.showView(Coconut.questionView)
 
 
   showResult: (result_id) ->

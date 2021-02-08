@@ -31,6 +31,10 @@ global.ResultOfQuestion = (name) ->
   else
     null
 
+
+global.PreviousQuestionResult =  ->
+  window.previousQuestionResult
+
 global.setValue = (targetLabel, value) ->
   @$("[name=#{slugify(targetLabel)}]").val(value)
 
@@ -371,7 +375,7 @@ class QuestionView extends Backbone.View
     "click .qr-scan" : "getQrCode"
 
   onChange: (event) =>
-    console.log event.target
+    @activeQuestion =  event.target
     @updateLabelClass()
 
     prevCompletedState = @$("#question-set-complete").prop("checked")
@@ -392,8 +396,6 @@ class QuestionView extends Backbone.View
     console.log targetName
     if targetName == "complete" || @$("#question-set-complete").prop("checked")
       allQuestionsPassValidation = await @validateAll()
-
-      console.log allQuestionsPassValidation
 
       # Update the menu
       Coconut.headerView.update()
@@ -652,11 +654,12 @@ class QuestionView extends Backbone.View
   updateSkipLogic: ->
     @updateCache()
 
-
+    previousQuestionResult = null
     for name, $question of window.questionCache
-
       skipLogicCode = window.skipLogicCache[name]
-      continue if skipLogicCode is "" or not skipLogicCode?
+      if skipLogicCode is "" or not skipLogicCode?
+        window.previousQuestionResult = getValueCache[name] # Lets us use previousQuestionResult in skip logic
+        continue 
 
       try
         return if name.match(/\[\d+\]/) and not @namePrefix? # Since we have multiple questionview instances, we need to make sure that the right one is being run
@@ -671,6 +674,7 @@ class QuestionView extends Backbone.View
             if getValueCache[potentialQuestionStringReplacement]
               skipLogicCode = skipLogicCode.replace(originalQuestionStringMatch, potentialQuestionStringReplacement).replace(/\?/,"") # we can get trailing question marks
         result = eval(skipLogicCode)
+        window.previousQuestionResult = getValueCache[name]
       catch error
         console.log skipLogicCode
         console.error error
@@ -686,10 +690,20 @@ class QuestionView extends Backbone.View
       else
         $question[0].style.display = ""
 
+
   currentData: =>
     currentData = {}
     for form in document.querySelectorAll("form") # gets data from repeatable forms
       merge(currentData, getFormData.default(form))
+
+    for property, value of currentData
+      currentData[property] = value
+
+    currentData["complete"] = 
+      if currentData["complete"] is "true"
+        true
+      else
+        false
     currentData
 
   # Handling legacy formats
@@ -698,15 +712,10 @@ class QuestionView extends Backbone.View
     for property, value of @currentData()
       unless property.match(/\[\d+\]/) # Don't fixed repeatable questions
         property = capitalize(camelize(property))
+      property = "complete" if property is "Complete" # various things use the complete field in lowercase form so make sure this stays that way
       # These are both legacy things that I wish we didn't have
       property = "MalariaCaseID" if property is "MalariaCaseId"
-      property = "complete" if property is "Complete"
       currentData[property] = value
-    currentData["complete"] = 
-      if currentData["complete"]
-        true
-      else
-        false
 
     currentData
 
