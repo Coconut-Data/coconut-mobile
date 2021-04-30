@@ -733,8 +733,6 @@ class QuestionView extends Backbone.View
     await @result.save(currentData)
 
     if document.location.hash.match("new/result")
-      console.log document.location.hash
-      console.log "REDIRECT"
       Coconut.router.navigate("#{Coconut.databaseName}/edit/result/#{@result.id()}",false)
 
   completeButton: ( value ) ->

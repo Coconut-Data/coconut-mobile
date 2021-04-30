@@ -1,6 +1,7 @@
 $ = require 'jquery'
 _ = require 'underscore'
 radix64 = require('radix-64')()
+bases = require('bases')
 
 Config = require './models/Config'
 global.Router = require './Router'
@@ -524,15 +525,16 @@ class Coconut
   # format: [unix-timestamp-radix64 encoded]
   assignInstanceId: =>
 
-    unixMillisecondTimestampRadix64Encoded = -> radix64.encodeInt(moment().format('x'))
+    #unixMillisecondTimestampRadix64Encoded = -> radix64.encodeInt(moment().format('x'))
+    millisecondsSinceBeginningOf2021 = moment().format('x') - moment("2021-01-01").format('x')
+    # https://www.crockford.com/base32.html - 
+    # error resistant (all uppercase, no letters/numbers that can be mixed up), compact
+    millisecondsEncodedAsBase32 = bases.toBase32(millisecondsSinceBeginningOf2021)
 
     @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
     @cloudDB.get("assigned_instance_ids")
     .then (assignedInstanceIds) =>
-      # Get the last one from the array
-      lastAssignedInstanceId = assignedInstanceIds.ids[assignedInstanceIds.ids.length-1]
-      lastAssignedInstanceIdIndex = parseInt(lastAssignedInstanceId.split(/ /)[0])
-      assignedInstanceIds.ids.push unixMillisecondTimestampRadix64Encoded()
+      assignedInstanceIds.ids.push millisecondsEncodedAsBase32
       Promise.resolve(assignedInstanceIds)
     .catch (error) ->
       console.log error
@@ -540,7 +542,7 @@ class Coconut
       if error.status is 404
         Promise.resolve
           _id: "assigned_instance_ids"
-          ids: [unixMillisecondTimestampRadix64Encoded()]
+          ids: [millisecondsEncodedAsBase32]
       else
         throw "Error finding existing instance ids in cloud: #{JSON.stringify error}"
     .then (assignedInstanceIds) =>
