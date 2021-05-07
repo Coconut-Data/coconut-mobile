@@ -998,6 +998,17 @@ class QuestionView extends Backbone.View
       $.getJSON "https://secure.geonames.org/findNearbyPlaceNameJSON?lat=#{geoposition.coords.latitude}&lng=#{geoposition.coords.longitude}&username=mikeymckay&callback=?", null, (result) =>
         @$("##{question_id}-description").val parseFloat(result.geonames[0].distance).toFixed(1) + " km from center of " + result.geonames[0].name
 
+      ## Copied from actionOnChange
+      locationQuestionDiv = @$("[data-question-id=#{question_id}]")
+      actionOnChangeCode = locationQuestionDiv.attr("data-action_on_change")
+      return if actionOnChangeCode == "" or not actionOnChangeCode?
+      # Add new lines and indents to enable coffeescript appropriate formatting
+      actionOnChangeCode = actionOnChangeCode.replace(/\n/g,"\n  ").replace(/^/g,"\n  ")
+      try
+        await ((CoffeeScript.eval("(value,target) -> #{actionOnChangeCode}", {bare:true}))([geoposition.coords.longitude, geoposition.coords.latitude], locationQuestionDiv))
+      catch error
+        alert "Action on location change error"
+
     onSuccess = (geoposition) =>
       @$("label[type=location]").html "Household Location"
       updateFormWithCoordinates(geoposition)
