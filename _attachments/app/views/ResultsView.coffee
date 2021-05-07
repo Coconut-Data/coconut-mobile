@@ -114,6 +114,7 @@ class ResultsView extends Backbone.View
       columns = for title,field of @question.summaryFieldsMappedToResultPropertyNames()
         title: title
         field: field
+        headerFilter: "input"
 
       columns.unshift
         title: "Time Modified"

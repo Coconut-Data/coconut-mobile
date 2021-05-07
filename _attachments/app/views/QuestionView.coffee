@@ -41,6 +41,22 @@ global.setValue = (targetLabel, value) ->
 global.setLabelText = (targetLabel, value) ->
   @$("[data-question-name=#{slugify(targetLabel)}] label").html(value)
 
+global.showMessage = (questionTarget, html) ->
+  messageElement = questionTarget.closest("div").children(".info-message").first()
+  if messageElement.length is 0
+    messageElement  = $("<div class='info-message'></div>")
+    questionTarget.closest("div").append(messageElement[0])
+  messageElement.html html
+  messageElement.show()
+
+global.warn = (questionTarget, text) ->
+  messageElement = showMessage(questionTarget,text)
+  messageElement.css("background-color", "yellow")
+  _.delay =>
+    messageElement.fadeOut()
+    messageElement.css("background-color", "")
+  , 5000
+
 # # # #
 
 _ = require 'underscore'
@@ -643,7 +659,7 @@ class QuestionView extends Backbone.View
     # Add new lines and indents to enable coffeescript appropriate formatting
     actionOnChangeCode = actionOnChangeCode.replace(/\n/g,"\n  ").replace(/^/g,"\n  ")
     try
-      await ((CoffeeScript.eval("(value) -> #{actionOnChangeCode}", {bare:true}))(value))
+      await ((CoffeeScript.eval("(value,target) -> #{actionOnChangeCode}", {bare:true}))(value, $target))
     catch error
       name = ((/function (.{1,})\(/).exec(error.constructor.toString())[1])
       message = error.message
