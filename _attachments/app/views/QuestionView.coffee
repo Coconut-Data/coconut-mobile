@@ -863,7 +863,7 @@ class QuestionView extends Backbone.View
               when "autocomplete from list", "autocomplete from previous entries", "autocomplete from code"
                 "
                   <!-- autocomplete='off' disables browser completion -->
-                  <input autocomplete='off' name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}' data-autocomplete-options='#{question.get("autocomplete-options")}'></input>
+                  <input autocomplete='off' name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}' data-autocomplete-options='#{question.get("autocomplete-options").replace(/'/g,"\'")}'></input>
                   <ul id='#{question_id}-suggestions' data-role='listview' data-inset='true'/>
                 "
               when "location"
