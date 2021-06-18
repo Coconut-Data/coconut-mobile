@@ -85,7 +85,7 @@ class Sync extends Backbone.Model
             Coconut.noInternet()
           success: =>
             @log "Creating list of all results on the mobile device. Please wait."
-            Coconut.database.query "results", {},
+            await Coconut.database.query "results", {},
               (error,result) =>
                 if error
                   console.log "Could not retrieve list of results: #{JSON.stringify(error)}"
@@ -113,11 +113,69 @@ class Sync extends Backbone.Model
                       last_send_result: result
                       last_send_error: false
                       last_send_time: new Date().getTime()
-                    options?.success?()
                     Promise.resolve()
                   .on 'error', (error) ->
                     console.error error
                     options.error(error)
+
+            ###
+            # EXAMPLE ACTION ON SYNC
+            millisecondsSinceBeginningOf2021 = moment().format('x') - moment("2021-01-01").format('x')
+            millisecondsEncodedAsBase32 = bases.toBase32(millisecondsSinceBeginningOf2021)
+
+            Coconut.database.put
+              _id: "syncAction_#{Coconut.instanceId}_#{millisecondsEncodedAsBase32}"
+              action: "await fetch('https://lapq907iz0.execute-api.us-east-1.amazonaws.com/default/corsProxy?url=https://example.com')"
+              description: "Test Action"
+            ###
+
+            @log "Checking for outstanding actions on sync"
+            await Coconut.database.allDocs
+              startkey: "syncAction_"
+              endkey: "syncAction_\uf000"
+              include_docs: true
+            .then (result) =>
+              for row in result.rows
+                unless row.doc.complete
+                  @log "Sync action: #{row.doc.description or row.doc.action}"
+                  console.log "Found sync action:"
+                  console.log row.doc.action
+                  codeToEvalAsPromiseReturningFunction = """
+->
+  new Promise (response) ->
+    response(
+      #{row.doc.action}
+    )
+"""
+
+                  try
+                    evaldFunction = await CoffeeScript.eval(codeToEvalAsPromiseReturningFunction, {bare:true})
+
+                    # Now execute the function
+                    await evaldFunction()
+                    .then (result) =>
+                      console.log "RESULT:"
+                      console.log result
+                      row.doc.complete = true
+                      row.doc.result = result
+                      row.doc.completeTime = moment().format("YYYY-MM-DD HH:mm:ss")
+                    .catch (error) =>
+                      console.error "Error on this sync action:"
+                      console.error codeToEvalAsPromiseReturningFunction
+                      console.error "Here's the error"
+                      console.error error
+
+                      row.doc.complete = false
+                      row.doc.error or= []
+                      row.doc.error.push error
+                    await Coconut.database.put row.doc
+
+                  catch error
+                    console.error error
+              Promise.resolve()
+            options?.success?()
+
+
 
   log: (message) =>
     Coconut.debug message

@@ -28,6 +28,9 @@ class Config extends Backbone.Model
   cloud_url_with_credentials: ->
     "#{@httpOrHttps()}://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}"
 
+  cloud_url_with_credentials_no_db: ->
+    "#{@httpOrHttps()}://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}"
+
   cloud_log_url_with_credentials: ->
     "#{@httpOrHttps()}://#{@get "cloud_credentials"}@#{@cloud_url_no_http()}/#{@cloud_database_name()}-log"
 

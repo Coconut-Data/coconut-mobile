@@ -1,7 +1,7 @@
 $ = require 'jquery'
 _ = require 'underscore'
 radix64 = require('radix-64')()
-bases = require('bases')
+global.bases = require('bases')
 
 Config = require './models/Config'
 global.Router = require './Router'
