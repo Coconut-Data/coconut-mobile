@@ -911,7 +911,7 @@ class QuestionView extends Backbone.View
               when "label"
                 ""
               when "text"
-                "<input name='#{name}' id='#{question_id}' type='text' class='mdl-textfield__input' value='#{question.value()}'></input>"
+                "<input name='#{name}' id='#{question_id}' type='text' class='mdl-textfield__input #{question.safeLabel()}' value='#{question.value()}'></input>"
               when "number"
                 "<input name='#{name}' id='#{question_id}' type='number' class='mdl-textfield__input' value='#{question.value()}'></input>"
               when "repeatableQuestionSet"
