@@ -567,6 +567,9 @@ class QuestionView extends Backbone.View
     #
     # Exit early conditions
     #
+    #
+    console.log labelText
+    console.log value
 
     # don't evaluate anything that's been skipped. Skipped = valid
     return "" if not questionWrapper.is(":visible")
@@ -574,7 +577,7 @@ class QuestionView extends Backbone.View
     # "" = true
     return "" if question.find("input").length != 0 and (type == "checkbox" or type == "radio")
 
-    result.push "'#{labelText}' is required." if required && (value is null or value?.length is 0) unless question_id is "household-location"
+    result.push "'#{labelText}' is required." if required && (value is null or value?.length is 0 or value is undefined) unless question_id is "household-location"
 
     # If not required, then don't validate when value is empty
     return "" if not required and (value is "")
