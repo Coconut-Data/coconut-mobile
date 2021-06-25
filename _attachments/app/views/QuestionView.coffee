@@ -408,8 +408,6 @@ class QuestionView extends Backbone.View
     @oldStamp     = eventStamp
 
     targetName = $target.attr("name")
-    console.log $target
-    console.log targetName
     if targetName == "complete" || @$("#question-set-complete").prop("checked")
       allQuestionsPassValidation = await @validateAll()
 
@@ -568,8 +566,6 @@ class QuestionView extends Backbone.View
     # Exit early conditions
     #
     #
-    console.log labelText
-    console.log value
 
     # don't evaluate anything that's been skipped. Skipped = valid
     return "" if not questionWrapper.is(":visible")
