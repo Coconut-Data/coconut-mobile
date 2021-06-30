@@ -127,9 +127,11 @@ class SetupView extends Backbone.View
     Coconut.destroyApplicationDatabases
       applicationName: applicationName
       success: =>
-        $("#message").html "<h4 style='text-align: center'>#{applicationName} Removed</h4>"
+        $("#message").html "<h4 style='text-align: center'>#{applicationName} Removed, reloading...</h4>"
         $("#message h4").fadeOut 3000
-        @install()
+        _.delay =>
+          document.location.reload(true)
+        , 3000
 
   getOptions: ->
     options = @options || {}

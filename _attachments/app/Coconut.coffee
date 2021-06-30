@@ -394,18 +394,20 @@ class Coconut
     console.log "Creating PouchDB: coconut-#{@databaseName}-#{user._id}"
     userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
     userDatabase.destroy()
+    .catch (error) =>
+      console.error "Error while creating database:coconut-#{@databaseName}-#{user._id}"
+      console.error error
     .then =>
       userDatabase = new PouchDB("coconut-#{@databaseName}-#{user._id}", pouchDBOptions)
-      console.log "Encrypting with password: #{user.password}"
+      console.log "Created coconut-#{@databaseName}-#{user._id} and encrypting with password: #{user.password}"
       userDatabase.crypto(user.password, ignore: '_attachments')
-      userDatabase.put
+      userDatabase.bulkDocs [{
         "_id": "encryption key"
         "key": @encryptionKey
-    .then =>
-      console.log "Created coconut-#{@databaseName}-#{user._id}"
-      userDatabase.put
+      },{
         "_id": "decryption check"
         "is the value of this clear text": "yes it is"
+      }]
 
   downloadEncryptionKey: (options) =>
     @cloudDB = new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout: 50000}})
