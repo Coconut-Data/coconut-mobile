@@ -88,13 +88,23 @@ class HeaderView extends Backbone.View
       $('#sync_icon').show()
 
   questionTabs: ->
+
     if Coconut.questions
-      navlinks = (Coconut.questions.map (question,index) ->
-        results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
-        spanID = question.id.replace(/\s/g,"_")
-        "<a class='mdl-navigation__link top_links' href='#{results_url}'><span id='#{spanID}' class='mdl-badge' data-badge=''><i class='mdl-layout--small-screen-only mdi mdi-star'></i> <span class='mdl-layout--large-screen-only'>#{question.id}</span></span></a>"
-      .join(" "))
-      $('nav.mdl-navigation').html(navlinks)
+      $('nav.mdl-navigation').html Coconut.questions.reduce( (result, question) =>
+        result += if JackfruitConfig?.questionsToHide and JackfruitConfig.questionsToHide.includes(question.id)
+          ""
+        else
+          results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
+          spanID = question.id.replace(/\s/g,"_")
+          "
+            <a class='mdl-navigation__link top_links' href='#{results_url}'>
+              <span id='#{spanID}' class='mdl-badge' data-badge=''>
+                <i class='mdl-layout--small-screen-only mdi mdi-star'></i> 
+                <span class='mdl-layout--large-screen-only'>#{question.id}</span>
+              </span>
+            </a>
+          "
+      , "")
 
   update: ->
     Coconut.questions.each (question,index) =>

@@ -22,7 +22,7 @@ class MenuView extends Backbone.View
         <div class='clear'>
           <div class='f-left m-l-10'><img src='images/cocoLogo.png' id='cslogo_sm'></div>
           <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
-          <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/a0bfae6'>a0bfae6</a></div>
+          <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/37092f2'>37092f2</a></div>
         </div>
         <div style='margin: 5px 0 0 25px'>
         Application: #{Coconut.databaseName}<br/>
@@ -71,18 +71,22 @@ class MenuView extends Backbone.View
     )
 
   questionLinks: ->
-    Coconut.questions.fetch
-      success: =>
-        $("#drawer_question_sets").html (Coconut.questions.map (question,index) ->
-          new_url = "##{Coconut.databaseName}/new/result/#{escape(question.id)}"
+    $("#drawer_question_sets").html Coconut.questions.reduce( (result, question) =>
+        result += if JackfruitConfig?.questionsToHide and JackfruitConfig.questionsToHide.includes(question.id)
+          ""
+        else
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           spanID = question.id.replace(/\s/g,"_")
           "
             <div>
-              <a class='mdl-navigation__link' href='#{results_url}'><span id='#{spanID}' class='#{spanID} mdl-badge' data-badge=''><i class='mdl-color-text--accent mdi mdi-star'></i>
-              <span>#{question.id}</span></span></a>
+              <a class='mdl-navigation__link' href='#{results_url}'>
+                <span id='#{spanID}' class='#{spanID} mdl-badge' data-badge=''>
+                  <i class='mdl-color-text--accent mdi mdi-star'></i>
+                  <span>#{question.id}</span>
+                </span>
+              </a>
             </div>
           "
-        .join(" "))
+      , "")
 
 module.exports = MenuView

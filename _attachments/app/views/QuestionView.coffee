@@ -562,6 +562,10 @@ class QuestionView extends Backbone.View
 
     value           = window.getValueCache[question_id]
 
+    if questionWrapper.hasClass("location")
+      value = window.getValueCache["#{question_id}-latitude"]
+      labelText = question_id
+
     #
     # Exit early conditions
     #
@@ -573,7 +577,7 @@ class QuestionView extends Backbone.View
     # "" = true
     return "" if question.find("input").length != 0 and (type == "checkbox" or type == "radio")
 
-    result.push "'#{labelText}' is required." if required && (value is null or value?.length is 0 or value is undefined) unless (question_id is "household-location" or labelText is undefined)
+    result.push "'#{labelText}' is required." if required && (value is null or value?.length is 0 or value is undefined)
 
     # If not required, then don't validate when value is empty
     return "" if not required and (value is "")

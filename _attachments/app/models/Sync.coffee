@@ -89,6 +89,7 @@ class Sync extends Backbone.Model
               (error,result) =>
                 if error
                   console.log "Could not retrieve list of results: #{JSON.stringify(error)}"
+                  alert "Could not retrieve list of results: #{JSON.stringify(error)}"
                   options?.error?(error)
                   @save
                     last_send_error: true
@@ -101,7 +102,7 @@ class Sync extends Backbone.Model
                   else
                     _.pluck result.rows, "id"
 
-                  @log "Synchronizing #{resultIDs.length} results. Please wait."
+                  $("#status").append "<br/>Synchronizing #{resultIDs.length} results. Please wait."
 
                   Coconut.database.replicate.to Coconut.cloudDB,
                     doc_ids: resultIDs
@@ -115,6 +116,7 @@ class Sync extends Backbone.Model
                       last_send_time: new Date().getTime()
                     Promise.resolve()
                   .on 'error', (error) ->
+                    $("#status").append "<br/>ERROR: While replicating results to server: #{JSON.stringify error}"
                     console.error error
                     options.error(error)
 
@@ -140,11 +142,14 @@ class Sync extends Backbone.Model
                   @log "Sync action: #{row.doc.description or row.doc.action}"
                   console.log "Found sync action:"
                   console.log row.doc.action
+                  # Format for coffeescript spacing
+                  action = row.doc.action.replace(/\n/g,"\n      ")
+        
                   codeToEvalAsPromiseReturningFunction = """
 ->
   new Promise (response) ->
     response(
-      #{row.doc.action}
+      #{action}
     )
 """
 
@@ -173,6 +178,7 @@ class Sync extends Backbone.Model
                   catch error
                     console.error error
               Promise.resolve()
+            Promise.resolve()
             options?.success?()
 
 

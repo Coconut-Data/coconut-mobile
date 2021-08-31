@@ -273,6 +273,8 @@ class Coconut
                   @getOrAssignInstanceId().then (instanceId) =>
                     @instanceId = instanceId
                     @router.startApp().then =>
+
+                      global.JackfruitConfig = await @database.get("JackfruitConfig").catch (error) -> Promise.resolve(null)
                       @fixCompletePropertyInResults()
                       # Look for a global StartPlugins array and then run all of the functions in it
                       if StartPlugins?
