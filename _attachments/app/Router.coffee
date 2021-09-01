@@ -260,6 +260,8 @@ class Router extends Backbone.Router
     Coconut.syncView.render()
     Coconut.syncView.sync.sendToCloud
       success: ->
+        await Coconut.syncView.sync.saveResultRevsFromCloudDB()
+        .catch( (error) -> alert "Error during saveResultRevsFromCloudDB: #{JSON.stringify(error)}")
         Coconut.syncView.update()
       error: ->
         Coconut.syncView.update()
@@ -279,6 +281,8 @@ class Router extends Backbone.Router
         $("#status").html "Receiving data..."
         Coconut.syncView.sync.getFromCloud
           success: ->
+            await Coconut.syncView.sync.saveResultRevsFromCloudDB()
+            .catch( (error) -> alert "Error during saveResultRevsFromCloudDB: #{JSON.stringify(error)}")
             $("#status").html "Complete!"
 
             # Save last_sync as a local doc

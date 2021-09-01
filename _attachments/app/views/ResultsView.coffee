@@ -126,6 +126,29 @@ class ResultsView extends Backbone.View
           "#{formatDistance(parse(cell.getValue(), "yyyy-MM-dd HH:mm:ss", new Date()), new Date(), {addSuffix: true})}"
 
       columns.unshift
+        title: "Synced"
+        field: "synced"
+        formatter: "tickCross"
+        sorter: "boolean"
+        contextMenu: [
+          label: "Sync result now"
+          action: (e,cell) =>
+            resultId = cell.getData()._id
+
+            Coconut.database.replicate.to(Coconut.cloudDB, 
+              doc_ids: [resultId]
+            )
+            .on 'complete', => 
+              serverRev = (await Coconut.cloudDB.get(resultId))?._rev
+              await Coconut.database.upsert("resultsWithServerRevs", (doc) =>
+                doc.serverRevs[resultId] = serverRev
+                doc
+              )
+
+              @render()
+        ]
+
+      columns.unshift
         title: "Complete"
         field: "complete"
         formatter: "tickCross"
@@ -140,11 +163,16 @@ class ResultsView extends Backbone.View
           </a>
           "
 
+      resultsWithServerRevs = (await Coconut.database.get("resultsWithServerRevs").catch (error) -> Promise.resolve null)?.serverRevs
+
       data = _(result.rows)
         .chain()
         .filter (row) =>
           row.doc.question is @question.id
         .pluck "doc"
+        .map (result) =>
+          result.synced = resultsWithServerRevs?[result._id] is result._rev
+          result
         .value()
 
       @tabulator = new Tabulator "#results-table",

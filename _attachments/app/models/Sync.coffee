@@ -94,7 +94,7 @@ class Sync extends Backbone.Model
                   @save
                     last_send_error: true
                 else
-                  resultIDs = if options.completeResultsOnly? and options.completeResultsOnly is true
+                  @resultIDs = if options.completeResultsOnly? and options.completeResultsOnly is true
                     _.chain(result.rows)
                     .filter (row) ->
                       row.key[1] is true # Only get complete results
@@ -102,10 +102,10 @@ class Sync extends Backbone.Model
                   else
                     _.pluck result.rows, "id"
 
-                  $("#status").append "<br/>Synchronizing #{resultIDs.length} results. Please wait."
+                  $("#status").append "<br/>Synchronizing #{@resultIDs.length} results. Please wait."
 
                   Coconut.database.replicate.to Coconut.cloudDB,
-                    doc_ids: resultIDs
+                    doc_ids: @resultIDs
                     timeout: 60000
                     batch_size: 20
                   .on 'complete', (info) =>
@@ -180,6 +180,24 @@ class Sync extends Backbone.Model
               Promise.resolve()
             Promise.resolve()
             options?.success?()
+
+  saveResultRevsFromCloudDB: =>
+    resultIDs = @resultIDs or await Coconut.database.allDocs({startkey:"result", endkey:"result\uf000"})
+    .then (result) => _(result.rows).pluck "id"
+
+    resultsOnServer = await Coconut.cloudDB.allDocs
+      keys: resultIDs
+    .then (result) => Promise.resolve result.rows
+
+    resultsWithServerRevs = {}
+    for result in resultsOnServer
+      console.log result
+      resultsWithServerRevs[result.id] = result.value?.rev
+
+    @log "Saved version on server for #{resultsOnServer.length} results."
+    await Coconut.database.upsert "resultsWithServerRevs", (doc) =>
+      doc.serverRevs = resultsWithServerRevs
+      doc
 
 
 
