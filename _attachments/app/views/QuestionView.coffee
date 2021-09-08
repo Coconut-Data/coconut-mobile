@@ -57,6 +57,35 @@ global.warn = (questionTarget, text) ->
     messageElement.css("background-color", "")
   , 5000
 
+global.createSyncActionUnlessExists = (options) =>
+  id = Coconut.questionView.result.data._id.replace(/result-/,"syncAction_#{options.type}-")
+  existingSyncAction = await Coconut.database.get(id).catch (error) => Promise.resolve null
+  unless existingSyncAction?
+    Coconut.database.put
+      _id: id
+      action: options.action
+      description: options.description
+
+### EXAMPLE Sync Action Below ###
+###
+global.createNotifyEntomologySyncAction = (district, message) =>
+  createSyncActionUnlessExists
+    type: "notify-entomology"
+    action: "notifyEntomology('#{district}','#{message}')"
+    description: "Create notification for Entomology"
+
+global.notifyEntomology = (district, message) =>
+  entoDb = new PouchDB(Coconut.config.cloud_url_with_credentials_no_db()+"/entomology_surveillance")
+  targetNumbers = await entoDb.allDocs
+    startkey: "user"
+    endkey: "user\uf000"
+    include_docs: true
+  .then (result) =>
+    for row in result.rows
+      if row.doc.districts?.includes district
+        await sendSMS(row.doc.mobile,message)
+###
+
 # # # #
 
 _ = require 'underscore'

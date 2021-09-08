@@ -139,12 +139,7 @@ class ResultsView extends Backbone.View
               doc_ids: [resultId]
             )
             .on 'complete', => 
-              serverRev = (await Coconut.cloudDB.get(resultId))?._rev
-              await Coconut.database.upsert("resultsWithServerRevs", (doc) =>
-                doc.serverRevs[resultId] = serverRev
-                doc
-              )
-
+              Sync.updateResultRevsFromCloudDB([resultId])
               @render()
         ]
 

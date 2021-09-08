@@ -12,6 +12,10 @@ class LoginView extends Backbone.View
   el: '#content'
 
   render: =>
+    # If we try to login while on the logout page it will automatically log out upon successful login
+    if document.location.hash.match("/logout")
+      Coconut.router.navigate("", trigger: true)
+      return
     @displayHeader()
     $('.mdl-layout__drawer-button').hide()
     @$el.html "
@@ -101,7 +105,7 @@ class LoginView extends Backbone.View
           <li class='mdl-menu__item'><a id='refresh' class='mdl-color-text--blue-grey-400' onclick='window.location.reload()'><i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
 
           <li class='mdl-menu__item'>
-            <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/07ef190'>07ef190</a></div>
+            <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/5566c88'>5566c88</a></div>
           <i class='mdi mdi-rotate-right mdi-24px'></i> Refresh screen</a></li>
 
         </ul>

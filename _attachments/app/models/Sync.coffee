@@ -140,8 +140,7 @@ class Sync extends Backbone.Model
               for row in result.rows
                 unless row.doc.complete
                   @log "Sync action: #{row.doc.description or row.doc.action}"
-                  console.log "Found sync action:"
-                  console.log row.doc.action
+                  console.log "Found sync action: #{row.doc._id}"
                   # Format for coffeescript spacing
                   action = row.doc.action.replace(/\n/g,"\n      ")
         
@@ -154,16 +153,19 @@ class Sync extends Backbone.Model
 """
 
                   try
+                    console.log "codeToEvalAsPromiseReturningFunction:"
+                    console.log codeToEvalAsPromiseReturningFunction
                     evaldFunction = await CoffeeScript.eval(codeToEvalAsPromiseReturningFunction, {bare:true})
 
                     # Now execute the function
                     await evaldFunction()
                     .then (result) =>
-                      console.log "RESULT:"
+                      console.log "SYNC ACTION RESULT:"
                       console.log result
                       row.doc.complete = true
                       row.doc.result = result
                       row.doc.completeTime = moment().format("YYYY-MM-DD HH:mm:ss")
+                      Promise.resolve()
                     .catch (error) =>
                       console.error "Error on this sync action:"
                       console.error codeToEvalAsPromiseReturningFunction
@@ -173,7 +175,14 @@ class Sync extends Backbone.Model
                       row.doc.complete = false
                       row.doc.error or= []
                       row.doc.error.push error
+                      Promise.resolve()
+                    console.log row.doc
                     await Coconut.database.put row.doc
+                    .catch (error) => 
+                      console.log "Error while saving:"
+                      console.log JSON.stringify(row.doc)
+                      console.log error
+                      alert error
 
                   catch error
                     console.error error
@@ -182,24 +191,7 @@ class Sync extends Backbone.Model
             options?.success?()
 
   saveResultRevsFromCloudDB: =>
-    resultIDs = @resultIDs or await Coconut.database.allDocs({startkey:"result", endkey:"result\uf000"})
-    .then (result) => _(result.rows).pluck "id"
-
-    resultsOnServer = await Coconut.cloudDB.allDocs
-      keys: resultIDs
-    .then (result) => Promise.resolve result.rows
-
-    resultsWithServerRevs = {}
-    for result in resultsOnServer
-      console.log result
-      resultsWithServerRevs[result.id] = result.value?.rev
-
-    @log "Saved version on server for #{resultsOnServer.length} results."
-    await Coconut.database.upsert "resultsWithServerRevs", (doc) =>
-      doc.serverRevs = resultsWithServerRevs
-      doc
-
-
+    Sync.updateResultRevsFromCloudDB(@resultIDs)
 
   log: (message) =>
     Coconut.debug message
@@ -283,6 +275,23 @@ class Sync extends Backbone.Model
     if Coconut.config.get('mobile_background_sync')
       _.delay @backgroundSync, minimumMinutesBetweenSync*60*1000
     return minimumMinutesBetweenSync
+
+Sync.updateResultRevsFromCloudDB = (resultIDs) => 
+  resultIDs or= await Coconut.database.allDocs({startkey:"result", endkey:"result\uf000"})
+  .then (result) => _(result.rows).pluck "id"
+
+  resultsOnServer = await Coconut.cloudDB.allDocs
+    keys: resultIDs
+  .then (result) => Promise.resolve result.rows
+
+  resultsWithServerRevs = {}
+  for result in resultsOnServer
+    resultsWithServerRevs[result.id] = result.value?.rev
+
+  console.log "Saved version on server for #{resultsOnServer.length} results."
+  Coconut.database.upsert "resultsWithServerRevs", (doc) =>
+    doc.serverRevs = resultsWithServerRevs
+    doc
 
 Sync.checkForQuotaErrorAndAlert = (error) =>
   if error.reason is "QuotaExceededError"
