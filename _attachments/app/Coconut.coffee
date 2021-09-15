@@ -528,38 +528,38 @@ class Coconut
     .catch (error) =>
       @assignInstanceId()
 
-  # format: [unix-timestamp-radix64 encoded]
+  # Server/database managed incrementing number for each installation of the app
   assignInstanceId: =>
+    highestExistingInstanceId = await @cloudDB.allDocs
+      startkey: "instance-"
+      endkey: "instance-\uf000"
+    .then (result) =>
+      highestInstanceId = 0
+      for row in result.rows
+        instanceId = parseInt(row.id.split("-").pop())
+        if instanceId > highestInstanceId
+          highestInstanceId = instanceId
+      Promise.resolve(highestInstanceId)
 
-    #unixMillisecondTimestampRadix64Encoded = -> radix64.encodeInt(moment().format('x'))
-    millisecondsSinceBeginningOf2021 = moment().format('x') - moment("2021-01-01").format('x')
-    # https://www.crockford.com/base32.html - 
-    # error resistant (all uppercase, no letters/numbers that can be mixed up), compact
-    millisecondsEncodedAsBase32 = bases.toBase32(millisecondsSinceBeginningOf2021)
+    proposedNewId = highestExistingInstanceId + 1
 
-    @cloudDB = @cloudDB or new PouchDB(@config.cloud_url_with_credentials(), {ajax:{timeout:50000}})
-    @cloudDB.get("assigned_instance_ids")
-    .then (assignedInstanceIds) =>
-      assignedInstanceIds.ids.push millisecondsEncodedAsBase32
-      Promise.resolve(assignedInstanceIds)
-    .catch (error) ->
-      console.log error
-      # If it doesn't exist, this must be the first one, so create the doc
-      if error.status is 404
-        Promise.resolve
-          _id: "assigned_instance_ids"
-          ids: [millisecondsEncodedAsBase32]
+    @cloudDB.put
+      "_id": "instance-#{proposedNewId}"
+      creationTimestamp: (new Date()).toISOString()
+    .then =>
+      @database.upsert '_local/instance_id', (doc) =>
+        _id: '_local/instance_id'
+        value: proposedNewId
+      .catch (error) -> throw "Could not save _local/instance_id: #{proposedNewId} #{JSON.stringify error}"
+      .then -> Promise.resolve(proposedNewId)
+    .catch (error) => # Database will enforce uniqueness in case this ID exists
+      if confirm "Error while creating instance ID: #{JSON.stringify error}\n Do you want to try again?"
+        Promise.resolve @assignInstanceId()
       else
-        throw "Error finding existing instance ids in cloud: #{JSON.stringify error}"
-    .then (assignedInstanceIds) =>
-      @cloudDB.put assignedInstanceIds
-      .then =>
-        assignedId = assignedInstanceIds.ids.pop()
-        @database.put
-          _id: '_local/instance_id'
-          value: assignedId
-        .catch (error) -> throw "Could not save _local/instance_id: #{JSON.stringify error}"
-        .then -> Promise.resolve(assignedId)
-      .catch (error) -> throw "Could not save new instance id to cloud: #{JSON.stringify error}"
+        throw "Error creating instance ID"
+        console.error error
+
+
+
 
 module.exports = Coconut
