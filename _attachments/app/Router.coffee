@@ -176,22 +176,19 @@ class Router extends Backbone.Router
     # Hack by SL to refresh to the plugin's default method.
     Backbone.history.loadUrl()
 
-    if @defaultRouteRefreshCount > 50
+    if Coconut.questions.length is 0
+      alert "No questions"
+      return
 
-      if Coconut.questions.length is 0
-        alert "No questions"
-        return
+    defaultQuestion = Coconut.questions.find (question) ->
+      question.get("default") is true
+    unless defaultQuestion
+      defaultQuestion = Coconut.questions.first()
+    Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.id}", trigger:true
 
-      defaultQuestion = Coconut.questions.filter (question) ->
-        question.get("default") is true
-      if defaultQuestion.length is 0
-        defaultQuestion = Coconut.questions.first()
-      Coconut.router.navigate "#{Coconut.databaseName}/show/results/#{defaultQuestion.id}", trigger:true
-
-    @defaultRouteRefreshTimestamp = Date.now()
-    @defaultRouteRefreshCount ?= 0
-    @defaultRouteRefreshCount += 1
-    Coconut.router.navigate "#{Backbone.history.getFragment()}", trigger:true
+    _.delay =>
+      Coconut.router.navigate "#{Backbone.history.getFragment()}", trigger:true
+    , 1000
 
 
   setup: (httpType, cloudUrl, applicationName, cloudUsername, cloudPassword) ->

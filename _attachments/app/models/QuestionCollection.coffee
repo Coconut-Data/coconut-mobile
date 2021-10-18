@@ -17,6 +17,17 @@ class QuestionCollection extends Backbone.Collection
   parse: (response) ->
     _(response.rows).pluck("doc")
 
+  displayOrder: =>
+    if JackfruitConfig?.questionDisplayOrder?
+      for question in JackfruitConfig.questionDisplayOrder
+        Coconut.questions.get question
+    else
+      if JackfruitConfig?.questionsToHide?
+        Coconut.questions.filter (question) =>
+          not JackfruitConfig.questionsToHide.includes(question.id)
+      else
+        Coconut.questions
+
   QuestionCollection.load = (options) ->
     Coconut.questions = new QuestionCollection()
 

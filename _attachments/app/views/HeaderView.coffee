@@ -90,10 +90,8 @@ class HeaderView extends Backbone.View
   questionTabs: ->
 
     if Coconut.questions
-      $('nav.mdl-navigation').html Coconut.questions.reduce( (result, question) =>
-        result += if JackfruitConfig?.questionsToHide and JackfruitConfig.questionsToHide.includes(question.id)
-          ""
-        else
+      $('nav.mdl-navigation').html( 
+        Coconut.questions.displayOrder().map (question) =>
           results_url = "##{Coconut.databaseName}/show/results/#{escape(question.id)}"
           spanID = question.id.replace(/\s/g,"_")
           "
@@ -104,7 +102,8 @@ class HeaderView extends Backbone.View
               </span>
             </a>
           "
-      , "")
+        .join("")
+      )
 
   update: ->
     Coconut.questions.each (question,index) =>

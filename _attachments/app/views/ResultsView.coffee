@@ -167,6 +167,18 @@ class ResultsView extends Backbone.View
         .pluck "doc"
         .map (result) =>
           result.synced = resultsWithServerRevs?[result._id] is result._rev
+
+          # Count the number of repeatableQuestionSet items so they can be displayed in the table
+          repeatableQuestionSetResultsHighestIndex = {}
+          for property,value of result
+            if match = property.match(/(.+)\[(.+)\]/)
+              index = parseInt(match[2])
+              repeatableQuestionSetResultsHighestIndex[match[1]] or= 0
+              if repeatableQuestionSetResultsHighestIndex[match[1]] < index
+                repeatableQuestionSetResultsHighestIndex[match[1]] = index
+          for repeatableQuestionSet, highestIndex of repeatableQuestionSetResultsHighestIndex
+            result[slugify(repeatableQuestionSet)] = "#{highestIndex+1} Item#{if highestIndex+1 > 1 then "s" else ""}"
+
           result
         .value()
 
