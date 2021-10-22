@@ -306,7 +306,7 @@ class Coconut
       dbsToDestroy = _(dbs).filter (dbName) ->
         dbName.match "^coconut-"+options.applicationName
 
-      Promise.all dbsToDestroy.map (db) =>
+      await Promise.all dbsToDestroy.map (db) =>
       #for db in dbsToDestroy
         #await (new PouchDB(db, pouchDBOptions)).destroy()
         (new PouchDB(db, pouchDBOptions)).destroy()
@@ -382,10 +382,14 @@ class Coconut
             $("#loginErrMsg").html "Updating #{changedUsers.length} users. " if changedUsers.length > 0
             indx = 0
 
-            Promise.all changedUsers.map (user) =>
+            #for user in changedUsers
+            #  await @createDatabaseForUser(user).then =>
+            await Promise.all changedUsers.map (user) =>
               @createDatabaseForUser(user).then =>
                 $("div#percent").html "( #{++indx} of #{changedUsers.length} )"
                 Promise.resolve()
+
+
 
             sequenceResult.sequence = currentDBInfo.update_seq
             @database.put sequenceResult
