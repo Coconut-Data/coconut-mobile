@@ -153,23 +153,29 @@ class Coconut
 
         for pluginId in pluginIds
           pluginDoc = await pluginDatabase.get pluginId
+          console.log pluginDoc
           if pluginDoc.source and pluginDoc.doc_ids
-            await new Promise (resolve) =>
+            await (new Promise (resolve) =>
               ###
               console.log pluginId
               console.log await pluginDatabase.info()
               console.log await pluginDoc.source
               console.log pluginDoc.doc_ids
               ###
+              doc_ids = [pluginId].concat(pluginDoc.doc_ids)
               pluginDatabase.replicate.from pluginDoc.source,
-                doc_ids: [pluginId].concat(pluginDoc.doc_ids)
+                doc_ids: doc_ids
               .on 'complete', (info) =>
-                console.log "Replicated #{[pluginId].concat(pluginDoc.doc_ids)} from #{pluginDoc.source}"
+                console.log "Replicated #{doc_ids.join(',')} from #{pluginDoc.source}"
                 console.log info
                 resolve()
               .on 'error', (error) =>
-                alert("Error during plugin replication of #{pluginId}: #{JSON.stringify error}")
+                message = "Error while replicating plugin docs: #{doc_ids.join(',')} for #{pluginId}: #{JSON.stringify error}"
+                console.error message
+                console.error error
+                alert(message)
                 resolve()
+              )
 
         options?.success?()
         Promise.resolve()
@@ -205,6 +211,7 @@ class Coconut
               catch error
                 console.error "Error loading #{plugin}"
                 console.error error
+              console.info "#{plugin} started"
               Promise.resolve()
           .catch (error) ->
             console.log "Error while loading plugin-bundle.js for #{plugin}:"
@@ -278,11 +285,11 @@ class Coconut
                       @fixCompletePropertyInResults()
                       # Look for a global StartPlugins array and then run all of the functions in it
                       if StartPlugins?
-                        console.log "STARTING PLUGINS"
+                        console.log "Starting Plugins"
                         for startPluginFunction in StartPlugins
                           await startPluginFunction()
                       # Will return a promise
-                      console.log "DONE STARTING PLUGINS"
+                      console.log "All plugins started"
 
   fixCompletePropertyInResults: => # Bug generated some bad data for a few weeks - can remove after a few days
     @database.query "results",

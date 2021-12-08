@@ -22,7 +22,7 @@ class MenuView extends Backbone.View
         <div class='clear'>
           <div class='f-left m-l-10'><img src='images/cocoLogo.png' id='cslogo_sm'></div>
           <div class='mdl-layout-title' id='drawer-title'>Coconut Mobile</div>
-          <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/28293c7'>28293c7</a></div>
+          <div id='version'>Version: 1.0.0 - <a href='https://github.com/ICTatRTI/coconut-mobile/commit/ac436b0'>ac436b0</a></div>
         </div>
         <div style='margin: 5px 0 0 25px'>
         Application: #{Coconut.databaseName}<br/>
@@ -79,7 +79,7 @@ class MenuView extends Backbone.View
           <div>
             <a class='mdl-navigation__link' href='#{results_url}'>
               <span id='#{spanID}' class='#{spanID} mdl-badge' data-badge=''>
-                <i class='mdl-color-text--accent mdi mdi-star'></i>
+                <span class='material-icons'>#{question.get('icon') or "star"}</span>
                 <span>#{question.id}</span>
               </span>
             </a>

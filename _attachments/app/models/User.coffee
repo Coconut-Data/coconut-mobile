@@ -26,8 +26,8 @@ User.isAuthenticated = ->
   Coconut.validateDatabase()
   .catch (error) ->
     # See if we have cookies that can login
-    userCookie = Cookie('current_user')
-    passwordCookie = Cookie('current_password')
+    userCookie = Cookie.get('current_user')
+    passwordCookie = Cookie.get('current_password')
 
     console.log "Trying to login with cookies"
 
@@ -35,7 +35,7 @@ User.isAuthenticated = ->
       Coconut.openDatabase
         username: userCookie
         password: passwordCookie
-      .then -> 
+      .then ->
         Promise.resolve()
     else
       throw "No saved user, must login"
@@ -51,16 +51,17 @@ User.login = (options) ->
       _id: "user.#{options.username}"
     user.fetch
       success: =>
+        console.log "SETTING COOKIES"
         Coconut.currentUser = user
-        Cookie('current_user', user.username())
-        Cookie('current_password', options.password)
+        Cookie.set('current_user', user.username())
+        Cookie.set('current_password', options.password)
         resolve()
       error: (error) =>
         throw error
 
 User.logout = ->
-  Cookie('current_user',"")
-  Cookie('current_password',"")
+  Cookie.set('current_user',"")
+  Cookie.set('current_password',"")
   Coconut.currentUser = null
 
 module.exports = User

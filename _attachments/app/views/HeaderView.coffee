@@ -40,7 +40,7 @@ class HeaderView extends Backbone.View
 
   render: =>
     @$el.html "
-      <span class='mdl-layout-title' id='layout-title'>Coconut Mobile</span>
+      <span class='mdl-layout-title' style='width:60px;font-size:.75em;overflow:hidden' id='layout-title'>#{titleize(Coconut.databaseName?.replace(/[-_]/,' ') or "Coconut")}</span>
       <a href='##{Coconut.databaseName}' id='home_icon' class='mdl-navigation__link top_links'>
          <span><i class='mdl-layout--small-screen-only mdi mdi-home mdi-36px' title='Home'></i></span>
          <span class='mdl-layout--large-screen-only'>Home</span>
@@ -97,7 +97,7 @@ class HeaderView extends Backbone.View
           "
             <a class='mdl-navigation__link top_links' href='#{results_url}'>
               <span id='#{spanID}' class='mdl-badge' data-badge=''>
-                <i class='mdl-layout--small-screen-only mdi mdi-star'></i> 
+                <span class='material-icons'>#{question.get('icon') or "star"}</span>
                 <span class='mdl-layout--large-screen-only'>#{question.id}</span>
               </span>
             </a>

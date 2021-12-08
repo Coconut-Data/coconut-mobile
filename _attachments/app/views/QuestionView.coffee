@@ -1,17 +1,5 @@
-# These need to be available to the window object for form logic
-# # # #
-global.SkipTheseWhen = ( argQuestions, result ) ->
-  questions = []
-  argQuestions = argQuestions.split(/\s*,\s*/)
-  for question in argQuestions
-    questions.push window.questionCache[question]
-  disabledClass = "disabled_skipped"
-
-  for question in questions
-    if result
-      question.addClass disabledClass
-    else
-      question.removeClass disabledClass
+# QuestionViewHelpers is where functions used by question view are kept. Like ResultOfQuestion setValue setValueWithNextIdIfEmptyAndSetResultId
+require "./QuestionViewHelpers"
 
 global.classify = require("underscore.string/classify")
 global.capitalize = require("underscore.string/capitalize")
@@ -23,79 +11,15 @@ global.camelize = require("underscore.string/camelize")
 get = require "lodash/get"
 merge = require "lodash.merge"
 
-global.ResultOfQuestion = (name) ->
-  if window.getValueCache[name]?
-    window.getValueCache[name]
-  else if window.getValueCache[slugify(name)]?
-    window.getValueCache[slugify(name)]
-  else
-    null
-
-
-global.PreviousQuestionResult =  ->
-  window.previousQuestionResult
-
-global.setValue = (targetLabel, value) ->
-  @$("[name=#{slugify(targetLabel)}]").val(value)
-
-global.setLabelText = (targetLabel, value) ->
-  @$("[data-question-name=#{slugify(targetLabel)}] label").html(value)
-
-global.showMessage = (questionTarget, html) ->
-  messageElement = questionTarget.closest("div").children(".info-message").first()
-  if messageElement.length is 0
-    messageElement  = $("<div class='info-message'></div>")
-    questionTarget.closest("div").append(messageElement[0])
-  messageElement.html html
-  messageElement.show()
-
-global.warn = (questionTarget, text) ->
-  messageElement = showMessage(questionTarget,text)
-  messageElement.css("background-color", "yellow")
-  _.delay =>
-    messageElement.fadeOut()
-    messageElement.css("background-color", "")
-  , 5000
-
-global.createSyncActionUnlessExists = (options) =>
-  id = Coconut.questionView.result.data._id.replace(/result-/,"syncAction_#{options.type}-")
-  existingSyncAction = await Coconut.database.get(id).catch (error) => Promise.resolve null
-  unless existingSyncAction?
-    Coconut.database.put
-      _id: id
-      action: options.action
-      description: options.description
-
-### EXAMPLE Sync Action Below ###
-###
-global.createNotifyEntomologySyncAction = (district, message) =>
-  createSyncActionUnlessExists
-    type: "notify-entomology"
-    action: "notifyEntomology('#{district}','#{message}')"
-    description: "Create notification for Entomology"
-
-global.notifyEntomology = (district, message) =>
-  entoDb = new PouchDB(Coconut.config.cloud_url_with_credentials_no_db()+"/entomology_surveillance")
-  targetNumbers = await entoDb.allDocs
-    startkey: "user"
-    endkey: "user\uf000"
-    include_docs: true
-  .then (result) =>
-    for row in result.rows
-      if row.doc.districts?.includes district
-        await sendSMS(row.doc.mobile,message)
-###
-
-# # # #
 
 _ = require 'underscore'
 global._ = _
 $ = require 'jquery'
 global.$ = $ # required for validations that use jquery
 jQuery = require 'jquery'
-Cookie = require 'js-cookie'
 Awesomplete = require 'awesomplete'
 global.awesompleteByName = {}
+QRCode = require('qrcode')
 
 Backbone = require 'backbone'
 Backbone.$  = $
@@ -364,10 +288,11 @@ class QuestionView extends Backbone.View
                   checkBox.checked = true
               if found is false
                 console.error "Could not find checkbox element for: #{property}, #{value}"
-
-
-
+          else if input.hasClass("photoData")
+            input.val(value)
+            input.siblings("img").attr("src", "#{value}")
           else
+            console.log input
             console.error "Could not element to populate: #{property}, #{value}"
             console.log "#{property} is of type: #{input[0].type}"
         else
@@ -418,6 +343,12 @@ class QuestionView extends Backbone.View
     "click .next_error"   : "validateAll"
     "click .validate_one" : "onValidateOne"
     "click .qr-scan" : "getQrCode"
+    "click .takePhoto" : "takePhoto"
+
+    "click #createQR" : "createQR"
+
+  createQR: =>
+    await QRCode.toCanvas(document.getElementById('qrcode'), JSON.stringify(@currentData()), {scale:3})
 
   onChange: (event) =>
     @activeQuestion =  event.target
@@ -806,6 +737,10 @@ class QuestionView extends Backbone.View
                   <input name='complete' id='question-set-complete' type='checkbox' value='true'></input>
                   <label class='question-set-complete-label' for='question-set-complete'>Complete</label>
                 </div>
+                <br/>
+                <br/>
+                <span style='cursor:pointer;font-size:4em' id='createQR' class='material-icons'>qr_code</span>
+                <canvas style='display:inline-block; vertical-align:top;' id='qrcode'></canvas>
                 "
               else ""
             }
@@ -965,6 +900,24 @@ class QuestionView extends Backbone.View
                     </div>
                   </div>
                 "
+              when "photo"
+                _.delay =>
+                  navigator.mediaDevices.getUserMedia?({ video: true })
+                  .then (stream) => @$("#photo-video-#{question_id}")?[0]?.srcObject = stream
+                  .catch (error) -> alert "Error capturing photo"
+                , 1000
+                "
+                  <div id='container'>
+                    <video width='400' height='400' autoplay='true' id='photo-video-#{question_id}'></video>
+                  </div>
+                  <button type='button' class='takePhoto' data-question-id='#{question_id}'>Take Photo</button>
+                  <canvas id='photo-canvas-#{question_id}' style='display:none;overflow:auto' class='photo-canvas'></canvas>
+                  <input name='#{name}' id='#{question_id}' type='hidden' class='photoData mdl-textfield__input' value='#{question.value()}'></input>
+                  <img id='photo-image-#{question_id}'>
+                "
+
+
+
               else
                 "<input name='#{name}' id='#{question_id}' type='#{question.type()}' value='#{question.value()}'></input>"
           }
@@ -1060,6 +1013,21 @@ class QuestionView extends Backbone.View
         desiredAccuracy: requiredAccuracy
         maxWait: maxWait
     )
+
+
+
+  takePhoto: (event) =>
+    photoButton = $(event.target)
+    questionId = photoButton.attr("data-question-id")
+
+    canvas = @$("#photo-canvas-#{questionId}")?[0]
+    video = @$("#photo-video-#{questionId}")?[0]
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d').drawImage(video, 0, 0)
+
+    @$("##{questionId}").val canvas.toDataURL()
+    @$("#photo-image-#{questionId}").attr "src", canvas.toDataURL()
 
   getQrCode: (event) =>
     qrButton = $(event.target)

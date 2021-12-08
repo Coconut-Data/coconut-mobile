@@ -116,8 +116,8 @@ class Result
       @set {"#{key}", value}
 
     @set
-      user: Cookie('current_user')
-      savedBy: Cookie('current_user')
+      user: Coconut.currentUser.username() or Cookie.get("current_user") or Cookie('current_user')
+      savedBy: Coconut.currentUser.username() or Cookie.get("current_password") or Cookie('current_password')
       lastModifiedAt: moment(new Date()).format(Coconut.config.get "date_format")
 
     unless @data._id

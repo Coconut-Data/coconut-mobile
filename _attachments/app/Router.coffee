@@ -401,8 +401,8 @@ class Router extends Backbone.Router
         success: ->
 
           # Forces a new login to occur
-          Cookie('current_user', '')
-          Cookie('current_password', '')
+          Cookie.set('current_user', '')
+          Cookie.set('current_password', '')
 
           cloudUrl = Coconut.config.get("cloud")
           applicationName = Coconut.config.get("cloud_database_name")

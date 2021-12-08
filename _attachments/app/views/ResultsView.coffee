@@ -183,7 +183,7 @@ class ResultsView extends Backbone.View
         .value()
 
       @tabulator = new Tabulator "#results-table",
-        maxHeight: "100%"
+        height: Math.floor($(window).height()*.75)
         data: data
         columns: columns
         initialSort: [
