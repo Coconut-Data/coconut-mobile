@@ -1,0 +1,45 @@
+{
+  z: {
+    data: '6efd393c3da4bd7ed2e1c9441be0ac2e2b74bff299dc0b18c243a40a85e38a4c1afc5183844667dea21970c83ffe19b3jlUKiNCUJnCcbgcINMLLqghJ0UGcL1YlYWxtf3uhdh9ANiux38ZdCe5mPb3EX45628p7qivZuQhvvvMe8mtnUNeDHpxXwnxC28GPot48c4Y='
+  },
+  k: {
+    data: '7b5c968648a4ea48ad7e43f9322c98aa5151e1995f8ea54c944d4bba291ede2490b66141fb62289e7b5c78ca363b3913lP99s33btTyzTxj4qRct0OVAXq3IwFj0PvBK1ab5wRKqZzk2ZvDJX2Hfw6gPxLDSZBm0X5ekXoIKdfGhHb6pOJap2r10i2z7XlBngd1g8m8='
+  },
+  w: {
+    data: '0c16b04f8f8afa1de5f4df238cb39c1b38b2867af0a4e4e2f87f2c932a79d726109ac4b5de1b01ff98c68b543a5cbce422AhyEuLh/rAlY5qR/kWXvBvvEiMu2QZfNC920pPrhDuZ/kPQfJ6QNcvCPZUgpW9FPki76YD8SLawkeXIuuGJu/xJ3zQuoxZknQON6nBoEw='
+  },
+  lz: {
+    data: [ 'http', 'localhost:5984', 'zanzibar', 'admin', 'password' ]
+  },
+  lw: { data: [ 'http', 'localhost:5984', 'keep', 'admin', 'password' ] },
+  zd: {
+    data: [
+      'https',
+      'zanzibar.cococloud.co',
+      'zanzibar-development',
+      'clientuser',
+      'learningthehardway'
+    ]
+  },
+  s: {
+    data: [
+      'https',
+      'zanzibar.cococloud.co',
+      'shokishoki',
+      'clientuser',
+      'learningthehardway'
+    ]
+  },
+  wiki: {
+    data: '4d3a1634e105f8ee662d44d97b75251fc01ebf997eaf0f8014e0c09ad9d0668f6a3092b9f494c5baff1af7922494cc0dChI/CEvaqCAr4I6blYyLOg5bWaTxLGrVRHzHzrPymewPX4wpEpcbroyja1CQBDcpDhqgaDWb4C9LILEuNEIVyeMsIo8ssim1L2DfKaNWCkCEFslkRmqiyyq+B/FPtCECneqznka2LaW1+ygfx0O5q6itTtV+t9IPpH0/ShaLu52ISzFRVY3LUf0bfpocLzqSDhvBUvgo0cNPEpV3JUbwdAsuvo9NmzyyVIy/4ZDW8Xq9ibpkgoWP186IdhSVzRaU'
+  },
+  lk: {
+    data: [ 'http', 'localhost:5984', 'kigelia', 'admin', 'password' ]
+  },
+  ento: {
+    data: 'f0fff9997b1a55d63d3a422dcd932392e7e5552c17bbb5108be4bcddb1a9c3bde60fde9c8f4c563fe766f3074c35a8acqoKMU9/ToNzIHIVMt90XQMv43TvCaAK9nplYr4XQ4W7e0TzyFLLtd/KanHBzGwl8m5j2I8jQKcU5uOHhCJ6+Ua8oT+8ELg+PgNR9u47X9POSv+SjwYZ7F1+JsFp41dG6'
+  },
+  mgt: {
+    data: 'a5a2c43d124669ecb391404e039a86165c8cf5179b7dc77bf2dceb4849da238af5373f7517270aaeafa28d5ac3333638S6CEALQ2phUvvt0+A7mPD2rM7bQisLFTptbzDaVBhmP4NARIj+YkWwts8MsTN/L1UsD3xXcF6vLxXobK3SP2HaTziwHh/Ik+1tvDDRocAQvSx3rzh3/Y8rUg5R2fWInq'
+  }
+}
