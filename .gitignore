@@ -1,3 +1,5 @@
 _attachments/node_modules/
 _attachments/bundle.js
 _attachments/package-lock.json
+_attachments/vendor.min.js
+package-lock.json
