@@ -24,4 +24,11 @@ A Question Set is a list of questions. Each question set can be rendered and the
   * action_on_change
   * skip_logic
   * onValidatedComplete
+  
+### Installation
+
+```
+npm run install-server
+```
+
 
