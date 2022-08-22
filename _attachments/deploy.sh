@@ -13,8 +13,7 @@ echo "Minifying bundle-css.min.css"
 ./bundleCss.sh
 echo "Minifying bundle-libraries.min.js"
 ./bundleJsLibraries.sh
-
-#workbox generateSW workbox-config.js
+workbox generateSW workbox-config.js
 #echo "Rsyncing to cloud"
 #rsync --verbose  --copy-links --recursive --exclude=node_modules ./ mobile.cococloud.co:/var/www/mobile.cococloud.co/ | grep total
 # No longer use couch for serving the app so this isn't required

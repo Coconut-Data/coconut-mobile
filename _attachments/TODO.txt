@@ -1,0 +1,2 @@
+add ignore:_attachments to crypto
+turn on auto_compact
