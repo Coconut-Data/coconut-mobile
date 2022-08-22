@@ -26,7 +26,6 @@ Backbone.$  = $
 #CoffeeScript = require 'coffee-script' - this is loaded in index.html
 Module = require 'module'
 
-global.Form2js = require 'form2js'
 moment = require 'moment'
 jsQR = require 'jsqr'
 
