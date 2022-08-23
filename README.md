@@ -27,8 +27,14 @@ A Question Set is a list of questions. Each question set can be rendered and the
   
 ### Installation
 
+1. Clone the repository
+2. Install the dependencies
 ```
-npm run install-server
+npm install
+```
+3. Run the script
+```
+./deploy.sh
 ```
 
 
