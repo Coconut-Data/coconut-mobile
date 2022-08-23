@@ -3,6 +3,8 @@ $ = require 'jquery'
 Backbone = require 'backbone'
 Backbone.$  = $
 
+Form2js = require 'form2js'
+
 User = require '../models/User'
 
 class LoginView extends Backbone.View
